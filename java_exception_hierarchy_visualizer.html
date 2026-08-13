@@ -1,0 +1,1640 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Java Exception & Error Hierarchy Visualizer</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- D3.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+
+    /* D3 Canvas Transitions & Styles */
+    .link {
+      fill: none;
+      stroke-width: 2px;
+      transition: stroke 0.3s, stroke-width 0.3s;
+    }
+    
+    .node {
+      cursor: pointer;
+    }
+
+    .node-card {
+      transition: all 0.2s ease-in-out;
+      rx: 8px;
+      ry: 8px;
+    }
+
+    .node:hover .node-card {
+      filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.4));
+    }
+
+    .node--highlighted .node-card {
+      stroke: #f59e0b !important;
+      stroke-width: 3px !important;
+      filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.6));
+    }
+
+    /* Radial gradient background */
+    .bg-grid-pattern {
+      background-size: 30px 30px;
+      background-image: 
+        radial-gradient(circle, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col font-sans overflow-hidden bg-slate-950 text-slate-100">
+
+  <!-- Header & Toolbar -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur px-6 py-3 flex flex-wrap items-center justify-between gap-4 z-20 shadow-md">
+    <div class="flex items-center space-x-3">
+      <div class="w-9 h-9 rounded-lg bg-gradient-to-tr from-amber-500 via-indigo-600 to-rose-500 flex items-center justify-center text-white shadow-lg">
+        <i class="fa-solid fa-sitemap text-lg"></i>
+      </div>
+      <div>
+        <h1 class="text-lg font-bold tracking-wide text-white flex items-center gap-2">
+          Java Exception & Error Hierarchy
+          <span class="text-xs font-semibold px-2 py-0.5 rounded bg-indigo-950 border border-indigo-700 text-indigo-300">JDK Interactive Tree</span>
+        </h1>
+        <p class="text-xs text-slate-400">Explore Throwable, Exception, RuntimeException, and Error branches with complete code examples</p>
+      </div>
+    </div>
+
+    <!-- Filter Buttons -->
+    <div class="flex items-center gap-2 bg-slate-950/60 p-1 rounded-xl border border-slate-800">
+      <button id="filter-all" class="filter-btn active px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-indigo-600 text-white shadow">
+        All
+      </button>
+      <button id="filter-error" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-rose-400 hover:bg-rose-950/40">
+        <i class="fa-solid fa-circle text-[8px] mr-1 text-rose-500"></i> Error
+      </button>
+      <button id="filter-unchecked" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-emerald-400 hover:bg-emerald-950/40">
+        <i class="fa-solid fa-circle text-[8px] mr-1 text-emerald-500"></i> Runtime (Unchecked)
+      </button>
+      <button id="filter-checked" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-sky-400 hover:bg-sky-950/40">
+        <i class="fa-solid fa-circle text-[8px] mr-1 text-sky-500"></i> Checked Exception
+      </button>
+    </div>
+
+    <!-- Search & Quick Actions -->
+    <div class="flex items-center gap-3">
+      <div class="relative">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+        <input type="text" id="search-input" placeholder="Search class (e.g., NullPointer)..." 
+               class="bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-8 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 w-64 shadow-inner transition-all">
+        <button id="clear-search" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 text-xs">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="flex items-center gap-1 border-l border-slate-800 pl-3">
+        <button id="btn-expand-all" title="Expand All Nodes" class="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white transition text-xs">
+          <i class="fa-solid fa-expand"></i>
+        </button>
+        <button id="btn-collapse-all" title="Collapse All Nodes" class="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white transition text-xs">
+          <i class="fa-solid fa-compress"></i>
+        </button>
+        <button id="btn-reset-zoom" title="Reset Camera View" class="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white transition text-xs">
+          <i class="fa-solid fa-crosshairs"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Viewport -->
+  <div class="flex-1 relative flex overflow-hidden">
+    
+    <!-- SVG Tree Container -->
+    <div id="tree-container" class="flex-1 h-full w-full bg-slate-950 bg-grid-pattern relative cursor-grab active:cursor-grabbing">
+      <!-- Zoom controls overlay -->
+      <div class="absolute bottom-6 left-6 flex flex-col gap-1 bg-slate-900/90 border border-slate-800 p-1.5 rounded-xl shadow-xl z-10">
+        <button id="zoom-in" class="p-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition text-xs">
+          <i class="fa-solid fa-plus"></i>
+        </button>
+        <button id="zoom-out" class="p-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition text-xs">
+          <i class="fa-solid fa-minus"></i>
+        </button>
+      </div>
+
+      <!-- Map Legend -->
+      <div class="absolute bottom-6 right-6 bg-slate-900/90 border border-slate-800 p-3 rounded-xl shadow-xl z-10 text-xs backdrop-blur">
+        <span class="text-slate-400 font-semibold mb-2 block uppercase text-[10px] tracking-wider">Classification Legend</span>
+        <div class="grid grid-cols-2 gap-x-4 gap-y-1.5">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-sm bg-rose-500/20 border border-rose-500"></span>
+            <span class="text-slate-300">Error (JVM issue)</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-sm bg-emerald-500/20 border border-emerald-500"></span>
+            <span class="text-slate-300">RuntimeException (Unchecked)</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-sm bg-sky-500/20 border border-sky-500"></span>
+            <span class="text-slate-300">Checked Exception</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-sm bg-amber-500/20 border border-amber-500"></span>
+            <span class="text-slate-300">Root (Throwable)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detail Drawer Sidebar -->
+    <aside id="detail-drawer" class="w-[420px] border-l border-slate-800 bg-slate-900/95 backdrop-blur h-full flex flex-col shadow-2xl z-20 transform translate-x-full transition-transform duration-300 ease-in-out absolute right-0 top-0">
+      <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span id="drawer-badge" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300">Type</span>
+          <span class="text-xs text-slate-500 font-mono">java.lang</span>
+        </div>
+        <button id="close-drawer" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto flex-1 space-y-6">
+        <div>
+          <h2 id="drawer-title" class="text-xl font-bold text-white font-mono break-words">ExceptionName</h2>
+          <p id="drawer-package" class="text-xs text-slate-400 font-mono mt-0.5">Package hierarchy</p>
+        </div>
+
+        <div class="space-y-2">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Inheritance Chain</h3>
+          <div id="drawer-chain" class="flex flex-wrap items-center gap-1.5 text-xs font-mono text-slate-300 bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+            <!-- Dynamic path -->
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Description & Common Triggers</h3>
+          <div id="drawer-desc" class="text-sm text-slate-300 leading-relaxed bg-slate-950/50 p-3 rounded-lg border border-slate-800/80">
+            Click on any node to view details.
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Compiler Requirement</h3>
+            <span id="drawer-requirement" class="text-xs font-semibold px-2 py-0.5 rounded bg-slate-800 text-slate-300">Checked</span>
+          </div>
+          <p id="drawer-req-desc" class="text-xs text-slate-400">Detailed explanation of catch / declare requirements.</p>
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Complete Java Code Example</h3>
+            <button id="copy-code-btn" class="text-[10px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1 bg-slate-950 px-2 py-1 rounded border border-slate-800">
+              <i class="fa-regular fa-copy"></i> Copy Example
+            </button>
+          </div>
+          <div class="relative">
+            <pre id="drawer-code" class="bg-slate-950 p-3.5 rounded-lg border border-slate-800 text-xs font-mono text-emerald-400 overflow-x-auto leading-relaxed max-h-80 whitespace-pre">
+// Select a node to view real-time runnable code example
+            </pre>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- JavaScript Application Logic -->
+  <script>
+    // Comprehensive Java Throwable Hierarchy Dataset with REAL-TIME runnable examples for EVERY node
+    const hierarchyData = {
+      name: "java.lang.Throwable",
+      type: "root",
+      pkg: "java.lang",
+      desc: "The superclass of all errors and exceptions in Java. Only objects that inherit from Throwable can be thrown by the JVM or via the Java 'throw' statement.",
+      code: `public class ThrowableDemo {
+    public static void main(String[] args) {
+        try {
+            throw new Exception("Custom exception message");
+        } catch (Throwable t) {
+            System.err.println("Caught Throwable: " + t.getMessage());
+            t.printStackTrace();
+        }
+    }
+}`,
+      children: [
+        {
+          name: "java.lang.Error",
+          type: "error",
+          checked: false,
+          pkg: "java.lang",
+          desc: "Indicates severe problems that a reasonable application should not try to catch. Errors are abnormal JVM conditions.",
+          code: `public class ErrorDemo {
+    public static void main(String[] args) {
+        try {
+            throw new StackOverflowError("Simulated stack overflow error");
+        } catch (Error e) {
+            System.err.println("Caught fatal JVM Error: " + e.getMessage());
+        }
+    }
+}`,
+          children: [
+            {
+              name: "VirtualMachineError",
+              type: "error",
+              checked: false,
+              pkg: "java.lang",
+              desc: "Thrown to indicate that the Java Virtual Machine is broken or has run out of resources necessary for it to continue operating.",
+              code: `public class VirtualMachineErrorDemo {
+    public static void main(String[] args) {
+        // Abstract base class for JVM internal failure exceptions
+        try {
+            throw new OutOfMemoryError("Simulated heap depletion");
+        } catch (VirtualMachineError vme) {
+            System.err.println("VM Error occurred: " + vme.getClass().getSimpleName());
+        }
+    }
+}`,
+              children: [
+                {
+                  name: "OutOfMemoryError",
+                  type: "error",
+                  checked: false,
+                  pkg: "java.lang",
+                  desc: "Thrown when the JVM cannot allocate an object because it is out of memory and GC cannot free up more space.",
+                  code: `import java.util.*;
+
+public class OOMDemo {
+    public static void main(String[] args) {
+        List<byte[]> memoryLeakList = new ArrayList<>();
+        // Continuously allocate 10MB byte arrays until heap space is exhausted
+        while (true) {
+            memoryLeakList.add(new byte[10 * 1024 * 1024]);
+        }
+    }
+}`
+                },
+                {
+                  name: "StackOverflowError",
+                  type: "error",
+                  checked: false,
+                  pkg: "java.lang",
+                  desc: "Thrown when a stack overflow occurs because an application recurses too deeply without a termination condition.",
+                  code: `public class StackOverflowDemo {
+    public static void infiniteRecursion() {
+        infiniteRecursion(); // Deep un-bounded recursion depletes thread call stack
+    }
+
+    public static void main(String[] args) {
+        infiniteRecursion();
+    }
+}`
+                },
+                {
+                  name: "InternalError",
+                  type: "error",
+                  checked: false,
+                  pkg: "java.lang",
+                  desc: "Thrown to indicate some unexpected internal error occurred inside the Java Virtual Machine implementation.",
+                  code: `public class InternalErrorDemo {
+    public static void main(String[] args) {
+        // Typically thrown directly by JVM runtime / JNI C++ code
+        throw new InternalError("Fatal unexpected fault in JVM internal execution engine");
+    }
+}`
+                },
+                {
+                  name: "UnknownError",
+                  type: "error",
+                  checked: false,
+                  pkg: "java.lang",
+                  desc: "Thrown when an unknown but serious exception has occurred inside the Java Virtual Machine.",
+                  code: `public class UnknownErrorDemo {
+    public static void main(String[] args) {
+        // Thrown when an unclassifiable serious JVM internal exception happens
+        throw new UnknownError("Unrecoverable non-descript JVM subsystem failure");
+    }
+}`
+                }
+              ]
+            },
+            {
+              name: "LinkageError",
+              type: "error",
+              checked: false,
+              pkg: "java.lang",
+              desc: "Indicates that a class has a dependency on another class; however, the latter class has incompatibly changed after compilation.",
+              code: `public class LinkageErrorDemo {
+    public static void main(String[] args) {
+        // Base error thrown when binary compatibility rules are broken between compiled JARs
+        throw new LinkageError("Class definition mismatch or incompatible compiled version");
+    }
+}`,
+              children: [
+                {
+                  name: "NoClassDefFoundError",
+                  type: "error",
+                  checked: false,
+                  pkg: "java.lang",
+                  desc: "Thrown if the JVM tries to load a class definition at runtime, but the class file is missing from the classpath.",
+                  code: `public class NoClassDefFoundDemo {
+    public static void main(String[] args) {
+        // Compiled successfully against HelperClass.java,
+        // but HelperClass.class was removed/deleted from execution classpath before running:
+        HelperClass helper = new HelperClass();
+    }
+}`
+                },
+                {
+                  name: "ClassFormatError",
+                  type: "error",
+                  checked: false,
+                  pkg: "java.lang",
+                  desc: "Thrown when the JVM attempts to read a class file and determines that the file format is malformed or cannot be interpreted.",
+                  code: `public class ClassFormatDemo {
+    public static void main(String[] args) {
+        // Thrown when JVM bytecode loader reads a corrupted .class file
+        // (e.g. invalid magic number header 0xCAFEBABE or corrupted byte structure)
+    }
+}`,
+                  children: [
+                    {
+                      name: "UnsupportedClassVersionError",
+                      type: "error",
+                      checked: false,
+                      pkg: "java.lang",
+                      desc: "Thrown when the JVM attempts to read a .class file compiled with a newer JDK than the current JRE supports.",
+                      code: `public class ClassVersionDemo {
+    public static void main(String[] args) {
+        // Example: Bytecode compiled with JDK 21 (class file version 65.0)
+        // being executed on a JDK 11 JRE runtime (max version 55.0)
+        System.out.println("UnsupportedClassVersionError: Has been compiled by a more recent version of Java");
+    }
+}`
+                    }
+                  ]
+                },
+                {
+                  name: "IncompatibleClassChangeError",
+                  type: "error",
+                  checked: false,
+                  pkg: "java.lang",
+                  desc: "Thrown when an incompatible class change has occurred to some class definition after original compilation.",
+                  code: `public class IncompatibleClassChangeDemo {
+    public static void main(String[] args) {
+        // E.g., Changing an instance method in a dependency JAR to static without re-compiling caller code
+    }
+}`,
+                  children: [
+                    { 
+                      name: "NoSuchMethodError", 
+                      type: "error", 
+                      checked: false, 
+                      pkg: "java.lang", 
+                      desc: "Thrown if an application tries to call a method of a class, and that class no longer has a definition of that method at runtime.",
+                      code: `public class NoSuchMethodDemo {
+    public static void main(String[] args) {
+        // Dependency Library V1 had method 'public void processData()'
+        // Upgraded to Library V2 where 'processData()' was deleted/renamed
+        // Executing compiled V1 bytecode against V2 JAR throws NoSuchMethodError:
+        ExternalService service = new ExternalService();
+        service.processData();
+    }
+}`
+                    },
+                    { 
+                      name: "NoSuchFieldError", 
+                      type: "error", 
+                      checked: false, 
+                      pkg: "java.lang", 
+                      desc: "Thrown if an application tries to access or modify a field of an object, and that object no longer has that field at runtime.",
+                      code: `public class NoSuchFieldDemo {
+    public static void main(String[] args) {
+        // Code compiled against Config.java with public field 'TIMEOUT_MS'
+        // At runtime, Config.jar is replaced with a version where TIMEOUT_MS was removed
+        Config config = new Config();
+        System.out.println(config.TIMEOUT_MS);
+    }
+}`
+                    }
+                  ]
+                },
+                { 
+                  name: "UnsatisfiedLinkError", 
+                  type: "error", 
+                  checked: false, 
+                  pkg: "java.lang", 
+                  desc: "Thrown if the JVM cannot find an appropriate native language library definition (JNI / DLL / .so) of a method declared native.",
+                  code: `public class NativeJniDemo {
+    // Native method signature declaration
+    public native void invokeCFunction();
+
+    public static void main(String[] args) {
+        // Forgot to load the native dynamic library or .dll/.so is missing
+        System.loadLibrary("non_existent_native_lib");
+        new NativeJniDemo().invokeCFunction();
+    }
+}`
+                },
+                { 
+                  name: "VerifyError", 
+                  type: "error", 
+                  checked: false, 
+                  pkg: "java.lang", 
+                  desc: "Thrown when the JVM bytecode 'verifier' detects that a class file contains invalid bytecode or security rule violations.",
+                  code: `public class BytecodeVerifyDemo {
+    public static void main(String[] args) {
+        // Thrown when bytecode manipulation frameworks (ASM, ByteBuddy, CGLIB)
+        // generate malformed bytecode that fails JVM stack map frame verification
+    }
+}`
+                }
+              ]
+            },
+            {
+              name: "AssertionError",
+              type: "error",
+              checked: false,
+              pkg: "java.lang",
+              desc: "Thrown to indicate that an 'assert' statement has failed when running Java with assertions enabled (-ea).",
+              code: `public class AssertionDemo {
+    public static void main(String[] args) {
+        int userAge = -5;
+        // Run application with JVM flag '-ea' (enable assertions)
+        assert userAge >= 0 : "User age cannot be negative! Received: " + userAge;
+    }
+}`
+            },
+            {
+              name: "ThreadDeath",
+              type: "error",
+              checked: false,
+              pkg: "java.lang",
+              desc: "Thrown in the victim thread when the deprecated Thread.stop() method is invoked on a thread.",
+              code: `public class ThreadDeathDemo {
+    public static void main(String[] args) {
+        Thread worker = new Thread(() -> {
+            System.out.println("Worker thread running...");
+        });
+        worker.start();
+        
+        // Invoking deprecated stop() sends ThreadDeath error asynchronously to target thread
+        worker.stop();
+    }
+}`
+            }
+          ]
+        },
+        {
+          name: "java.lang.Exception",
+          type: "exception",
+          pkg: "java.lang",
+          desc: "The superclass of all application-level exceptions that a reasonable application should handle or catch.",
+          code: `public class CustomExceptionDemo {
+    public static void validateAge(int age) throws Exception {
+        if (age < 18) {
+            throw new Exception("Age must be at least 18 years old");
+        }
+    }
+
+    public static void main(String[] args) {
+        try {
+            validateAge(15);
+        } catch (Exception e) {
+            System.err.println("Caught application exception: " + e.getMessage());
+        }
+    }
+}`,
+          children: [
+            {
+              name: "java.lang.RuntimeException",
+              type: "unchecked",
+              checked: false,
+              pkg: "java.lang",
+              desc: "Superclass of all Unchecked Exceptions. The compiler does NOT require them to be declared in throws clause or caught.",
+              code: `public class RuntimeExceptionDemo {
+    public static void main(String[] args) {
+        String data = null;
+        if (data == null) {
+            throw new RuntimeException("Operational state error: data string is uninitialized");
+        }
+    }
+}`,
+              children: [
+                {
+                  name: "NullPointerException",
+                  type: "unchecked",
+                  checked: false,
+                  pkg: "java.lang",
+                  desc: "Thrown when an application attempts to use null in a case where an object reference is required.",
+                  code: `public class NPEDemo {
+    public static void main(String[] args) {
+        String text = null;
+        // Calling instance method on null reference causes NullPointerException
+        int length = text.length(); 
+    }
+}`
+                },
+                {
+                  name: "IllegalArgumentException",
+                  type: "unchecked",
+                  checked: false,
+                  pkg: "java.lang",
+                  desc: "Thrown to indicate that a method has been passed an illegal or inappropriate argument.",
+                  code: `public class IllegalArgumentDemo {
+    public static void setPercentage(int val) {
+        if (val < 0 || val > 100) {
+            throw new IllegalArgumentException("Percentage must be between 0 and 100: " + val);
+        }
+    }
+
+    public static void main(String[] args) {
+        setPercentage(150); // Triggers IllegalArgumentException
+    }
+}`,
+                  children: [
+                    {
+                      name: "NumberFormatException",
+                      type: "unchecked",
+                      checked: false,
+                      pkg: "java.lang",
+                      desc: "Thrown to indicate that the application attempted to parse a string into a number, but the string has an invalid format.",
+                      code: `public class NumberFormatDemo {
+    public static void main(String[] args) {
+        String input = "123a";
+        // Attempting to parse non-numeric characters to integer
+        int number = Integer.parseInt(input); 
+    }
+}`
+                    },
+                    {
+                      name: "IllegalThreadStateException",
+                      type: "unchecked",
+                      checked: false,
+                      pkg: "java.lang",
+                      desc: "Thrown to indicate that a thread has been invoked at an illegal time (e.g., starting an already started thread).",
+                      code: `public class ThreadStateDemo {
+    public static void main(String[] args) {
+        Thread worker = new Thread(() -> System.out.println("Working..."));
+        worker.start();
+        // Calling start() twice on the same thread instance throws IllegalThreadStateException
+        worker.start();
+    }
+}`
+                    }
+                  ]
+                },
+                {
+                  name: "IndexOutOfBoundsException",
+                  type: "unchecked",
+                  checked: false,
+                  pkg: "java.lang",
+                  desc: "Thrown to indicate that an index of some sort (such as to an array, list, or string) is out of range.",
+                  code: `import java.util.*;
+
+public class IndexOutOfBoundsDemo {
+    public static void main(String[] args) {
+        List<String> items = Arrays.asList("Apple", "Banana");
+        // Index 5 is out of range for list size of 2
+        String item = items.get(5);
+    }
+}`,
+                  children: [
+                    {
+                      name: "ArrayIndexOutOfBoundsException",
+                      type: "unchecked",
+                      checked: false,
+                      pkg: "java.lang",
+                      desc: "Thrown to indicate that an array has been accessed with an illegal index (negative or >= array length).",
+                      code: `public class ArrayBoundsDemo {
+    public static void main(String[] args) {
+        int[] numbers = {10, 20, 30};
+        // Array length is 3 (valid indices 0..2). Accessing index 3 causes exception:
+        int value = numbers[3]; 
+    }
+}`
+                    },
+                    {
+                      name: "StringIndexOutOfBoundsException",
+                      type: "unchecked",
+                      checked: false,
+                      pkg: "java.lang",
+                      desc: "Thrown by String methods to indicate that an index is either negative or greater than the size of the string.",
+                      code: `public class StringBoundsDemo {
+    public static void main(String[] args) {
+        String text = "Hello";
+        // String length is 5 (char positions 0..4). Accessing index 10 fails:
+        char character = text.charAt(10);
+    }
+}`
+                    }
+                  ]
+                },
+                {
+                  name: "IllegalStateException",
+                  type: "unchecked",
+                  checked: false,
+                  pkg: "java.lang",
+                  desc: "Signals that a method has been invoked at an illegal or inappropriate time in the application lifecycle.",
+                  code: `import java.util.*;
+
+public class IllegalStateDemo {
+    public static void main(String[] args) {
+        List<String> list = new ArrayList<>(List.of("A", "B"));
+        Iterator<String> it = list.iterator();
+        // Calling it.remove() BEFORE calling it.next() throws IllegalStateException
+        it.remove(); 
+    }
+}`
+                },
+                {
+                  name: "ArithmeticException",
+                  type: "unchecked",
+                  checked: false,
+                  pkg: "java.lang",
+                  desc: "Thrown when an exceptional arithmetic condition has occurred. E.g., an integer division by zero.",
+                  code: `public class ArithmeticDemo {
+    public static void main(String[] args) {
+        int totalScore = 100;
+        int players = 0;
+        // Integer division by zero
+        int average = totalScore / players; 
+    }
+}`
+                },
+                {
+                  name: "ClassCastException",
+                  type: "unchecked",
+                  checked: false,
+                  pkg: "java.lang",
+                  desc: "Thrown to indicate that code attempted to cast an object to a subclass of which it is not an instance.",
+                  code: `public class ClassCastDemo {
+    public static void main(String[] args) {
+        Object text = "Hello World";
+        // Attempting illegal downcast from String to Integer
+        Integer number = (Integer) text; 
+    }
+}`
+                },
+                {
+                  name: "UnsupportedOperationException",
+                  type: "unchecked",
+                  checked: false,
+                  pkg: "java.lang",
+                  desc: "Thrown to indicate that the requested operation is not supported on this object/collection.",
+                  code: `import java.util.*;
+
+public class UnsupportedOperationDemo {
+    public static void main(String[] args) {
+        // List.of() returns an immutable list
+        List<String> immutableList = List.of("Java", "Python", "C++");
+        // Attempting to modify an unmodifiable list throws UnsupportedOperationException
+        immutableList.add("Rust"); 
+    }
+}`
+                },
+                {
+                  name: "ConcurrentModificationException",
+                  type: "unchecked",
+                  checked: false,
+                  pkg: "java.util",
+                  desc: "Thrown when a collection is modified concurrently while iterating over it without using the Iterator's remove method.",
+                  code: `import java.util.*;
+
+public class ConcurrentModDemo {
+    public static void main(String[] args) {
+        List<String> list = new ArrayList<>(List.of("One", "Two", "Three"));
+        // Modifying list directly inside enhanced for-each loop
+        for (String item : list) {
+            if (item.equals("Two")) {
+                list.remove(item); // Throws ConcurrentModificationException
+            }
+        }
+    }
+}`
+                },
+                {
+                  name: "NoSuchElementException",
+                  type: "unchecked",
+                  checked: false,
+                  pkg: "java.util",
+                  desc: "Thrown by Iterator.next() or Enumeration.nextElement() to indicate that there are no more elements.",
+                  code: `import java.util.*;
+
+public class NoSuchElementDemo {
+    public static void main(String[] args) {
+        List<String> emptyList = Collections.emptyList();
+        Iterator<String> it = emptyList.iterator();
+        // Calling next() on an empty iterator throws NoSuchElementException
+        String val = it.next(); 
+    }
+}`,
+                  children: [
+                    {
+                      name: "InputMismatchException",
+                      type: "unchecked",
+                      checked: false,
+                      pkg: "java.util",
+                      desc: "Thrown by Scanner to indicate that the token retrieved does not match the pattern for the expected type.",
+                      code: `import java.util.Scanner;
+
+public class InputMismatchDemo {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner("abc"); // Input contains string letters
+        // Scanner expects an integer token from nextInt()
+        int number = scanner.nextInt(); 
+    }
+}`
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              name: "java.io.IOException",
+              type: "checked",
+              checked: true,
+              pkg: "java.io",
+              desc: "Signals that an I/O exception of some sort has occurred. Must be handled or declared.",
+              code: `import java.io.*;
+
+public class IODemo {
+    public static void main(String[] args) {
+        try (FileReader fr = new FileReader("missing_file.txt")) {
+            fr.read();
+        } catch (IOException e) {
+            System.err.println("I/O operation failed: " + e.getMessage());
+        }
+    }
+}`,
+              children: [
+                {
+                  name: "FileNotFoundException",
+                  type: "checked",
+                  checked: true,
+                  pkg: "java.io",
+                  desc: "Signals that an attempt to open the file denoted by a specified pathname has failed.",
+                  code: `import java.io.*;
+
+public class FileNotFoundDemo {
+    public static void main(String[] args) {
+        try {
+            FileInputStream fis = new FileInputStream("C:/non_existent_folder/file.txt");
+        } catch (FileNotFoundException e) {
+            System.err.println("Specified file path could not be found: " + e.getMessage());
+        }
+    }
+}`
+                },
+                {
+                  name: "EOFException",
+                  type: "checked",
+                  checked: true,
+                  pkg: "java.io",
+                  desc: "Signals that an end of file or end of stream has been reached unexpectedly during input.",
+                  code: `import java.io.*;
+
+public class EOFDemo {
+    public static void main(String[] args) {
+        try (DataInputStream dis = new DataInputStream(new ByteArrayInputStream(new byte[0]))) {
+            // Attempting to read integer from empty stream throws EOFException
+            int data = dis.readInt();
+        } catch (EOFException e) {
+            System.err.println("Reached End Of File unexpectedly!");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}`
+                },
+                {
+                  name: "SocketException",
+                  type: "checked",
+                  checked: true,
+                  pkg: "java.net",
+                  desc: "Thrown to indicate that there is an error creating or accessing an underlying network Socket.",
+                  code: `import java.net.*;
+
+public class SocketDemo {
+    public static void main(String[] args) {
+        try {
+            Socket socket = new Socket();
+            socket.close();
+            // Setting options on a closed socket throws SocketException
+            socket.setKeepAlive(true);
+        } catch (SocketException e) {
+            System.err.println("Socket operation error: " + e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}`,
+                  children: [
+                    { 
+                      name: "ConnectException", 
+                      type: "checked", 
+                      checked: true, 
+                      pkg: "java.net", 
+                      desc: "Signals that an error occurred while attempting to connect a socket to a remote host and port.",
+                      code: `import java.net.*;
+
+public class ConnectDemo {
+    public static void main(String[] args) {
+        try {
+            // Attempting to connect to localhost port where no service is listening
+            Socket socket = new Socket("localhost", 9999);
+        } catch (ConnectException e) {
+            System.err.println("Connection refused by target server: " + e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}` 
+                    },
+                    { 
+                      name: "BindException", 
+                      type: "checked", 
+                      checked: true, 
+                      pkg: "java.net", 
+                      desc: "Signals that an error occurred while attempting to bind a socket to a local port (e.g. port already in use).",
+                      code: `import java.net.*;
+
+public class BindDemo {
+    public static void main(String[] args) {
+        try {
+            ServerSocket server1 = new ServerSocket(8080);
+            // Binding port 8080 a second time throws BindException (Address already in use)
+            ServerSocket server2 = new ServerSocket(8080);
+        } catch (BindException e) {
+            System.err.println("Port 8080 is already in use by another process!");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}` 
+                    }
+                  ]
+                },
+                { 
+                  name: "UnknownHostException", 
+                  type: "checked", 
+                  checked: true, 
+                  pkg: "java.net", 
+                  desc: "Thrown to indicate that the IP address of a host could not be determined by DNS resolution.",
+                  code: `import java.net.*;
+
+public class UnknownHostDemo {
+    public static void main(String[] args) {
+        try {
+            // Attempting DNS lookup for non-existent domain name
+            InetAddress address = InetAddress.getByName("invalid.domain.that.doesnotexist12345.com");
+        } catch (UnknownHostException e) {
+            System.err.println("Failed to resolve IP for host: " + e.getMessage());
+        }
+    }
+}` 
+                }
+              ]
+            },
+            {
+              name: "java.sql.SQLException",
+              type: "checked",
+              checked: true,
+              pkg: "java.sql",
+              desc: "Provides information on database access errors, syntax issues, or communication failures.",
+              code: `import java.sql.*;
+
+public class SQLDemo {
+    public static void main(String[] args) {
+        String dbUrl = "jdbc:mysql://localhost:3306/invalid_db";
+        try (Connection conn = DriverManager.getConnection(dbUrl, "root", "wrong_password")) {
+            // Database operations
+        } catch (SQLException e) {
+            System.err.println("SQL Error State: " + e.getSQLState() + " - " + e.getMessage());
+        }
+    }
+}`,
+              children: [
+                { 
+                  name: "SQLSyntaxErrorException", 
+                  type: "checked", 
+                  checked: true, 
+                  pkg: "java.sql", 
+                  desc: "Thrown when the SQL statement sent to the database contains illegal syntax.",
+                  code: `import java.sql.*;
+
+public class SQLSyntaxDemo {
+    public static void queryUsers(Connection conn) {
+        try (Statement stmt = conn.createStatement()) {
+            // Malformed SQL query keyword 'SELEC' instead of 'SELECT'
+            stmt.executeQuery("SELEC * FORM users;");
+        } catch (SQLSyntaxErrorException e) {
+            System.err.println("SQL Syntax error in query statement: " + e.getMessage());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}` 
+                },
+                { 
+                  name: "SQLTimeoutException", 
+                  type: "checked", 
+                  checked: true, 
+                  pkg: "java.sql", 
+                  desc: "Thrown when the database query timeout specified by Statement.setQueryTimeout has expired.",
+                  code: `import java.sql.*;
+
+public class SQLTimeoutDemo {
+    public static void executeLongQuery(Connection conn) {
+        try (Statement stmt = conn.createStatement()) {
+            stmt.setQueryTimeout(1); // Set timeout limit to 1 second
+            stmt.executeQuery("SELECT SLEEP(10);"); // Long running query takes 10s
+        } catch (SQLTimeoutException e) {
+            System.err.println("Database query timed out before completion!");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}` 
+                },
+                { 
+                  name: "SQLIntegrityConstraintViolationException", 
+                  type: "checked", 
+                  checked: true, 
+                  pkg: "java.sql", 
+                  desc: "Thrown when a foreign key, primary key, or unique constraint in the database is violated.",
+                  code: `import java.sql.*;
+
+public class SQLIntegrityDemo {
+    public static void insertDuplicateUser(Connection conn) {
+        try (Statement stmt = conn.createStatement()) {
+            // Attempting to insert duplicate primary key ID = 1 twice
+            stmt.executeUpdate("INSERT INTO users (id) VALUES (1);");
+            stmt.executeUpdate("INSERT INTO users (id) VALUES (1);"); // Constraint violation
+        } catch (SQLIntegrityConstraintViolationException e) {
+            System.err.println("Database constraint violation (e.g. Duplicate primary key): " + e.getMessage());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}` 
+                }
+              ]
+            },
+            {
+              name: "ReflectiveOperationException",
+              type: "checked",
+              checked: true,
+              pkg: "java.lang",
+              desc: "Common superclass of exceptions thrown by reflection operations in Java core API.",
+              code: `public class ReflectiveOperationDemo {
+    public static void main(String[] args) {
+        try {
+            Class<?> clazz = Class.forName("com.example.NonExistentClass");
+            clazz.getDeclaredConstructor().newInstance();
+        } catch (ReflectiveOperationException e) {
+            System.err.println("Reflection call failed: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+        }
+    }
+}`,
+              children: [
+                {
+                  name: "ClassNotFoundException",
+                  type: "checked",
+                  checked: true,
+                  pkg: "java.lang",
+                  desc: "Thrown when an application tries to load a class through Class.forName() using string name, but no definition is found.",
+                  code: `public class ClassNotFoundDemo {
+    public static void main(String[] args) {
+        try {
+            // Dynamically loading JDBC driver class from string name
+            Class<?> clazz = Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            System.err.println("Requested class could not be found on runtime classpath: " + e.getMessage());
+        }
+    }
+}`
+                },
+                { 
+                  name: "NoSuchMethodException", 
+                  type: "checked", 
+                  checked: true, 
+                  pkg: "java.lang", 
+                  desc: "Thrown when reflection inspects a class for a method signature that does not exist.",
+                  code: `public class NoSuchMethodReflectionDemo {
+    public static void main(String[] args) {
+        try {
+            // Inspecting non-existent method name on String class via Reflection
+            String.class.getMethod("nonExistentMethod", String.class);
+        } catch (NoSuchMethodException e) {
+            System.err.println("Reflected method signature does not exist on target class: " + e.getMessage());
+        }
+    }
+}` 
+                },
+                { 
+                  name: "NoSuchFieldException", 
+                  type: "checked", 
+                  checked: true, 
+                  pkg: "java.lang", 
+                  desc: "Thrown when reflection inspects a class for a field name that does not exist.",
+                  code: `public class NoSuchFieldReflectionDemo {
+    public static void main(String[] args) {
+        try {
+            // Inspecting non-existent field name on String class via Reflection
+            String.class.getField("invalidFieldName");
+        } catch (NoSuchFieldException e) {
+            System.err.println("Reflected field name does not exist on target class: " + e.getMessage());
+        }
+    }
+}` 
+                },
+                { 
+                  name: "IllegalAccessException", 
+                  type: "checked", 
+                  checked: true, 
+                  pkg: "java.lang", 
+                  desc: "Thrown when an application tries to reflectively instantiate or access a private member without privileges.",
+                  code: `import java.lang.reflect.Field;
+
+public class IllegalAccessDemo {
+    private String secretKey = "12345";
+
+    public static void main(String[] args) {
+        try {
+            Field field = IllegalAccessDemo.class.getDeclaredField("secretKey");
+            // Accessing private field without calling field.setAccessible(true)
+            String value = (String) field.get(new IllegalAccessDemo());
+        } catch (IllegalAccessException e) {
+            System.err.println("Access denied to private member: " + e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}` 
+                },
+                { 
+                  name: "InvocationTargetException", 
+                  type: "checked", 
+                  checked: true, 
+                  pkg: "java.lang", 
+                  desc: "Wrapper exception thrown by Method.invoke() when the invoked underlying method throws an exception.",
+                  code: `import java.lang.reflect.Method;
+
+public class InvocationTargetDemo {
+    public static void throwBug() {
+        throw new ArithmeticException("Divide by zero inside reflected method");
+    }
+
+    public static void main(String[] args) {
+        try {
+            Method m = InvocationTargetDemo.class.getMethod("throwBug");
+            m.invoke(null); // Reflected method execution
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            System.err.println("Invoked target method threw exception: " + e.getCause());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}` 
+                }
+              ]
+            },
+            {
+              name: "InterruptedException",
+              type: "checked",
+              checked: true,
+              pkg: "java.lang",
+              desc: "Thrown when a thread is sleeping, waiting, or occupied, and the thread is interrupted.",
+              code: `public class InterruptedDemo {
+    public static void main(String[] args) {
+        Thread worker = new Thread(() -> {
+            try {
+                System.out.println("Sleeping for 10 seconds...");
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                System.err.println("Thread was interrupted while sleeping!");
+                Thread.currentThread().interrupt(); // Restore interrupted status
+            }
+        });
+
+        worker.start();
+        worker.interrupt(); // Interrupt worker thread
+    }
+}`
+            },
+            {
+              name: "ParseException",
+              type: "checked",
+              checked: true,
+              pkg: "java.text",
+              desc: "Signals that an error has been reached unexpectedly while parsing a date or number string.",
+              code: `import java.text.SimpleDateFormat;
+import java.text.ParseException;
+import java.util.Date;
+
+public class ParseDemo {
+    public static void main(String[] args) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            // String does not match expected format pattern 'yyyy-MM-dd'
+            Date date = sdf.parse("31/12/2026"); 
+        } catch (ParseException e) {
+            System.err.println("Failed to parse date string at character offset " + e.getErrorOffset());
+        }
+    }
+}`
+            },
+            {
+              name: "CloneNotSupportedException",
+              type: "checked",
+              checked: true,
+              pkg: "java.lang",
+              desc: "Thrown to indicate that Object.clone() was called, but the object's class does not implement Cloneable.",
+              code: `public class UnclonableClass {
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        // Thrown if class does NOT implement java.lang.Cloneable interface
+        return super.clone();
+    }
+
+    public static void main(String[] args) {
+        try {
+            UnclonableClass obj = new UnclonableClass();
+            obj.clone();
+        } catch (CloneNotSupportedException e) {
+            System.err.println("Class does not implement Cloneable interface: " + e.getMessage());
+        }
+    }
+}`
+            }
+          ]
+        }
+      ]
+    };
+
+    // Color Theme Mapping
+    function getNodeColor(d) {
+      if (d.data.type === 'root') return { fill: '#3b82f6', border: '#f59e0b', text: '#fef3c7' };
+      if (d.data.type === 'error') return { fill: '#881337', border: '#f43f5e', text: '#fecdd3' };
+      if (d.data.type === 'unchecked') return { fill: '#064e3b', border: '#10b981', text: '#a7f3d0' };
+      if (d.data.type === 'checked') return { fill: '#075985', border: '#0284c7', text: '#bae6fd' };
+      return { fill: '#1e293b', border: '#64748b', text: '#f1f5f9' };
+    }
+
+    // Application State
+    let rootData;
+    let svg, gTree, zoomBehavior;
+    let i = 0;
+    const duration = 350;
+    let activeFilter = 'all';
+
+    // Dimensions
+    const container = document.getElementById('tree-container');
+    let width = container.clientWidth;
+    let height = container.clientHeight;
+
+    // Initialize D3 Layout
+    function initTree() {
+      svg = d3.select("#tree-container").append("svg")
+        .attr("width", "100%")
+        .attr("height", "100%")
+        .attr("class", "select-none");
+
+      gTree = svg.append("g").attr("id", "tree-group");
+
+      // Configure Zoom/Pan
+      zoomBehavior = d3.zoom()
+        .scaleExtent([0.2, 2.5])
+        .on("zoom", (event) => {
+          gTree.attr("transform", event.transform);
+        });
+
+      svg.call(zoomBehavior);
+
+      // Create Root Hierarchy
+      rootData = d3.hierarchy(hierarchyData, d => d.children);
+      rootData.x0 = height / 2;
+      rootData.y0 = 100;
+
+      // Initially collapse deeper levels for clean view
+      rootData.children.forEach(collapseBranch);
+
+      // Center initial camera
+      const initialTransform = d3.zoomIdentity.translate(80, height / 2 - 40).scale(0.85);
+      svg.call(zoomBehavior.transform, initialTransform);
+
+      update(rootData);
+    }
+
+    // Helper: Collapse children
+    function collapseBranch(d) {
+      if (d.children) {
+        d._children = d.children;
+        d._children.forEach(collapseBranch);
+        d.children = null;
+      }
+    }
+
+    // Helper: Expand children
+    function expandBranch(d) {
+      if (d._children) {
+        d.children = d._children;
+        d.children.forEach(expandBranch);
+        d._children = null;
+      } else if (d.children) {
+        d.children.forEach(expandBranch);
+      }
+    }
+
+    // Main D3 Tree Render Update
+    function update(source) {
+      const treeLayout = d3.tree().nodeSize([44, 250]);
+      const treeData = treeLayout(rootData);
+
+      const nodes = treeData.descendants();
+      const links = treeData.links();
+
+      // Normalize for fixed-depth separation
+      nodes.forEach(d => { d.y = d.depth * 280; });
+
+      // --- NODES SELECTION ---
+      const node = gTree.selectAll('g.node')
+        .data(nodes, d => d.id || (d.id = ++i));
+
+      // Enter new nodes at parent's previous position
+      const nodeEnter = node.enter().append('g')
+        .attr('class', 'node')
+        .attr('transform', d => `translate(${source.y0},${source.x0})`)
+        .on('click', (event, d) => {
+          // Open Sidebar detail on click
+          showDetails(d);
+          // Toggle children on expand icon or node click
+          if (event.defaultPrevented) return;
+          toggleNode(d);
+          update(d);
+        });
+
+      // Node Card Rectangle
+      nodeEnter.append('rect')
+        .attr('class', 'node-card')
+        .attr('width', 220)
+        .attr('height', 36)
+        .attr('x', 0)
+        .attr('y', -18)
+        .attr('rx', 8)
+        .style('fill', d => getNodeColor(d).fill)
+        .style('stroke', d => getNodeColor(d).border)
+        .style('stroke-width', '1.5px');
+
+      // Category Indicator Tag Dot
+      nodeEnter.append('circle')
+        .attr('cx', 12)
+        .attr('cy', 0)
+        .attr('r', 5)
+        .style('fill', d => getNodeColor(d).border);
+
+      // Node Label Text
+      nodeEnter.append('text')
+        .attr('x', 24)
+        .attr('y', 4)
+        .attr('font-size', '11px')
+        .attr('font-weight', '600')
+        .attr('font-family', 'monospace')
+        .style('fill', d => getNodeColor(d).text)
+        .text(d => {
+          const parts = d.data.name.split('.');
+          return parts[parts.length - 1]; // Short class name
+        });
+
+      // Expand / Collapse Circle Indicator
+      const toggleGroup = nodeEnter.append('g')
+        .attr('class', 'toggle-group')
+        .attr('transform', 'translate(220, 0)')
+        .style('display', d => (d.children || d._children) ? 'block' : 'none');
+
+      toggleGroup.append('circle')
+        .attr('r', 8)
+        .style('fill', '#0f172a')
+        .style('stroke', '#64748b')
+        .style('stroke-width', '1px');
+
+      toggleGroup.append('text')
+        .attr('class', 'toggle-icon')
+        .attr('text-anchor', 'middle')
+        .attr('dy', '3.5px')
+        .attr('font-size', '10px')
+        .style('fill', '#94a3b8')
+        .text(d => d._children ? '+' : '-');
+
+      // UPDATE existing nodes
+      const nodeUpdate = nodeEnter.merge(node);
+
+      nodeUpdate.transition()
+        .duration(duration)
+        .attr('transform', d => `translate(${d.y},${d.x})`);
+
+      nodeUpdate.select('rect.node-card')
+        .style('fill', d => getNodeColor(d).fill)
+        .style('stroke', d => getNodeColor(d).border);
+
+      nodeUpdate.select('.toggle-group')
+        .style('display', d => (d.children || d._children) ? 'block' : 'none');
+
+      nodeUpdate.select('.toggle-icon')
+        .text(d => d._children ? '+' : '-');
+
+      // Apply Filter Dimming Effect
+      nodeUpdate.style('opacity', d => {
+        if (activeFilter === 'all') return 1;
+        if (activeFilter === 'error' && (d.data.type === 'error' || d.data.type === 'root')) return 1;
+        if (activeFilter === 'unchecked' && (d.data.type === 'unchecked' || d.data.type === 'exception' || d.data.type === 'root')) return 1;
+        if (activeFilter === 'checked' && (d.data.type === 'checked' || d.data.type === 'exception' || d.data.type === 'root')) return 1;
+        return 0.2;
+      });
+
+      // EXIT nodes
+      const nodeExit = node.exit().transition()
+        .duration(duration)
+        .attr('transform', d => `translate(${source.y},${source.x})`)
+        .remove();
+
+      nodeExit.select('rect').attr('width', 0).attr('height', 0);
+
+      // --- LINKS SELECTION ---
+      const link = gTree.selectAll('path.link')
+        .data(links, d => d.target.id);
+
+      // Enter links
+      const linkEnter = link.enter().insert('path', 'g')
+        .attr('class', 'link')
+        .attr('d', d => {
+          const o = { x: source.x0, y: source.y0 };
+          return diagonal(o, o);
+        })
+        .style('stroke', d => getNodeColor(d.target).border)
+        .style('stroke-opacity', '0.4');
+
+      // Update links
+      const linkUpdate = linkEnter.merge(link);
+
+      linkUpdate.transition()
+        .duration(duration)
+        .attr('d', d => diagonal(d.source, d.target))
+        .style('stroke', d => getNodeColor(d.target).border)
+        .style('stroke-opacity', d => {
+          if (activeFilter === 'all') return 0.4;
+          return 0.15;
+        });
+
+      // Exit links
+      link.exit().transition()
+        .duration(duration)
+        .attr('d', d => {
+          const o = { x: source.x, y: source.y };
+          return diagonal(o, o);
+        })
+        .remove();
+
+      // Store previous positions for transition
+      nodes.forEach(d => {
+        d.x0 = d.x;
+        d.y0 = d.y;
+      });
+    }
+
+    // Horizontal Link Path Generator
+    function diagonal(s, t) {
+      const sourceX = s.y + 220; // right edge of card
+      const sourceY = s.x;
+      const targetX = t.y;
+      const targetY = t.x;
+
+      return `M ${sourceX} ${sourceY}
+              C ${(sourceX + targetX) / 2} ${sourceY},
+                ${(sourceX + targetX) / 2} ${targetY},
+                ${targetX} ${targetY}`;
+    }
+
+    // Toggle Children
+    function toggleNode(d) {
+      if (d.children) {
+        d._children = d.children;
+        d.children = null;
+      } else {
+        d.children = d._children;
+        d._children = null;
+      }
+    }
+
+    // Show Detail Drawer Sidebar
+    function showDetails(d) {
+      const data = d.data;
+      const drawer = document.getElementById('detail-drawer');
+      
+      const badge = document.getElementById('drawer-badge');
+      const title = document.getElementById('drawer-title');
+      const pkg = document.getElementById('drawer-package');
+      const chain = document.getElementById('drawer-chain');
+      const desc = document.getElementById('drawer-desc');
+      const req = document.getElementById('drawer-requirement');
+      const reqDesc = document.getElementById('drawer-req-desc');
+      const code = document.getElementById('drawer-code');
+
+      // Set Badge & Colors
+      if (data.type === 'error') {
+        badge.textContent = 'Error (JVM)';
+        badge.className = 'px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-rose-950 text-rose-300 border border-rose-800';
+        req.textContent = 'Unchecked';
+        req.className = 'text-xs font-semibold px-2 py-0.5 rounded bg-rose-950 text-rose-300';
+        reqDesc.textContent = 'Indicates critical system/JVM error. Do NOT catch in typical application logic.';
+      } else if (data.type === 'unchecked') {
+        badge.textContent = 'RuntimeException';
+        badge.className = 'px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-950 text-emerald-300 border border-emerald-800';
+        req.textContent = 'Unchecked (Optional)';
+        req.className = 'text-xs font-semibold px-2 py-0.5 rounded bg-emerald-950 text-emerald-300';
+        reqDesc.textContent = 'Compiler does NOT mandate try-catch or throws clause. Indicates logic/programming bug.';
+      } else if (data.type === 'checked') {
+        badge.textContent = 'Checked Exception';
+        badge.className = 'px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-sky-950 text-sky-300 border border-sky-800';
+        req.textContent = 'Checked (Mandatory)';
+        req.className = 'text-xs font-semibold px-2 py-0.5 rounded bg-sky-950 text-sky-300';
+        reqDesc.textContent = 'MUST be explicitly caught in a try-catch block or declared in method throws signature.';
+      } else {
+        badge.textContent = 'Superclass';
+        badge.className = 'px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-amber-950 text-amber-300 border border-amber-800';
+        req.textContent = 'Root Base';
+        req.className = 'text-xs font-semibold px-2 py-0.5 rounded bg-amber-950 text-amber-300';
+        reqDesc.textContent = 'Root superclass of all throwables in Java.';
+      }
+
+      // Title & Package
+      const fullName = data.name;
+      const nameParts = fullName.split('.');
+      title.textContent = nameParts[nameParts.length - 1];
+      pkg.textContent = data.pkg ? `Package: ${data.pkg}` : 'Package: java.lang';
+
+      // Inheritance Ancestry Chain
+      const ancestors = d.ancestors().reverse();
+      chain.innerHTML = ancestors.map(a => {
+        const simpleName = a.data.name.split('.').pop();
+        return `<span class="hover:text-indigo-400 transition">${simpleName}</span>`;
+      }).join(' <i class="fa-solid fa-chevron-right text-[9px] text-slate-600"></i> ');
+
+      // Description & Code
+      desc.textContent = data.desc || 'No detailed description available.';
+      code.textContent = data.code || `public class ${title.textContent}Demo {\n    public static void main(String[] args) {\n        try {\n            // Code that triggers ${title.textContent}\n        } catch (${title.textContent} e) {\n            e.printStackTrace();\n        }\n    }\n}`;
+
+      // Slide in drawer
+      drawer.classList.remove('translate-x-full');
+    }
+
+    // Search Feature: Finds matching node, expands parents, highlights
+    function handleSearch(query) {
+      if (!query.trim()) {
+        d3.selectAll('.node').classed('node--highlighted', false);
+        document.getElementById('clear-search').classList.add('hidden');
+        return;
+      }
+
+      document.getElementById('clear-search').classList.remove('hidden');
+      const q = query.toLowerCase();
+
+      let matchedNode = null;
+
+      // Search all nodes
+      rootData.each(d => {
+        const simpleName = d.data.name.split('.').pop().toLowerCase();
+        if (simpleName.includes(q) || d.data.name.toLowerCase().includes(q)) {
+          if (!matchedNode) matchedNode = d;
+          
+          // Expand all ancestors to make node visible
+          let p = d.parent;
+          while (p) {
+            if (p._children) {
+              p.children = p._children;
+              p._children = null;
+            }
+            p = p.parent;
+          }
+        }
+      });
+
+      update(rootData);
+
+      // Apply CSS Highlight
+      d3.selectAll('.node')
+        .classed('node--highlighted', d => {
+          const simpleName = d.data.name.split('.').pop().toLowerCase();
+          return simpleName.includes(q);
+        });
+
+      // Pan to first match
+      if (matchedNode) {
+        const transform = d3.zoomIdentity
+          .translate(width / 2 - matchedNode.y, height / 2 - matchedNode.x)
+          .scale(1.1);
+        svg.transition().duration(600).call(zoomBehavior.transform, transform);
+        showDetails(matchedNode);
+      }
+    }
+
+    // Copy Code Action
+    function copyCodeToClipboard() {
+      const codeElement = document.getElementById('drawer-code');
+      const text = codeElement.textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const copyBtn = document.getElementById('copy-code-btn');
+        const originalText = copyBtn.innerHTML;
+        copyBtn.innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i> Copied!`;
+        setTimeout(() => {
+          copyBtn.innerHTML = originalText;
+        }, 2000);
+      });
+    }
+
+    // Event Listeners Initialization
+    document.addEventListener('DOMContentLoaded', () => {
+      initTree();
+
+      // Drawer Close Button
+      document.getElementById('close-drawer').addEventListener('click', () => {
+        document.getElementById('detail-drawer').classList.add('translate-x-full');
+      });
+
+      // Copy Code Button
+      document.getElementById('copy-code-btn').addEventListener('click', copyCodeToClipboard);
+
+      // Search Bar Events
+      const searchInput = document.getElementById('search-input');
+      searchInput.addEventListener('input', (e) => handleSearch(e.target.value));
+
+      document.getElementById('clear-search').addEventListener('click', () => {
+        searchInput.value = '';
+        handleSearch('');
+      });
+
+      // Filter Buttons
+      const filterBtns = document.querySelectorAll('.filter-btn');
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          filterBtns.forEach(b => {
+            b.classList.remove('active', 'bg-indigo-600', 'text-white', 'shadow');
+            b.classList.add('text-slate-400');
+          });
+          btn.classList.add('active', 'bg-indigo-600', 'text-white', 'shadow');
+          btn.classList.remove('text-slate-400');
+
+          activeFilter = btn.id.replace('filter-', '');
+          update(rootData);
+        });
+      });
+
+      // Camera Control Actions
+      document.getElementById('btn-expand-all').addEventListener('click', () => {
+        rootData.children.forEach(expandBranch);
+        update(rootData);
+      });
+
+      document.getElementById('btn-collapse-all').addEventListener('click', () => {
+        rootData.children.forEach(collapseBranch);
+        update(rootData);
+      });
+
+      document.getElementById('btn-reset-zoom').addEventListener('click', () => {
+        const initialTransform = d3.zoomIdentity.translate(80, height / 2 - 40).scale(0.85);
+        svg.transition().duration(500).call(zoomBehavior.transform, initialTransform);
+      });
+
+      document.getElementById('zoom-in').addEventListener('click', () => {
+        svg.transition().duration(300).call(zoomBehavior.scaleBy, 1.25);
+      });
+
+      document.getElementById('zoom-out').addEventListener('click', () => {
+        svg.transition().duration(300).call(zoomBehavior.scaleBy, 0.8);
+      });
+
+      // Window Resize Listener
+      window.addEventListener('resize', () => {
+        width = container.clientWidth;
+        height = container.clientHeight;
+        update(rootData);
+      });
+    });
+  </script>
+</body>
+</html>
