@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Java Compiler</title>
+  
+  <link rel="stylesheet" href="https://fonts.programiz.com/fonts.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0" />
+  <link rel="icon" href="YOUR_IMAGE_URL_OR_PATH_HERE" type="image/png">
+ 
+  <script>
+    // GA4 initialization
+    (function(w, d) {
+      const gaId = 'G-YJM03XN8Q2';
+      w.dataLayer = w.dataLayer || [];
+
+      function gtag() {
+        w.dataLayer.push(arguments);
+      }
+      w.gtag = gtag;
+      gtag('js', new Date());
+      gtag('config', gaId, {
+        send_page_view: false
+      });
+    })(window, document);
+  </script>
+  <style>
+    @media (max-width: 1024px) {
+    body {
+        display: none;
+    }
+}
+
+.pgAdWrapper,
+.mobile-top-bar {
+    display: none !important;
+}
+
+/* ===========================
+   STRETCH FULL HEIGHT & OVERRIDE JS INLINE STYLES
+=========================== */
+html, body, #root, .container, .wrapper, .main-content-wrapper, .editor-workspace-wrapper, .split-panes-wrapper {
+    height: 100vh !important;
+    min-height: 100vh !important;
+    max-height: 100vh !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+}
+
+/* This is the magic bullet that overrides the 675.6px inline style */
+#editor, #terminal {
+    height: calc(100vh - 42px) !important; 
+    background: #000000 !important;
+}
+
+/* ===========================
+   BLACK CONSOLE THEME
+=========================== */
+
+html, body {
+    background: #0b0b0b !important;
+    color: #00ff66 !important;
+    font-family: Consolas, "Courier New", monospace !important;
+}
+
+.container,
+.wrapper,
+.main-content-wrapper,
+.editor-workspace-wrapper,
+.split-panes-wrapper,
+.editor-wrapper,
+.terminal-wrapper {
+    background: #0b0b0b !important;
+}
+
+.editor-wrapper {
+    border-right: 1px solid #222;
+}
+
+.terminal-wrapper {
+    border-left: 1px solid #222;
+}
+
+.editor-desktop-top-bar,
+.terminal-desktop-top-bar,
+.mobile-top-bar {
+    background: #111 !important;
+    border-bottom: 1px solid #333 !important;
+    height: 42px !important; /* Force a consistent height for our calc() math */
+    box-sizing: border-box;
+}
+
+.file-name,
+.shell-name,
+.run-text {
+    color: #00ff66 !important;
+    font-weight: bold;
+}
+
+#terminal {
+    color: #00ff66 !important;
+    padding: 10px;
+}
+
+button {
+    background: #181818 !important;
+    color: #00ff66 !important;
+    border: 1px solid #00ff66 !important;
+    border-radius: 4px;
+    transition: .25s;
+}
+
+button:hover {
+    background: #00ff66 !important;
+    color: #000 !important;
+}
+
+input,
+textarea {
+    background: #111 !important;
+    color: #00ff66 !important;
+    border: 1px solid #333 !important;
+}
+
+a {
+    color: #00ff66 !important;
+}
+
+svg {
+    filter: invert(1);
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #111;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #00ff66;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #00cc55;
+}
+
+/* ===========================
+   ACE EDITOR FIXES
+=========================== */
+
+.ace_editor,
+.ace_scroller,
+.ace_content,
+.ace_gutter,
+.ace_gutter-layer {
+    background: #000000 !important;
+    background-color: #000000 !important;
+}
+
+.ace_gutter {
+    color: #00ff66 !important;
+    border-right: 1px solid #222 !important;
+}
+
+.ace_cursor {
+    color: #ffffff !important;
+    border-left: 2px solid #00ff66 !important;
+}
+
+.ace_marker-layer .ace_active-line {
+    background: #111111 !important;
+}
+
+.ace_marker-layer .ace_selection {
+    background: #333333 !important;
+}
+
+.ace_identifier,
+.ace_variable,
+.ace_entity,
+.ace_support,
+.ace_storage,
+.ace_keyword,
+.ace_string,
+.ace_constant,
+.ace_numeric,
+.ace_comment,
+.ace_punctuation,
+.ace_operator,
+.ace_type {
+    background: transparent !important;
+}
+
+  </style>
+  
+  <meta http-equiv="x-dns-prefetch-control" content="on" />
+  <link rel="dns-prefetch" href="//cdnjs.cloudflare.com" />
+
+  <link href="https://fonts.googleapis.com/css2?family=Allura&family=Chakra+Petch:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.playground-v2.programiz.com/build/styles.7dc3db2aad8f1c6bbcda.css" />
+
+</head>
+
+<body>
+  <div class="container" id="root" data-lang="java">
+    <div class="spinner">
+      <div class="loader"><span>{</span><span>}</span></div>
+    </div>
+    
+    <div class="share-link-generating-modal" style="display: none;">
+      <div class="modal-backdrop-share">
+      </div>
+
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">Generating Link</h2>
+          <h2 class="modal-title modal-title-mob">Generating Link</h2>
+        </div>
+        <div class="modal-body">
+          <div class="progress-bar">
+            <div class="progress"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wrapper">
+      
+      <div class="mobile-top-bar clearfix">
+        <div class="pills-wrapper">
+          <div class="pills clearfix">
+            <button class="pill active compiler-pill" id="executed-file-name-mobile"
+              title="Main.java">
+              Main.java            </button>
+            <button class="pill shell-pill">
+              Output            </button>
+          </div>
+        </div>
+      </div>
+      <div class="main-content-wrapper">
+        
+        <div class="editor-workspace-wrapper">
+          <div class="split-panes-wrapper">
+            <div class="editor-wrapper">
+              <div class="editor-desktop-top-bar">
+                <div class="file-name" id="executed-file-name" title="Main.java">
+                  Main.java                </div>
+                <div class="desktop-top-bar__btn-wrapper">
+                 
+                  <button class="desktop-run-button run">
+                    <span class="run-text">
+                      &nbsp;Run&nbsp;
+                    </span>
+                  </button>
+                </div>
+              </div>
+              <button class="mobile-run-button run">
+                Run
+              </button>
+              
+<div id="editor">import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+
+      Scanner sc = new Scanner(System.in);
+
+      System.out.println("Enter the number:");
+      int val=sc.nextInt();
+      System.out.println("You entered: " + val);
+
+      sc.close();
+    }
+}</div>
+            </div>
+
+            <div class="terminal-wrapper">
+              <div class="terminal-desktop-top-bar">
+                <div class="shell-name">
+                  Output                </div>
+                <div class="terminal-desktop-top-bar__btn-wrapper">
+                  <button class="desktop-clear-button">
+                    &nbsp;Clear&nbsp;
+                  </button>
+                </div>
+              </div>
+              <div id="terminal"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script defer type="text/javascript">
+    const lang = "java";
+  </script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.5/socket.io.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js"></script>
+
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.41.0/ace.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/mousetrap/1.4.6/mousetrap.min.js"></script>
+  <script defer src="https://cdn.playground-v2.programiz.com/build/final.779aca50113359469a78.js"></script>
+  <script>
+window.addEventListener("load", function () {
+
+    const timer = setInterval(function () {
+
+        if (window.ace) {
+            try {
+                const editor = ace.edit("editor");
+                editor.setTheme("ace/theme/monokai");   
+                
+                // Force Ace Editor to resize and recognize the new CSS bounds
+                editor.resize();
+                
+                clearInterval(timer);
+            } catch(e) {}
+        }
+
+    }, 500);
+
+});
+</script>
+
+</body>
+
+</html>
