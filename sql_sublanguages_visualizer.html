@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL & MSSQL Sublanguages Visualizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .code-font { font-family: 'Fira Code', monospace; }
+        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-slate-100 min-h-screen">
+
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-indigo-600 p-2.5 rounded-xl shadow-lg shadow-indigo-500/30">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8-4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-white">SQL & MSSQL Sublanguages</h1>
+                    <p class="text-xs text-slate-400">Interactive Hierarchy, Structure & Examples Explorer</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="switchTab('hierarchy')" id="nav-hierarchy" class="px-4 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white transition shadow-md">Visual Hierarchy</button>
+                <button onclick="switchTab('explorer')" id="nav-explorer" class="px-4 py-2 text-sm font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition">Deep-Dive & Examples</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+
+        <div id="view-hierarchy" class="space-y-8 animate-fade-in">
+            <div class="text-center max-w-2xl mx-auto space-y-2">
+                <span class="text-xs uppercase tracking-widest px-3 py-1 bg-indigo-500/10 text-indigo-400 rounded-full border border-indigo-500/20 font-semibold">Architecture</span>
+                <h2 class="text-3xl font-extrabold tracking-tight">Structured SQL Language Tree</h2>
+                <p class="text-slate-400 text-sm">Structured Query Language (SQL) is broadly partitioned into distinct sublanguages based on operational scope and database administration rules in standard SQL and Microsoft SQL Server (T-SQL).</p>
+            </div>
+
+            <!-- Root Node -->
+            <div class="flex justify-center">
+                <div class="bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-8 py-4 rounded-2xl shadow-xl border border-indigo-400/30 text-center font-bold text-lg flex items-center gap-3">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                    SQL / T-SQL Language Family
+                </div>
+            </div>
+
+            <!-- Connector Line -->
+            <div class="flex justify-center -my-4">
+                <div class="w-0.5 h-8 bg-indigo-500/50"></div>
+            </div>
+
+            <!-- Sublanguages Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 pt-2">
+                
+                <!-- DDL Card -->
+                <div onclick="selectAndGo('DDL')" class="bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 hover:border-indigo-500/50 rounded-2xl p-5 cursor-pointer transition-all duration-300 shadow-lg hover:shadow-indigo-500/10 flex flex-col justify-between group">
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="px-2.5 py-1 bg-blue-500/10 text-blue-400 rounded-lg text-xs font-bold border border-blue-500/20">DDL</span>
+                            <span class="text-xs text-slate-500 group-hover:text-indigo-400 transition">Explore &rarr;</span>
+                        </div>
+                        <h3 class="font-bold text-base text-slate-100 group-hover:text-indigo-300 transition">Data Definition</h3>
+                        <p class="text-xs text-slate-400 mt-2 leading-relaxed">Defines database schema, tables, indexes, constraints, and database structure.</p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-700/60">
+                        <span class="text-[11px] font-mono text-slate-300 bg-slate-900/60 px-2 py-1 rounded block text-center truncate">CREATE, ALTER, DROP</span>
+                    </div>
+                </div>
+
+                <!-- DQL Card -->
+                <div onclick="selectAndGo('DQL')" class="bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 hover:border-indigo-500/50 rounded-2xl p-5 cursor-pointer transition-all duration-300 shadow-lg hover:shadow-indigo-500/10 flex flex-col justify-between group">
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 rounded-lg text-xs font-bold border border-emerald-500/20">DQL</span>
+                            <span class="text-xs text-slate-500 group-hover:text-indigo-400 transition">Explore &rarr;</span>
+                        </div>
+                        <h3 class="font-bold text-base text-slate-100 group-hover:text-indigo-300 transition">Data Query</h3>
+                        <p class="text-xs text-slate-400 mt-2 leading-relaxed">Retrieves data from database tables without making any modifications.</p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-700/60">
+                        <span class="text-[11px] font-mono text-slate-300 bg-slate-900/60 px-2 py-1 rounded block text-center truncate">SELECT</span>
+                    </div>
+                </div>
+
+                <!-- DML Card -->
+                <div onclick="selectAndGo('DML')" class="bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 hover:border-indigo-500/50 rounded-2xl p-5 cursor-pointer transition-all duration-300 shadow-lg hover:shadow-indigo-500/10 flex flex-col justify-between group">
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="px-2.5 py-1 bg-amber-500/10 text-amber-400 rounded-lg text-xs font-bold border border-amber-500/20">DML</span>
+                            <span class="text-xs text-slate-500 group-hover:text-indigo-400 transition">Explore &rarr;</span>
+                        </div>
+                        <h3 class="font-bold text-base text-slate-100 group-hover:text-indigo-300 transition">Data Manipulation</h3>
+                        <p class="text-xs text-slate-400 mt-2 leading-relaxed">Manages data records inside database tables (CRUD operations).</p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-700/60">
+                        <span class="text-[11px] font-mono text-slate-300 bg-slate-900/60 px-2 py-1 rounded block text-center truncate">INSERT, UPDATE, DELETE</span>
+                    </div>
+                </div>
+
+                <!-- DCL Card -->
+                <div onclick="selectAndGo('DCL')" class="bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 hover:border-indigo-500/50 rounded-2xl p-5 cursor-pointer transition-all duration-300 shadow-lg hover:shadow-indigo-500/10 flex flex-col justify-between group">
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="px-2.5 py-1 bg-purple-500/10 text-purple-400 rounded-lg text-xs font-bold border border-purple-500/20">DCL</span>
+                            <span class="text-xs text-slate-500 group-hover:text-indigo-400 transition">Explore &rarr;</span>
+                        </div>
+                        <h3 class="font-bold text-base text-slate-100 group-hover:text-indigo-300 transition">Data Control</h3>
+                        <p class="text-xs text-slate-400 mt-2 leading-relaxed">Controls user access rights, permissions, and security roles on database objects.</p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-700/60">
+                        <span class="text-[11px] font-mono text-slate-300 bg-slate-900/60 px-2 py-1 rounded block text-center truncate">GRANT, REVOKE, DENY</span>
+                    </div>
+                </div>
+
+                <!-- TCL Card -->
+                <div onclick="selectAndGo('TCL')" class="bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 hover:border-indigo-500/50 rounded-2xl p-5 cursor-pointer transition-all duration-300 shadow-lg hover:shadow-indigo-500/10 flex flex-col justify-between group">
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="px-2.5 py-1 bg-rose-500/10 text-rose-400 rounded-lg text-xs font-bold border border-rose-500/20">TCL</span>
+                            <span class="text-xs text-slate-500 group-hover:text-indigo-400 transition">Explore &rarr;</span>
+                        </div>
+                        <h3 class="font-bold text-base text-slate-100 group-hover:text-indigo-300 transition">Transaction Control</h3>
+                        <p class="text-xs text-slate-400 mt-2 leading-relaxed">Manages database transactions, ensuring ACID compliance and rollback safety.</p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-700/60">
+                        <span class="text-[11px] font-mono text-slate-300 bg-slate-900/60 px-2 py-1 rounded block text-center truncate">COMMIT, ROLLBACK, SAVE</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- MSSQL Specific Note Box -->
+            <div class="bg-indigo-950/40 border border-indigo-500/30 rounded-2xl p-6 mt-6 flex flex-col sm:flex-row items-center gap-5">
+                <div class="p-3 bg-indigo-600/20 text-indigo-400 rounded-xl">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <div>
+                    <h4 class="font-bold text-white text-base">Note on Microsoft SQL Server (T-SQL) Extensions</h4>
+                    <p class="text-slate-300 text-xs mt-1 leading-relaxed">In MSSQL, T-SQL (Transact-SQL) adds procedural extensions such as variables (`DECLARE`), flow control (`WHILE`, `IF...ELSE`), error handling (`TRY...CATCH`), and specialized commands like `MERGE` (combining insert, update, delete in one statement) and `DENY` under DCL.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-explorer" class="space-y-6 hidden animate-fade-in">
+            <div class="flex flex-wrap gap-2 border-b border-slate-800 pb-4">
+                <button onclick="selectSublang('DDL')" id="btn-DDL" class="sub-btn px-5 py-2.5 rounded-xl font-bold text-sm bg-indigo-600 text-white transition shadow-md">DDL (Definition)</button>
+                <button onclick="selectSublang('DQL')" id="btn-DQL" class="sub-btn px-5 py-2.5 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition">DQL (Query)</button>
+                <button onclick="selectSublang('DML')" id="btn-DML" class="sub-btn px-5 py-2.5 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition">DML (Manipulation)</button>
+                <button onclick="selectSublang('DCL')" id="btn-DCL" class="sub-btn px-5 py-2.5 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition">DCL (Control)</button>
+                <button onclick="selectSublang('TCL')" id="btn-TCL" class="sub-btn px-5 py-2.5 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition">TCL (Transaction)</button>
+            </div>
+
+            <!-- Dynamic Content Panel -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Left Details Column -->
+                <div class="lg:col-span-1 space-y-6">
+                    <div class="bg-slate-800/90 border border-slate-700 rounded-2xl p-6 shadow-xl">
+                        <div id="sublang-badge" class="inline-block px-3 py-1 bg-blue-500/10 text-blue-400 rounded-lg text-xs font-bold border border-blue-500/20 mb-3">Data Definition Language</div>
+                        <h3 id="sublang-title" class="text-2xl font-extrabold text-white">DDL</h3>
+                        <p id="sublang-desc" class="text-slate-300 text-sm mt-3 leading-relaxed">DDL is used to build and modify the database structure. Changes made using DDL are auto-committed to the database schema.</p>
+                        
+                        <div class="mt-6 pt-6 border-t border-slate-700">
+                            <h4 class="text-xs uppercase tracking-wider font-bold text-slate-400 mb-3">Core Keywords</h4>
+                            <div id="sublang-keywords" class="flex flex-wrap gap-2">
+                                <span class="px-2.5 py-1 bg-slate-900 text-indigo-300 rounded font-mono text-xs border border-slate-700">CREATE</span>
+                                <span class="px-2.5 py-1 bg-slate-900 text-indigo-300 rounded font-mono text-xs border border-slate-700">ALTER</span>
+                                <span class="px-2.5 py-1 bg-slate-900 text-indigo-300 rounded font-mono text-xs border border-slate-700">DROP</span>
+                                <span class="px-2.5 py-1 bg-slate-900 text-indigo-300 rounded font-mono text-xs border border-slate-700">TRUNCATE</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 pt-6 border-t border-slate-700">
+                            <h4 class="text-xs uppercase tracking-wider font-bold text-slate-400 mb-2">MSSQL / T-SQL Note</h4>
+                            <p id="sublang-mssql" class="text-xs text-slate-300 leading-relaxed">In SQL Server, `TRUNCATE TABLE` resets identity seeds and logs minimal information in transaction logs compared to `DELETE`.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Code & Example Column -->
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="bg-slate-800/90 border border-slate-700 rounded-2xl p-6 shadow-xl flex flex-col h-full">
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 rounded-full bg-rose-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                                <span class="text-xs text-slate-400 font-mono ml-2" id="code-file-name">ddl_examples.sql</span>
+                            </div>
+                            <button onclick="copyCode()" class="px-3 py-1 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs rounded-lg transition flex items-center gap-1.5 font-medium">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                                Copy Script
+                            </button>
+                        </div>
+                        <div class="bg-slate-950 p-5 rounded-xl border border-slate-800 flex-grow font-mono text-sm overflow-x-auto text-indigo-200" id="code-box">
+<pre><code><span class="text-slate-500">-- 1. CREATE TABLE in MSSQL</span>
+<span class="text-purple-400">CREATE TABLE</span> Employees (
+    EmployeeID <span class="text-blue-400">INT IDENTITY</span>(<span class="text-amber-400">1</span>,<span class="text-amber-400">1</span>) <span class="text-purple-400">PRIMARY KEY</span>,
+    FirstName <span class="text-blue-400">VARCHAR</span>(<span class="text-amber-400">50</span>) <span class="text-purple-400">NOT NULL</span>,
+    LastName <span class="text-blue-400">VARCHAR</span>(<span class="text-amber-400">50</span>) <span class="text-purple-400">NOT NULL</span>,
+    HireDate <span class="text-blue-400">DATE</span> <span class="text-purple-400">DEFAULT GETDATE</span>()
+);
+
+<span class="text-slate-500">-- 2. ALTER TABLE (Add Column)</span>
+<span class="text-purple-400">ALTER TABLE</span> Employees <span class="text-purple-400">ADD</span> Email <span class="text-blue-400">VARCHAR</span>(<span class="text-amber-400">100</span>);
+
+<span class="text-slate-500">-- 3. TRUNCATE TABLE (Removes all rows quickly)</span>
+<span class="text-purple-400">TRUNCATE TABLE</span> Employees;
+
+<span class="text-slate-500">-- 4. DROP TABLE (Removes table & structure permanently)</span>
+<span class="text-purple-400">DROP TABLE</span> Employees;</code></pre>
+                        </div>
+                        <div class="mt-4 text-xs text-slate-400 flex items-center justify-between">
+                            <span>Target Engine: Microsoft SQL Server (T-SQL) / Standard SQL</span>
+                            <span class="text-emerald-400 flex items-center gap-1 font-semibold">● Executable</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const sublangData = {
+            DDL: {
+                badge: "Data Definition Language",
+                title: "DDL",
+                desc: "DDL is used to define and modify the database schema, objects, tables, views, indexes, and constraints. Changes are permanent and auto-committed.",
+                keywords: ["CREATE", "ALTER", "DROP", "TRUNCATE", "RENAME"],
+                mssql: "In SQL Server, TRUNCATE TABLE resets identity seeds and logs minimal row deletions. ALTER TABLE allows dropping columns, adding constraints, and changing data types instantly.",
+                filename: "ddl_examples.sql",
+                code: `<span class="text-slate-500">-- 1. CREATE TABLE in MSSQL</span>
+<span class="text-purple-400">CREATE TABLE</span> Employees (
+    EmployeeID <span class="text-blue-400">INT IDENTITY</span>(<span class="text-amber-400">1</span>,<span class="text-amber-400">1</span>) <span class="text-purple-400">PRIMARY KEY</span>,
+    FirstName <span class="text-blue-400">VARCHAR</span>(<span class="text-amber-400">50</span>) <span class="text-purple-400">NOT NULL</span>,
+    LastName <span class="text-blue-400">VARCHAR</span>(<span class="text-amber-400">50</span>) <span class="text-purple-400">NOT NULL</span>,
+    HireDate <span class="text-blue-400">DATE</span> <span class="text-purple-400">DEFAULT GETDATE</span>()
+);
+
+<span class="text-slate-500">-- 2. ALTER TABLE (Add Column)</span>
+<span class="text-purple-400">ALTER TABLE</span> Employees <span class="text-purple-400">ADD</span> Email <span class="text-blue-400">VARCHAR</span>(<span class="text-amber-400">100</span>);
+
+<span class="text-slate-500">-- 3. TRUNCATE TABLE (Removes all rows quickly)</span>
+<span class="text-purple-400">TRUNCATE TABLE</span> Employees;
+
+<span class="text-slate-500">-- 4. DROP TABLE (Removes table & structure permanently)</span>
+<span class="text-purple-400">DROP TABLE</span> Employees;`
+            },
+            DQL: {
+                badge: "Data Query Language",
+                title: "DQL",
+                desc: "DQL is used to fetch and retrieve data from tables based on specific search criteria, sorting, joins, and aggregates without modifying stored data.",
+                keywords: ["SELECT", "FROM", "WHERE", "GROUP BY", "HAVING", "ORDER BY"],
+                mssql: "In T-SQL, SELECT also supports advanced clauses like TOP (e.g., SELECT TOP 10 *), WITH (CTE - Common Table Expressions), and XML/JSON querying.",
+                filename: "dql_examples.sql",
+                code: `<span class="text-slate-500">-- 1. Basic SELECT with TOP in MSSQL</span>
+<span class="text-purple-400">SELECT TOP</span> <span class="text-amber-400">5</span> EmployeeID, FirstName, LastName
+<span class="text-purple-400">FROM</span> Employees
+<span class="text-purple-400">WHERE</span> Department = <span class="text-emerald-300">'Engineering'</span>
+<span class="text-purple-400">ORDER BY</span> HireDate <span class="text-purple-400">DESC</span>;
+
+<span class="text-slate-500">-- 2. Aggregate & GROUP BY</span>
+<span class="text-purple-400">SELECT</span> Department, <span class="text-blue-400">COUNT</span>(*) <span class="text-purple-400">AS</span> TotalEmployees
+<span class="text-purple-400">FROM</span> Employees
+<span class="text-purple-400">GROUP BY</span> Department
+<span class="text-purple-400">HAVING</span> <span class="text-blue-400">COUNT</span>(*) > <span class="text-amber-400">2</span>;`
+            },
+            DML: {
+                badge: "Data Manipulation Language",
+                title: "DML",
+                desc: "DML is used for inserting, updating, deleting, and merging record rows inside existing database tables.",
+                keywords: ["INSERT", "UPDATE", "DELETE", "MERGE"],
+                mssql: "MSSQL features the powerful MERGE statement (Upsert) which performs INSERT, UPDATE, or DELETE operations in a single atomic pass based on a matching condition.",
+                filename: "dml_examples.sql",
+                code: `<span class="text-slate-500">-- 1. INSERT statement</span>
+<span class="text-purple-400">INSERT INTO</span> Employees (FirstName, LastName, Department)
+<span class="text-purple-400">VALUES</span> (<span class="text-emerald-300">'Jane'</span>, <span class="text-emerald-300">'Doe'</span>, <span class="text-emerald-300">'Engineering'</span>);
+
+<span class="text-slate-500">-- 2. UPDATE statement</span>
+<span class="text-purple-400">UPDATE</span> Employees 
+<span class="text-purple-400">SET</span> Department = <span class="text-emerald-300">'Product Management'</span>
+<span class="text-purple-400">WHERE</span> EmployeeID = <span class="text-amber-400">101</span>;
+
+<span class="text-slate-500">-- 3. MERGE statement (Upsert in MSSQL)</span>
+<span class="text-purple-400">MERGE INTO</span> TargetTable <span class="text-purple-400">AS</span> Target
+<span class="text-purple-400">USING</span> SourceTable <span class="text-purple-400">AS</span> Source
+    <span class="text-purple-400">ON</span> Target.ID = Source.ID
+<span class="text-purple-400">WHEN MATCHED THEN</span>
+    <span class="text-purple-400">UPDATE SET</span> Target.Val = Source.Val
+<span class="text-purple-400">WHEN NOT MATCHED THEN</span>
+    <span class="text-purple-400">INSERT</span> (ID, Val) <span class="text-purple-400">VALUES</span> (Source.ID, Source.Val);`
+            },
+            DCL: {
+                badge: "Data Control Language",
+                title: "DCL",
+                desc: "DCL controls security, access privileges, and user permissions on database tables, views, and stored procedures.",
+                keywords: ["GRANT", "REVOKE", "DENY"],
+                mssql: "MSSQL supports GRANT, REVOKE, and crucially DENY, which overrides all explicit or inherited permissions to ensure strict zero-trust access control.",
+                filename: "dcl_examples.sql",
+                code: `<span class="text-slate-500">-- 1. GRANT execute permission on stored procedure</span>
+<span class="text-purple-400">GRANT EXECUTE</span> <span class="text-purple-400">ON</span> sp_CalculatePayroll <span class="text-purple-400">TO</span> FinanceRole;
+
+<span class="text-slate-500">-- 2. REVOKE permission</span>
+<span class="text-purple-400">REVOKE SELECT</span> <span class="text-purple-400">ON</span> Employees <span class="text-purple-400">FROM</span> ContractorUser;
+
+<span class="text-slate-500">-- 3. DENY permission (MSSQL specific precedence)</span>
+<span class="text-purple-400">DENY INSERT</span> <span class="text-purple-400">ON</span> Salaries <span class="text-purple-400">TO</span> PublicRole;`
+            },
+            TCL: {
+                badge: "Transaction Control Language",
+                title: "TCL",
+                desc: "TCL manages transactions within the database to ensure ACID properties, allowing safe rollbacks in case of partial failures.",
+                keywords: ["BEGIN TRANSACTION", "COMMIT", "ROLLBACK", "SAVE TRANSACTION"],
+                mssql: "In MSSQL, transactions can be explicit (using BEGIN TRAN), implicit, or autocommit. SAVE TRANSACTION creates savepoints for partial rollbacks.",
+                filename: "tcl_examples.sql",
+                code: `<span class="text-slate-500">-- 1. Explicit Transaction with Rollback Safety</span>
+<span class="text-purple-400">BEGIN TRANSACTION</span>;
+
+<span class="text-purple-400">BEGIN TRY</span>
+    <span class="text-purple-400">UPDATE</span> Accounts <span class="text-purple-400">SET</span> Balance = Balance - <span class="text-amber-400">500</span> <span class="text-purple-400">WHERE</span> AccountID = <span class="text-amber-400">1</span>;
+    <span class="text-purple-400">UPDATE</span> Accounts <span class="text-purple-400">SET</span> Balance = Balance + <span class="text-amber-400">500</span> <span class="text-purple-400">WHERE</span> AccountID = <span class="text-amber-400">2</span>;
+    
+    <span class="text-purple-400">COMMIT TRANSACTION</span>;
+<span class="text-purple-400">END TRY</span>
+<span class="text-purple-400">BEGIN CATCH</span>
+    <span class="text-purple-400">ROLLBACK TRANSACTION</span>;
+    <span class="text-purple-400">PRINT</span> <span class="text-emerald-350">'Transaction rolled back due to error.'</span>;
+<span class="text-purple-400">END CATCH</span>;`
+            }
+        };
+
+        function switchTab(tabId) {
+            ['hierarchy', 'explorer'].forEach(id => {
+                document.getElementById(`view-${id}`).classList.add('hidden');
+                document.getElementById(`nav-${id}`).className = "px-4 py-2 text-sm font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition";
+            });
+            document.getElementById(`view-${tabId}`).classList.remove('hidden');
+            document.getElementById(`nav-${tabId}`).className = "px-4 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white transition shadow-md";
+        }
+
+        function selectAndGo(sublang) {
+            switchTab('explorer');
+            selectSublang(sublang);
+        }
+
+        function selectSublang(key) {
+            document.querySelectorAll('.sub-btn').forEach(btn => {
+                btn.className = "sub-btn px-5 py-2.5 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition";
+            });
+            document.getElementById(`btn-${key}`).className = "sub-btn px-5 py-2.5 rounded-xl font-bold text-sm bg-indigo-600 text-white transition shadow-md";
+
+            const data = sublangData[key];
+            document.getElementById('sublang-badge').innerText = data.badge;
+            document.getElementById('sublang-title').innerText = data.title;
+            document.getElementById('sublang-desc').innerText = data.desc;
+            document.getElementById('sublang-mssql').innerText = data.mssql;
+            document.getElementById('code-file-name').innerText = data.filename;
+            document.getElementById('code-box').innerHTML = `<pre><code>${data.code}</code></pre>`;
+
+            const kwContainer = document.getElementById('sublang-keywords');
+            kwContainer.innerHTML = data.keywords.map(kw => `<span class="px-2.5 py-1 bg-slate-900 text-indigo-300 rounded font-mono text-xs border border-slate-700">${kw}</span>`).join('');
+        }
+
+        function copyCode() {
+            const codeText = document.getElementById('code-box').innerText;
+            const textarea = document.createElement('textarea');
+            textarea.value = codeText;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            
+            event.target.innerText = "Copied!";
+            setTimeout(() => {
+                event.target.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg> Copy Script`;
+            }, 2000);
+        }
+
+        window.onload = function() {
+            // Initial load complete
+        };
+    </script>
+</body>
+</html>
