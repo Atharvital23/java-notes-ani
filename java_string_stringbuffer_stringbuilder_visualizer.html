@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Java String, StringBuffer & StringBuilder Visualizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 h-full font-sans antialiased flex flex-col" x-data="appData()">
+
+    <!-- Header -->
+    <header class="bg-slate-900 border-b border-slate-800 px-6 py-4 flex flex-col md:flex-row justify-between items-center shrink-0 shadow-lg">
+        <div class="flex items-center space-x-3 mb-3 md:mb-0">
+            <div class="bg-indigo-600 p-2.5 rounded-xl shadow-md text-white font-bold text-xl flex items-center justify-center">
+                <i class="fa-solid fa-code"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight text-white">Java String vs StringBuffer vs StringBuilder</h1>
+                <p class="text-xs text-slate-400">Architectural Comparison, Memory Models & Complete Method Explorer</p>
+            </div>
+        </div>
+        <!-- Navigation Tabs (Interactive Simulator removed) -->
+        <div class="flex bg-slate-800 p-1 rounded-xl space-x-1">
+            <button @click="currentTab = 'overview'" :class="currentTab === 'overview' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'" class="px-4 py-2 rounded-lg text-xs font-semibold transition-all">Overview & Memory</button>
+            <button @click="currentTab = 'methods'" :class="currentTab === 'methods' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'" class="px-4 py-2 rounded-lg text-xs font-semibold transition-all">Method Explorer</button>
+            <button @click="currentTab = 'cheatsheet'" :class="currentTab === 'cheatsheet' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'" class="px-4 py-2 rounded-lg text-xs font-semibold transition-all">Best Practices</button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 overflow-y-auto p-6 max-w-7xl mx-auto w-full">
+
+        <!-- TAB 1: OVERVIEW & MEMORY -->
+        <div x-show="currentTab === 'overview'" x-transition class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- String Card -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between hover:border-indigo-500/50 transition-all">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">String</span>
+                            <i class="fa-solid fa-lock text-blue-400 text-lg"></i>
+                        </div>
+                        <h2 class="text-lg font-bold text-white mb-2">java.lang.String</h2>
+                        <p class="text-slate-300 text-sm mb-4">Immutable sequence of characters. Once created, its internal character array cannot be changed.</p>
+                        <ul class="space-y-2 text-xs text-slate-300 mb-6">
+                            <li class="flex items-center"><i class="fa-solid fa-check text-emerald-400 mr-2"></i> Thread-safe (due to immutability)</li>
+                            <li class="flex items-center"><i class="fa-solid fa-check text-emerald-400 mr-2"></i> Uses String Constant Pool for memory optimization</li>
+                            <li class="flex items-center"><i class="fa-solid fa-xmark text-rose-400 mr-2"></i> Slow for frequent modifications & loops</li>
+                        </ul>
+                    </div>
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs text-indigo-300">
+                        String s = "Hello";<br>s = s + " World"; // Creates new object
+                    </div>
+                </div>
+
+                <!-- StringBuffer Card -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between hover:border-indigo-500/50 transition-all">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">StringBuffer</span>
+                            <i class="fa-solid fa-shield-halved text-amber-400 text-lg"></i>
+                        </div>
+                        <h2 class="text-lg font-bold text-white mb-2">java.lang.StringBuffer</h2>
+                        <p class="text-slate-300 text-sm mb-4">Mutable sequence of characters with thread-safe (synchronized) method execution.</p>
+                        <ul class="space-y-2 text-xs text-slate-300 mb-6">
+                            <li class="flex items-center"><i class="fa-solid fa-check text-emerald-400 mr-2"></i> Mutable in-place modifications</li>
+                            <li class="flex items-center"><i class="fa-solid fa-check text-emerald-400 mr-2"></i> Thread-safe (methods are synchronized)</li>
+                            <li class="flex items-center"><i class="fa-solid fa-triangle-exclamation text-amber-400 mr-2"></i> Slower due to synchronization overhead</li>
+                        </ul>
+                    </div>
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs text-amber-300">
+                        StringBuffer sb = new StringBuffer("Hello");<br>sb.append(" World"); // Modifies in place
+                    </div>
+                </div>
+
+                <!-- StringBuilder Card -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between hover:border-indigo-500/50 transition-all">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">StringBuilder</span>
+                            <i class="fa-solid fa-bolt text-emerald-400 text-lg"></i>
+                        </div>
+                        <h2 class="text-lg font-bold text-white mb-2">java.lang.StringBuilder</h2>
+                        <p class="text-slate-300 text-sm mb-4">Mutable sequence of characters, non-synchronized. Introduced in Java 5 for high performance.</p>
+                        <ul class="space-y-2 text-xs text-slate-300 mb-6">
+                            <li class="flex items-center"><i class="fa-solid fa-check text-emerald-400 mr-2"></i> Mutable in-place modifications</li>
+                            <li class="flex items-center"><i class="fa-solid fa-bolt text-emerald-400 mr-2"></i> Fastest performance (no synchronization)</li>
+                            <li class="flex items-center"><i class="fa-solid fa-xmark text-rose-400 mr-2"></i> Not thread-safe (unsafe in multi-threaded code)</li>
+                        </ul>
+                    </div>
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs text-emerald-300">
+                        StringBuilder sb = new StringBuilder("Hello");<br>sb.append(" World"); // Modifies in place
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparison Table -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                <h3 class="text-base font-bold text-white mb-4"><i class="fa-solid fa-table-cells mr-2 text-indigo-400"></i>Feature Comparison Matrix</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="bg-slate-950 text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                            <tr>
+                                <th class="p-3">Feature</th>
+                                <th class="p-3 text-blue-400">String</th>
+                                <th class="p-3 text-amber-400">StringBuffer</th>
+                                <th class="p-3 text-emerald-400">StringBuilder</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800">
+                            <tr>
+                                <td class="p-3 font-semibold text-white">Mutability</td>
+                                <td class="p-3 text-rose-400">Immutable</td>
+                                <td class="p-3 text-emerald-400">Mutable</td>
+                                <td class="p-3 text-emerald-400">Mutable</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold text-white">Thread Safety</td>
+                                <td class="p-3 text-emerald-400">Thread-safe (Immutable)</td>
+                                <td class="p-3 text-emerald-400">Thread-safe (Synchronized)</td>
+                                <td class="p-3 text-rose-400">Not Thread-safe</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold text-white">Performance</td>
+                                <td class="p-3 text-rose-400">Slow for concatenation</td>
+                                <td class="p-3 text-amber-400">Moderate (Sync overhead)</td>
+                                <td class="p-3 text-emerald-400">Fastest</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold text-white">Memory Pool</td>
+                                <td class="p-3 text-emerald-400">Yes (String Constant Pool)</td>
+                                <td class="p-3 text-slate-500">No</td>
+                                <td class="p-3 text-slate-500">No</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold text-white">Operator Overloading</td>
+                                <td class="p-3 text-emerald-400">Yes (+ and +=)</td>
+                                <td class="p-3 text-rose-400">No</td>
+                                <td class="p-3 text-rose-400">No</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold text-white">Introduced In</td>
+                                <td class="p-3">Java 1.0</td>
+                                <td class="p-3">Java 1.0</td>
+                                <td class="p-3">Java 5.0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: METHOD EXPLORER -->
+        <div x-show="currentTab === 'methods'" x-transition class="space-y-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                    <div>
+                        <h3 class="text-base font-bold text-white"><i class="fa-solid fa-book-bookmark mr-2 text-indigo-400"></i>Complete Method Explorer</h3>
+                        <p class="text-xs text-slate-400">Search and filter all methods available across String, StringBuffer, and StringBuilder.</p>
+                    </div>
+                    <!-- Filters -->
+                    <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                        <select x-model="selectedClass" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+                            <option value="ALL">All Classes</option>
+                            <option value="String">String Only</option>
+                            <option value="StringBuffer">StringBuffer Only</option>
+                            <option value="StringBuilder">StringBuilder Only</option>
+                            <option value="Shared">StringBuffer & StringBuilder (AbstractStringBuilder)</option>
+                        </select>
+                        <input type="text" x-model="searchQuery" placeholder="Search methods (e.g. append, substring, charAt)..." class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 flex-1 md:w-64">
+                    </div>
+                </div>
+
+                <!-- Methods List -->
+                <div class="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+                    <template x-for="method in filteredMethods" :key="method.name + method.classType">
+                        <div class="bg-slate-950 border border-slate-800/80 rounded-xl p-4 hover:border-indigo-500/40 transition-all">
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-2">
+                                <div class="flex items-center space-x-2">
+                                    <span class="px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider"
+                                        :class="{
+                                            'bg-blue-500/10 text-blue-400 border border-blue-500/20': method.classType === 'String',
+                                            'bg-amber-500/10 text-amber-400 border border-amber-500/20': method.classType === 'StringBuffer',
+                                            'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20': method.classType === 'StringBuilder',
+                                            'bg-purple-500/10 text-purple-400 border border-purple-500/20': method.classType === 'Shared'
+                                        }"
+                                        x-text="method.classType">
+                                    </span>
+                                    <span class="font-mono text-sm font-bold text-white" x-text="method.name"></span>
+                                </div>
+                                <span class="text-[11px] text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800" x-text="method.category"></span>
+                            </div>
+                            <div class="bg-slate-900/80 p-2.5 rounded-lg font-mono text-xs text-indigo-300 mb-2 overflow-x-auto" x-text="method.signature"></div>
+                            <p class="text-xs text-slate-300 mb-2" x-text="method.description"></p>
+                            <div class="text-[11px] text-slate-400 bg-slate-900/40 p-2 rounded border border-slate-800/50 flex items-center">
+                                <i class="fa-solid fa-code text-indigo-400 mr-2"></i>
+                                <span class="font-mono text-slate-300" x-text="method.example"></span>
+                            </div>
+                        </div>
+                    </template>
+                    <div x-show="filteredMethods.length === 0" class="text-center py-12 text-slate-500 text-xs">
+                        No methods found matching your search query.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: BEST PRACTICES / CHEAT SHEET -->
+        <div x-show="currentTab === 'cheatsheet'" x-transition class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- When to use what -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+                    <h3 class="text-base font-bold text-white flex items-center">
+                        <i class="fa-solid fa-lightbulb text-amber-400 mr-2"></i>Decision Guide: Which one to choose?
+                    </h3>
+                    <div class="space-y-3 text-xs text-slate-300">
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                            <strong class="text-blue-400 block mb-1">Use <code class="bg-slate-900 px-1.5 py-0.5 rounded text-white">String</code> when:</strong>
+                            <p class="text-slate-400">You are dealing with fixed text literals, configuration values, method parameters where immutability is preferred, or keys in HashMaps.</p>
+                        </div>
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                            <strong class="text-emerald-400 block mb-1">Use <code class="bg-slate-900 px-1.5 py-0.5 rounded text-white">StringBuilder</code> when:</strong>
+                            <p class="text-slate-400">You are doing extensive string manipulation, loops, or concatenation in a single-threaded environment (95% of use cases).</p>
+                        </div>
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                            <strong class="text-amber-400 block mb-1">Use <code class="bg-slate-900 px-1.5 py-0.5 rounded text-white">StringBuffer</code> when:</strong>
+                            <p class="text-slate-400">You need mutable string operations shared concurrently across multiple threads (thread-safe builder).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pro Tips -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+                    <h3 class="text-base font-bold text-white flex items-center">
+                        <i class="fa-solid fa-star text-indigo-400 mr-2"></i>Performance Pro Tips
+                    </h3>
+                    <ul class="space-y-3 text-xs text-slate-300">
+                        <li class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-start">
+                            <i class="fa-solid fa-circle-check text-emerald-400 mr-2.5 mt-0.5"></i>
+                            <div>
+                                <strong class="text-white block">Initial Capacity Sizing</strong>
+                                <span class="text-slate-400">If you know the approximate final size, initialize `StringBuilder` with capacity: `new StringBuilder(256)`. This avoids costly internal array reallocation and copying.</span>
+                            </div>
+                        </li>
+                        <li class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-start">
+                            <i class="fa-solid fa-circle-check text-emerald-400 mr-2.5 mt-0.5"></i>
+                            <div>
+                                <strong class="text-white block">Compiler Optimization (Java 5+)</strong>
+                                <span class="text-slate-400">Java compiler automatically converts simple string concatenations like `"Hello " + name` into `StringBuilder` under the hood. However, inside loops, always explicitly use `StringBuilder`.</span>
+                            </div>
+                        </li>
+                        <li class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-start">
+                            <i class="fa-solid fa-circle-check text-emerald-400 mr-2.5 mt-0.5"></i>
+                            <div>
+                                <strong class="text-white block">String Interning</strong>
+                                <span class="text-slate-400">Use `s.intern()` to ensure identical strings share the exact same memory reference in the JVM String Pool, optimizing memory for high-repetition categorical data.</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 border-t border-slate-800 py-3 px-6 text-center text-xs text-slate-500 shrink-0">
+        Java String, StringBuffer & StringBuilder Interactive Visualizer &bull; Built with Tailwind CSS & Alpine.js
+    </footer>
+
+    <script>
+        function appData() {
+            return {
+                currentTab: 'overview',
+                searchQuery: '',
+                selectedClass: 'ALL',
+                methods: [
+                    // String Methods
+                    { classType: 'String', name: 'length()', category: 'Inspection', signature: 'public int length()', description: 'Returns the length of this string.', example: '"Hello".length(); // returns 5' },
+                    { classType: 'String', name: 'charAt()', category: 'Inspection', signature: 'public char charAt(int index)', description: 'Returns the char value at the specified index.', example: '"Hello".charAt(1); // returns \'e\'' },
+                    { classType: 'String', name: 'substring()', category: 'Extraction', signature: 'public String substring(int beginIndex, int endIndex)', description: 'Returns a string that is a substring of this string.', example: '"Hello".substring(1, 4); // returns "ell"' },
+                    { classType: 'String', name: 'contains()', category: 'Searching', signature: 'public boolean contains(CharSequence s)', description: 'Returns true if and only if this string contains the specified sequence.', example: '"Hello".contains("ll"); // returns true' },
+                    { classType: 'String', name: 'indexOf()', category: 'Searching', signature: 'public int indexOf(String str)', description: 'Returns the index within this string of the first occurrence of the specified substring.', example: '"Hello".indexOf("l"); // returns 2' },
+                    { classType: 'String', name: 'lastIndexOf()', category: 'Searching', signature: 'public int lastIndexOf(String str)', description: 'Returns the index within this string of the last occurrence of the specified substring.', example: '"Hello".lastIndexOf("l"); // returns 3' },
+                    { classType: 'String', name: 'equals()', category: 'Comparison', signature: 'public boolean equals(Object anObject)', description: 'Compares this string to the specified object for equality.', example: '"Hello".equals("Hello"); // returns true' },
+                    { classType: 'String', name: 'equalsIgnoreCase()', category: 'Comparison', signature: 'public boolean equalsIgnoreCase(String anotherString)', description: 'Compares this String to another String, ignoring case considerations.', example: '"hello".equalsIgnoreCase("HELLO"); // returns true' },
+                    { classType: 'String', name: 'compareTo()', category: 'Comparison', signature: 'public int compareTo(String anotherString)', description: 'Compares two strings lexicographically.', example: '"A".compareTo("B"); // returns negative' },
+                    { classType: 'String', name: 'toLowerCase()', category: 'Transformation', signature: 'public String toLowerCase()', description: 'Converts all of the characters in this String to lower case.', example: '"HELLO".toLowerCase(); // returns "hello"' },
+                    { classType: 'String', name: 'toUpperCase()', category: 'Transformation', signature: 'public String toUpperCase()', description: 'Converts all of the characters in this String to upper case.', example: '"hello".toUpperCase(); // returns "HELLO"' },
+                    { classType: 'String', name: 'trim() / strip()', category: 'Transformation', signature: 'public String strip()', description: 'Returns a string whose value is this string, with all leading and trailing white space removed.', example: '"  hello  ".strip(); // returns "hello"' },
+                    { classType: 'String', name: 'replace()', category: 'Transformation', signature: 'public String replace(CharSequence target, CharSequence replacement)', description: 'Replaces each substring of this string that matches the target sequence with the specified replacement sequence.', example: '"hello".replace("l", "z"); // returns "hezzo"' },
+                    { classType: 'String', name: 'split()', category: 'Parsing', signature: 'public String[] split(String regex)', description: 'Splits this string around matches of the given regular expression.', example: '"a,b,c".split(","); // returns ["a", "b", "c"]' },
+                    { classType: 'String', name: 'join()', category: 'Utility', signature: 'public static String join(CharSequence delimiter, CharSequence... elements)', description: 'Returns a new String composed of copies of the `CharSequence` elements joined together.', example: 'String.join("-", "2026", "06", "06"); // "2026-06-06"' },
+                    { classType: 'String', name: 'valueOf()', category: 'Utility', signature: 'public static String valueOf(Object obj)', description: 'Returns the string representation of the argument.', example: 'String.valueOf(123); // returns "123"' },
+                    { classType: 'String', name: 'intern()', category: 'Memory', signature: 'public native String intern()', description: 'Returns a canonical representation for the string object from the String Pool.', example: 's.intern();' },
+                    { classType: 'String', name: 'repeat()', category: 'Transformation', signature: 'public String repeat(int count)', description: 'Returns a string whose value is the concatenation of this string repeated count times.', example: '"Ab".repeat(3); // returns "AbAbAb"' },
+                    { classType: 'String', name: 'isBlank() / isEmpty()', category: 'Inspection', signature: 'public boolean isBlank()', description: 'Returns true if the string is empty or contains only white space codepoints.', example: '"  ".isBlank(); // returns true' },
+
+                    // Shared (AbstractStringBuilder) Methods for StringBuffer & StringBuilder
+                    { classType: 'Shared', name: 'append()', category: 'Modification', signature: 'public AbstractStringBuilder append(String str)', description: 'Appends the specified string to this character sequence.', example: 'sb.append(" World");' },
+                    { classType: 'Shared', name: 'insert()', category: 'Modification', signature: 'public AbstractStringBuilder insert(int offset, String str)', description: 'Inserts the string into this character sequence at the specified offset.', example: 'sb.insert(5, " Java");' },
+                    { classType: 'Shared', name: 'delete()', category: 'Modification', signature: 'public AbstractStringBuilder delete(int start, int end)', description: 'Removes the characters in a substring of this sequence.', example: 'sb.delete(0, 3);' },
+                    { classType: 'Shared', name: 'deleteCharAt()', category: 'Modification', signature: 'public AbstractStringBuilder deleteCharAt(int index)', description: 'Removes the char at the specified position in this sequence.', example: 'sb.deleteCharAt(2);' },
+                    { classType: 'Shared', name: 'replace()', category: 'Modification', signature: 'public AbstractStringBuilder replace(int start, int end, String str)', description: 'Replates the characters in a substring of this sequence with characters in the specified String.', example: 'sb.replace(0, 5, "Hi");' },
+                    { classType: 'Shared', name: 'reverse()', category: 'Modification', signature: 'public AbstractStringBuilder reverse()', description: 'Causes this character sequence to be replaced by the reverse of the sequence.', example: 'sb.reverse(); // "olleH"' },
+                    { classType: 'Shared', name: 'capacity()', category: 'Inspection', signature: 'public int capacity()', description: 'Returns the current capacity of the internal buffer.', example: 'sb.capacity();' },
+                    { classType: 'Shared', name: 'ensureCapacity()', category: 'Utility', signature: 'public void ensureCapacity(int minimumCapacity)', description: 'Ensures that the capacity is at least equal to the specified minimum.', example: 'sb.ensureCapacity(50);' },
+                    { classType: 'Shared', name: 'setLength()', category: 'Modification', signature: 'public void setLength(int newLength)', description: 'Sets the length of the character sequence.', example: 'sb.setLength(3);' },
+                    { classType: 'Shared', name: 'setCharAt()', category: 'Modification', signature: 'public void setCharAt(int index, char ch)', description: 'The character at the specified index is set to `ch`.', example: 'sb.setCharAt(0, \'J\');' },
+                    { classType: 'Shared', name: 'trimToSize()', category: 'Utility', signature: 'public void trimToSize()', description: 'Attempts to reduce storage used for the character sequence.', example: 'sb.trimToSize();' },
+
+                    // StringBuffer Specific
+                    { classType: 'StringBuffer', name: 'codePointAt()', category: 'Inspection', signature: 'public synchronized int codePointAt(int index)', description: 'Synchronized version of codePointAt for thread safety.', example: 'sb.codePointAt(0);' },
+
+                    // StringBuilder Specific
+                    { classType: 'StringBuilder', name: 'indexOf()', category: 'Searching', signature: 'public int indexOf(String str)', description: 'Returns the index within this string of the first occurrence of the specified substring.', example: 'sb.indexOf("lo");' }
+                ],
+                get filteredMethods() {
+                    return this.methods.filter(m => {
+                        const matchesClass = this.selectedClass === 'ALL' || m.classType === this.selectedClass || (this.selectedClass === 'Shared' && m.classType === 'Shared');
+                        const matchesSearch = m.name.toLowerCase().includes(this.searchQuery.toLowerCase()) || 
+                                              m.description.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+                                              m.category.toLowerCase().includes(this.searchQuery.toLowerCase());
+                        return matchesClass && matchesSearch;
+                    });
+                }
+            }
+        }
+    </script>
+</body>
+</html>
