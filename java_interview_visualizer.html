@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Java Interview Architecture & Core Internals Visualizer</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom styling for custom scrollbars, layout containers, and canvas elements -->
+    <style>
+        /* Chosen Palette: Slate & Warm Indigo Harmonious Neutral Palette */
+        body {
+            background-color: #f8fafc;
+            color: #0f172a;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 650px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 360px;
+            }
+        }
+
+        /* Custom scrollbar for code and panel sections */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .memory-box {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .pulse-highlight {
+            animation: pulse-border 2s infinite;
+        }
+
+        @keyframes pulse-border {
+            0%, 100% { border-color: #6366f1; }
+            50% { border-color: #a855f7; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+
+    <!-- Application Structure Plan: A 5-module thematic interactive dashboard with dedicated low-level Canvas simulations, live execution graphs (JIT performance chart using Chart.js), interactive memory stack/heap allocators, bytecode step-throughs, and runnable code sandbox simulations for all 10 interview topics. Designed for intuitive navigation, interactive learning, and deep visualization of JVM mechanics. -->
+    
+    <!-- Visualization & Content Choices: 
+    1. Int vs Integer: Stack vs Heap HTML/Canvas memory allocation diagram + toggleable autoboxing simulator.
+    2. WORA: Multi-OS JVM architecture pipeline using structured Tailwind grid + dynamic step highlighter.
+    3. JIT Compiler: Interactive Chart.js line chart showing execution time dropping from Interpreter to JIT Native Code Cache compilation + HotSpot threshold simulator.
+    4. Class vs JDK/JRE: JDK/JRE/JVM Venn diagram using styled HTML containers & toggleable component inspector.
+    5. Static vs Global: Metaspace vs Heap memory visualizer with interactive instance count vs class field modifier.
+    6. Switch Cases: Interactive flow chart comparing O(1) tableswitch, lookupswitch, and String .hashCode() + .equals() double-check.
+    7. Object Creation: 5-way interactive tab card with constructor vs non-constructor execution paths.
+    8. Synchronized: Interactive Thread Monitor Lock simulator on Canvas showing Entry Set, Holding Thread, and monitorenter/monitorexit bytecode execution.
+    9. Throws vs Throw: Interactive Exception Call Stack propagation visualizer.
+    10. Interface Evolution: Timeline-style interactive matrix contrasting Java 7, 8, and 9 interface capabilities.
+    Confirming NO SVG graphics used and NO Mermaid JS used. -->
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <!-- Top Header -->
+    <header class="bg-indigo-900 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-indigo-600 text-white font-black text-xl px-3 py-1 rounded-lg border border-indigo-400">
+                    ☕ JVM
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold leading-tight">Java Core & JVM Internals Visualizer</h1>
+                    <p class="text-xs text-indigo-200">Interactive Architecture, Execution Flow & Low-Level Memory Deep Dive</p>
+                </div>
+            </div>
+
+            <!-- Global Topic Search & Quick Jump -->
+            <div class="flex items-center gap-2">
+                <div class="relative">
+                    <input type="text" id="topic-search" placeholder="Search topic (e.g. JIT, static, switch)..." 
+                        class="bg-indigo-950 text-slate-100 placeholder-indigo-300 text-xs rounded-lg px-3 py-2 w-48 sm:w-64 border border-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                        oninput="filterTopics()">
+                </div>
+                <button onclick="resetAllSimulations()" class="bg-indigo-800 hover:bg-indigo-700 text-xs px-3 py-2 rounded-lg font-medium border border-indigo-600 transition">
+                    🔄 Reset Views
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Navigation Bar -->
+    <nav class="bg-white border-b border-slate-200 shadow-sm sticky top-[60px] z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-x-auto">
+            <div class="flex space-x-1 sm:space-x-4 py-2" id="nav-tabs">
+                <button onclick="switchTab('memory')" id="tab-memory" class="nav-btn px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition bg-indigo-50 text-indigo-700 border-b-2 border-indigo-600 whitespace-nowrap">
+                    🧠 1. Memory & Types (`int` vs `Integer`)
+                </button>
+                <button onclick="switchTab('wora')" id="tab-wora" class="nav-btn px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 transition whitespace-nowrap">
+                    🌐 2. WORA Architecture
+                </button>
+                <button onclick="switchTab('jit')" id="tab-jit" class="nav-btn px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 transition whitespace-nowrap">
+                    ⚡ 3. JIT & JDK Runtime
+                </button>
+                <button onclick="switchTab('class-jre')" id="tab-class-jre" class="nav-btn px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 transition whitespace-nowrap">
+                    📦 4. `.class` & JRE Mechanics
+                </button>
+                <button onclick="switchTab('static-var')" id="tab-static-var" class="nav-btn px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 transition whitespace-nowrap">
+                    🏷️ 5. Static & Metaspace
+                </button>
+                <button onclick="switchTab('switch-case')" id="tab-switch-case" class="nav-btn px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 transition whitespace-nowrap">
+                    🔀 6. `switch` Lookup
+                </button>
+                <button onclick="switchTab('objects')" id="tab-objects" class="nav-btn px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 transition whitespace-nowrap">
+                    🏗️ 7. Object Instantiation
+                </button>
+                <button onclick="switchTab('synchronized')" id="tab-synchronized" class="nav-btn px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 transition whitespace-nowrap">
+                    🔒 8. `synchronized` Monitors
+                </button>
+                <button onclick="switchTab('exceptions')" id="tab-exceptions" class="nav-btn px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 transition whitespace-nowrap">
+                    ⚠️ 9. `throw` vs `throws`
+                </button>
+                <button onclick="switchTab('interfaces')" id="tab-interfaces" class="nav-btn px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 transition whitespace-nowrap">
+                    🧩 10. Java 8/9 Interfaces
+                </button>
+                <button onclick="switchTab('memory-jvm')" id="tab-memory-jvm" class="nav-btn px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 transition whitespace-nowrap">
+                    🧠 11. JVM Memory Mgmt
+                </button>
+                <button onclick="switchTab('core-features')" id="tab-core-features" class="nav-btn px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 transition whitespace-nowrap">
+                    💎 12. Core Features
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content View Area -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- ========================================== -->
+        <!-- SECTION 1: INT VS INTEGER & EMPLOYEE AGE -->
+        <!-- ========================================== -->
+        <section id="sec-memory" class="tab-content block space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div class="border-b border-slate-100 pb-4 mb-4">
+                    <span class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2.5 py-1 rounded-md uppercase">Topic #1 Analysis</span>
+                    <h2 class="text-2xl font-bold text-slate-900 mt-2">Primitive `int` vs. `Integer` Wrapper Class & Memory Allocation Strategy</h2>
+                    <p class="text-sm text-slate-600 mt-1">
+                        Understanding low-level stack allocation versus heap object headers, autoboxing performance overhead, nullability requirements, and choosing the optimal data type for domain model attributes such as employee age.
+                    </p>
+                </div>
+
+                <!-- 3-Column Architecture View -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Column 1: Core Definitions & Comparison -->
+                    <div class="space-y-4">
+                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                            <h3 class="font-bold text-indigo-900 text-sm flex items-center gap-2">
+                                <span>📄</span> Definition & Core Purpose
+                            </h3>
+                            <ul class="text-xs text-slate-700 mt-2 space-y-2">
+                                <li><strong class="text-slate-900">`int` (Primitive):</strong> Holds raw 32-bit signed binary values directly. Default value is <code class="bg-slate-200 px-1 rounded">0</code>. Zero heap overhead. Cannot be null.</li>
+                                <li><strong class="text-slate-900">`Integer` (Wrapper):</strong> Full Object residing on the Heap containing a primitive <code class="bg-slate-200 px-1 rounded">int</code> field, object headers, mark word, and class word. Default is <code class="bg-slate-200 px-1 rounded">null</code>.</li>
+                                <li><strong class="text-slate-900">Autoboxing:</strong> Implicit conversion by <code class="bg-slate-200 px-1 rounded">javac</code> invoking <code class="bg-slate-200 px-1 rounded">Integer.valueOf(int)</code>.</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-amber-50 border border-amber-200 p-4 rounded-lg">
+                            <h3 class="font-bold text-amber-900 text-sm flex items-center gap-2">
+                                <span>🎯</span> Employee Age Selection Recommendation
+                            </h3>
+                            <p class="text-xs text-amber-800 mt-1">
+                                Use <strong>primitive `int`</strong> by default for employee age. It consumes exactly 4 bytes of raw stack/heap inline memory with zero garbage collection impact. Use <strong>`Integer`</strong> ONLY if age can be optional/unknown (<code class="bg-amber-100 px-1 rounded">null</code> in database mapping) or when utilizing generic collections like <code class="bg-amber-100 px-1 rounded">List&lt;Integer&gt;</code>.
+                            </p>
+                        </div>
+
+                        <div class="bg-indigo-50 border border-indigo-200 p-4 rounded-lg">
+                            <h3 class="font-bold text-indigo-900 text-sm">💡 Real-World Analogy</h3>
+                            <p class="text-xs text-indigo-800 mt-1">
+                                <strong>`int`</strong> is like writing the number "30" directly on a sticky note in your pocket (immediate direct read). <br>
+                                <strong>`Integer`</strong> is putting that sticky note inside a heavy cardboard box with a barcode sticker, placing it on a warehouse shelf (Heap), and holding a slip of paper with the shelf aisle number (Reference).
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Column 2: Interactive Memory Visualizer -->
+                    <div class="lg:col-span-2 bg-slate-900 text-white rounded-xl p-5 border border-slate-800 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                                <h3 class="font-bold text-sm text-indigo-300 flex items-center gap-2">
+                                    <span>🔍</span> Interactive JVM Stack vs. Heap Visualizer
+                                </h3>
+                                <div class="space-x-2">
+                                    <button onclick="simAllocPrimitive()" class="bg-indigo-600 hover:bg-indigo-500 text-xs px-2.5 py-1 rounded font-medium text-white transition">
+                                        Alloc primitive `int age = 30`
+                                    </button>
+                                    <button onclick="simAllocWrapper()" class="bg-purple-600 hover:bg-purple-500 text-xs px-2.5 py-1 rounded font-medium text-white transition">
+                                        Alloc Wrapper `Integer age = 30`
+                                    </button>
+                                    <button onclick="clearMemorySim()" class="bg-slate-700 hover:bg-slate-600 text-xs px-2 py-1 rounded text-slate-300">
+                                        Clear
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Live Memory Canvas Layout -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                <!-- Stack Frame -->
+                                <div class="bg-slate-950 p-4 rounded-lg border border-slate-800">
+                                    <div class="text-xs font-bold text-indigo-400 mb-2 flex justify-between">
+                                        <span>STACK FRAME (Thread Execution Stack)</span>
+                                        <span class="text-slate-500">Fixed Frame Size</span>
+                                    </div>
+                                    <div id="stack-memory-list" class="space-y-2 min-h-[160px] max-h-[220px] overflow-y-auto">
+                                        <div class="text-xs text-slate-500 italic text-center py-8">Click a button above to allocate variables into Stack/Heap memory.</div>
+                                    </div>
+                                </div>
+
+                                <!-- Heap Memory -->
+                                <div class="bg-slate-950 p-4 rounded-lg border border-slate-800">
+                                    <div class="text-xs font-bold text-purple-400 mb-2 flex justify-between">
+                                        <span>HEAP MEMORY (Shared Object Space)</span>
+                                        <span id="heap-usage-label" class="text-slate-500">0 Objects</span>
+                                    </div>
+                                    <div id="heap-memory-list" class="space-y-2 min-h-[160px] max-h-[220px] overflow-y-auto">
+                                        <div class="text-xs text-slate-500 italic text-center py-8">Heap is currently clean. No Wrapper Objects allocated.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Live Stats Footer -->
+                        <div class="mt-4 pt-3 border-t border-slate-800 grid grid-cols-3 gap-2 text-center text-xs">
+                            <div class="bg-slate-950 p-2 rounded border border-slate-800">
+                                <span class="text-slate-400 block">Primitive `int` Overhead</span>
+                                <span class="font-bold text-emerald-400">Exact 4 Bytes (32 bits)</span>
+                            </div>
+                            <div class="bg-slate-950 p-2 rounded border border-slate-800">
+                                <span class="text-slate-400 block">Wrapper `Integer` Overhead</span>
+                                <span class="font-bold text-amber-400">16 - 24 Bytes (Header + Pointer)</span>
+                            </div>
+                            <div class="bg-slate-950 p-2 rounded border border-slate-800">
+                                <span class="text-slate-400 block">GC Pressure</span>
+                                <span id="gc-impact-text" class="font-bold text-slate-300">None</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Code Sandbox Section -->
+                <div class="mt-6 bg-slate-900 text-slate-100 rounded-xl p-5 border border-slate-800">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-xs font-mono text-indigo-400">TechnicalDemonstration.java</span>
+                        <span class="text-xs text-slate-400">Interactive Execution Console</span>
+                    </div>
+                    <pre class="bg-slate-950 p-4 rounded-lg font-mono text-xs overflow-x-auto text-emerald-400"><code><span class="text-slate-500">// 1. Primitive int: Direct value, high speed, non-nullable</span>
+<span class="text-indigo-300">int</span> primitiveAge = <span class="text-amber-300">30</span>; 
+
+<span class="text-slate-500">// 2. Wrapper Integer: Object reference on Heap, support nulls, utility methods</span>
+<span class="text-indigo-300">Integer</span> objectAge = <span class="text-amber-300">30</span>; <span class="text-slate-500">// Autoboxing: Integer.valueOf(30)</span>
+
+<span class="text-slate-500">// 3. Collections mandate Wrapper Objects (Generics erasure requirement)</span>
+java.util.<span class="text-indigo-300">List</span>&lt;<span class="text-indigo-300">Integer</span>&gt; ageList = <span class="text-indigo-300">new</span> java.util.<span class="text-indigo-300">ArrayList</span>&lt;&gt;();
+ageList.add(primitiveAge); <span class="text-slate-500">// Implicit Autoboxing creates Integer object</span>
+
+<span class="text-slate-500">// 4. Nullability handling comparison</span>
+<span class="text-indigo-300">Integer</span> unknownAge = <span class="text-purple-300">null</span>; <span class="text-slate-500">// Legal</span>
+<span class="text-slate-500">// int invalidAge = null; // COMPILE ERROR! Primitives cannot be null</span></code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- SECTION 2: WORA ARCHITECTURE -->
+        <!-- ========================================== -->
+        <section id="sec-wora" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div class="border-b border-slate-100 pb-4 mb-4">
+                    <span class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2.5 py-1 rounded-md uppercase">Topic #2 Analysis</span>
+                    <h2 class="text-2xl font-bold text-slate-900 mt-2">Write Once, Run Anywhere (WORA) Internal Architecture</h2>
+                    <p class="text-sm text-slate-600 mt-1">
+                        How Java decouples compiled program logic from host operating systems through Bytecode specification, class verification, and OS-specific JVM translations.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Theory Block -->
+                    <div class="space-y-4">
+                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 text-xs text-slate-700 space-y-2">
+                            <h3 class="font-bold text-slate-900 text-sm">💡 The WORA Paradox</h3>
+                            <p>Java source code is <strong>platform-independent</strong>, but the <strong>JVM is strictly platform-dependent</strong>.</p>
+                            <p>When you compile <code class="bg-slate-200 px-1 rounded">App.java</code> using <code class="bg-slate-200 px-1 rounded">javac</code>, it generates uniform, platform-agnostic <strong>Bytecode</strong> (<code class="bg-slate-200 px-1 rounded">.class</code>). That exact same bytecode file runs on Windows, macOS, or Linux without re-compilation.</p>
+                        </div>
+
+                        <div class="bg-indigo-50 border border-indigo-200 p-4 rounded-lg text-xs text-indigo-900">
+                            <h3 class="font-bold text-indigo-950 text-sm mb-1">🎭 Real-World Analogy</h3>
+                            <p>
+                                Imagine a book written in <strong>Universal Esperanto</strong> (Java Bytecode). You don't need to translate the original book for different readers. Instead, you hire three interpreters: one who reads Esperanto and speaks English (Windows JVM), one who speaks French (macOS JVM), and one who speaks German (Linux JVM). The book remains identical everywhere!
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Pipeline Visualizer -->
+                    <div class="lg:col-span-2 bg-slate-900 text-white rounded-xl p-5 border border-slate-800 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                                <h3 class="font-bold text-sm text-indigo-300">🌐 WORA Compilation & Execution Pipeline</h3>
+                                <button onclick="animateWORAPipeline()" class="bg-indigo-600 hover:bg-indigo-500 text-xs px-3 py-1.5 rounded font-medium transition">
+                                    ▶ Run Step-by-Step Flow
+                                </button>
+                            </div>
+
+                            <!-- Flow Visualization Steps -->
+                            <div class="mt-6 space-y-4">
+                                <!-- Step 1: Java Source Code -->
+                                <div id="wora-step-1" class="bg-slate-950 p-3 rounded-lg border border-slate-800 transition-all flex items-center justify-between">
+                                    <div class="flex items-center space-x-3">
+                                        <span class="w-7 h-7 rounded-full bg-indigo-900 text-indigo-300 flex items-center justify-center font-bold text-xs">1</span>
+                                        <div>
+                                            <div class="text-xs font-bold text-indigo-300">Java Source File</div>
+                                            <div class="text-[11px] text-slate-400">`Main.java` (Readable human code)</div>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs font-mono text-slate-500">javac compiler</span>
+                                </div>
+
+                                <div class="text-center text-slate-600 text-xs">⬇️ Compiles to Platform-Independent Intermediate Representation</div>
+
+                                <!-- Step 2: Bytecode Class File -->
+                                <div id="wora-step-2" class="bg-slate-950 p-3 rounded-lg border border-slate-800 transition-all flex items-center justify-between">
+                                    <div class="flex items-center space-x-3">
+                                        <span class="w-7 h-7 rounded-full bg-purple-900 text-purple-300 flex items-center justify-center font-bold text-xs">2</span>
+                                        <div>
+                                            <div class="text-xs font-bold text-purple-300">Universal Bytecode</div>
+                                            <div class="text-[11px] text-slate-400">`Main.class` (Binary bytecode instructions like `aload_0`, `invokevirtual`)</div>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs font-mono text-emerald-400">Same file everywhere!</span>
+                                </div>
+
+                                <div class="text-center text-slate-600 text-xs">⬇️ Distributed across Target OS Environments</div>
+
+                                <!-- Step 3: Platform-Specific JVMs -->
+                                <div id="wora-step-3" class="grid grid-cols-3 gap-2">
+                                    <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 text-center">
+                                        <div class="text-xs font-bold text-amber-400">Windows JVM</div>
+                                        <div class="text-[10px] text-slate-400 mt-1">Translates to x86/x64 Windows Native Machine Code</div>
+                                    </div>
+                                    <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 text-center">
+                                        <div class="text-xs font-bold text-cyan-400">macOS JVM</div>
+                                        <div class="text-[10px] text-slate-400 mt-1">Translates to ARM64 / Apple Silicon Machine Code</div>
+                                    </div>
+                                    <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 text-center">
+                                        <div class="text-xs font-bold text-emerald-400">Linux JVM</div>
+                                        <div class="text-[10px] text-slate-400 mt-1">Translates to POSIX ELF Machine Code</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="wora-status-msg" class="mt-4 text-xs text-center text-slate-400 italic bg-slate-950 p-2 rounded">
+                            Click "Run Step-by-Step Flow" to visualize how bytecodes branch across multiple OS targets.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- SECTION 3: JIT COMPILER & JDK ROLE -->
+        <!-- ========================================== -->
+        <section id="sec-jit" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div class="border-b border-slate-100 pb-4 mb-4">
+                    <span class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2.5 py-1 rounded-md uppercase">Topic #3 Analysis</span>
+                    <h2 class="text-2xl font-bold text-slate-900 mt-2">Just-In-Time (JIT) Compiler, HotSpot Engine & Code Cache Memory</h2>
+                    <p class="text-sm text-slate-600 mt-1">
+                        How the HotSpot JVM transitions from bytecode interpretation to direct CPU native machine code execution, utilizing invocation counters, tiered compilation (C1/C2), and Code Cache native memory allocation.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Column 1: JIT Mechanics Breakdown -->
+                    <div class="space-y-4 text-xs text-slate-700">
+                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-2">
+                            <h3 class="font-bold text-slate-900 text-sm">🔥 The HotSpot Threshold</h3>
+                            <p>Upon application startup, the JVM <strong>interprets</strong> bytecode line by line. Interpretation has zero startup delay but executes slowly.</p>
+                            <p>The JVM maintains <strong>Invocation Counters</strong> and <strong>Loop Backedge Counters</strong> for every method.</p>
+                            <p>When execution count exceeds the HotSpot threshold (e.g., 10,000 calls), the method is flagged as a <strong>"Hot Spot"</strong>.</p>
+                        </div>
+
+                        <div class="bg-indigo-50 border border-indigo-200 p-4 rounded-lg space-y-1">
+                            <h3 class="font-bold text-indigo-900 text-sm">🧠 Code Cache Allocation</h3>
+                            <p class="text-indigo-800">
+                                The JIT compiler compiles the Hot Spot bytecode into highly optimized CPU-native machine code in a background thread and stores it in native memory called the <strong>Code Cache</strong>.
+                            </p>
+                            <p class="text-indigo-800">
+                                Subsequent calls bypass interpretation completely and jump directly to Code Cache native addresses!
+                            </p>
+                        </div>
+
+                        <div class="bg-amber-50 border border-amber-200 p-4 rounded-lg text-amber-900">
+                            <h3 class="font-bold text-sm mb-1">🎭 Real-World Analogy</h3>
+                            <p>
+                                Imagine reading a foreign technical manual. At first, you look up every word in a dictionary line-by-line (<strong>Interpreter</strong>). Once you notice Chapter 3 is referenced constantly, you translate Chapter 3 once into your native language and save it in a desk binder (<strong>Code Cache</strong>). Next time, you read direct native text at 100x speed!
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Column 2 & 3: Interactive JIT Simulator Chart & Controls -->
+                    <div class="lg:col-span-2 bg-slate-900 text-white rounded-xl p-5 border border-slate-800 flex flex-col justify-between">
+                        <div>
+                            <div class="flex flex-wrap justify-between items-center border-b border-slate-800 pb-3 gap-2">
+                                <div>
+                                    <h3 class="font-bold text-sm text-indigo-300">📈 Live Execution Speed & JIT Compilation Visualizer</h3>
+                                    <p class="text-[11px] text-slate-400">Simulating loop iterations & latency drop upon HotSpot detection</p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="runJITSimulation(100)" class="bg-slate-800 hover:bg-slate-700 text-xs px-2.5 py-1 rounded text-slate-200 border border-slate-700">
+                                        Run 100 Loops (Interpreter)
+                                    </button>
+                                    <button onclick="runJITSimulation(15000)" class="bg-indigo-600 hover:bg-indigo-500 text-xs px-3 py-1 rounded font-medium text-white transition">
+                                        Run 15,000 Loops (Trigger JIT)
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Dynamic Latency Chart Container -->
+                            <div class="mt-4">
+                                <div class="chart-container">
+                                    <canvas id="jitPerformanceChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Live Status Indicator -->
+                        <div class="mt-4 bg-slate-950 p-3 rounded-lg border border-slate-800 flex items-center justify-between text-xs">
+                            <div class="flex items-center space-x-2">
+                                <span id="jit-status-dot" class="w-3 h-3 rounded-full bg-amber-500"></span>
+                                <span id="jit-status-state" class="font-bold text-amber-300">JVM Mode: Pure Interpreter (Slow execution per iteration)</span>
+                            </div>
+                            <span id="jit-counter-display" class="font-mono text-slate-400">Total Method Calls: 0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- SECTION 4: CLASS FILE WITHOUT JDK -->
+        <!-- ========================================== -->
+        <section id="sec-class-jre" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div class="border-b border-slate-100 pb-4 mb-4">
+                    <span class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2.5 py-1 rounded-md uppercase">Topic #4 Analysis</span>
+                    <h2 class="text-2xl font-bold text-slate-900 mt-2">Executing Pre-Compiled `.class` Files Without JDK Installed</h2>
+                    <p class="text-sm text-slate-600 mt-1">
+                        Analyzing the precise architectural boundary between Development Tools (JDK) and Production Runtime Environments (JRE / Custom JVM Images).
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Architectural Distinction -->
+                    <div class="space-y-4">
+                        <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-lg">
+                            <h3 class="font-bold text-emerald-950 text-sm flex items-center gap-2">
+                                <span>✅</span> Direct Answer: YES, You Can Run It!
+                            </h3>
+                            <p class="text-xs text-emerald-900 mt-2 leading-relaxed">
+                                You do <strong>NOT</strong> need the Java Development Kit (JDK) to execute a compiled <code class="bg-emerald-100 px-1 rounded">.class</code> file. You only require a <strong>Java Runtime Environment (JRE)</strong> or an embedded JVM runtime image created via <code class="bg-emerald-100 px-1 rounded">jlink</code>.
+                            </p>
+                        </div>
+
+                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 text-xs text-slate-700 space-y-2">
+                            <h3 class="font-bold text-slate-900 text-sm">🔍 Component Breakdown</h3>
+                            <ul class="space-y-2">
+                                <li><strong class="text-indigo-700">JDK (Developer Tools):</strong> Contains <code class="bg-slate-200 px-1 rounded">javac</code> (compiler), <code class="bg-slate-200 px-1 rounded">jdb</code> (debugger), <code class="bg-slate-200 px-1 rounded">javap</code> (disassembler), and documentation tools. Required ONLY during software development.</li>
+                                <li><strong class="text-purple-700">JRE (Runtime Engine):</strong> Contains the JVM interpreter/JIT, class loaders, and Java Class Library binaries (<code class="bg-slate-200 px-1 rounded">rt.jar</code> / modules like <code class="bg-slate-200 px-1 rounded">java.base</code>). Required to execute bytecode.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Component Hierarchy Visual Box -->
+                    <div class="bg-slate-900 text-white p-5 rounded-xl border border-slate-800 flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-bold text-sm text-indigo-300 border-b border-slate-800 pb-2">📦 Nesting Component Container Diagram</h3>
+                            
+                            <!-- Outer JDK Box -->
+                            <div class="mt-4 p-4 rounded-lg bg-slate-950 border-2 border-indigo-500 relative">
+                                <span class="absolute -top-3 left-3 bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded">JDK (Java Development Kit)</span>
+                                <div class="text-xs text-indigo-300 mb-3 font-mono">Tools: javac, jdb, jdeps, jlink</div>
+
+                                <!-- Inner JRE Box -->
+                                <div class="p-4 rounded-lg bg-slate-900 border-2 border-purple-500 relative">
+                                    <span class="absolute -top-3 left-3 bg-purple-600 text-white text-[10px] font-bold px-2 py-0.5 rounded">JRE (Java Runtime Environment) - Minimum to run .class</span>
+                                    <div class="text-xs text-purple-300 mb-3 font-mono">Libraries: java.base, java.sql, java.logging</div>
+
+                                    <!-- Innermost JVM Box -->
+                                    <div class="p-3 rounded bg-slate-950 border border-emerald-500 text-center">
+                                        <span class="text-xs font-bold text-emerald-400 block">JVM (Java Virtual Machine)</span>
+                                        <span class="text-[10px] text-slate-400">Class Loader + Execution Engine (Interpreter/JIT) + Memory Manager (GC)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 text-[11px] text-slate-400 text-center italic bg-slate-950 p-2 rounded">
+                            Note: Modern Java (JDK 11+) bundles JRE components into modular jlink images for container deployments.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- SECTION 5: GLOBAL VS STATIC VARIABLES -->
+        <!-- ========================================== -->
+        <section id="sec-static-var" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div class="border-b border-slate-100 pb-4 mb-4">
+                    <span class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2.5 py-1 rounded-md uppercase">Topic #5 Analysis</span>
+                    <h2 class="text-2xl font-bold text-slate-900 mt-2">Global Variables vs. Static Variables & Metaspace Storage</h2>
+                    <p class="text-sm text-slate-600 mt-1">
+                        Evaluating Java's strict encapsulation rules, class-level static fields, instance sharing mechanics, and memory allocation across Metaspace and Heap.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="space-y-4 text-xs text-slate-700">
+                        <div class="bg-amber-50 border border-amber-200 p-4 rounded-lg">
+                            <h3 class="font-bold text-amber-950 text-sm mb-1">🚫 Are there Global Variables in Java?</h3>
+                            <p class="text-amber-900 leading-relaxed">
+                                <strong>Strictly speaking, NO.</strong> Java enforces pure object-oriented encapsulation. No variable can exist outside of a class declaration.
+                            </p>
+                            <p class="text-amber-900 mt-2 leading-relaxed">
+                                However, <code class="bg-amber-100 px-1 rounded">public static</code> fields act as the <strong>functional equivalent</strong> of global variables because they can be accessed anywhere via <code class="bg-amber-100 px-1 rounded">ClassName.fieldName</code>.
+                            </p>
+                        </div>
+
+                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-2">
+                            <h3 class="font-bold text-slate-900 text-sm">📍 Memory Location (Java 8+)</h3>
+                            <p><strong>Class Metadata & Static Primitive References:</strong> Stored in <strong>Metaspace</strong> (native OS memory).</p>
+                            <p><strong>Static Object Instances:</strong> The actual object referenced by a static variable remains stored on the <strong>Heap</strong>.</p>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Shared Whiteboard Simulation -->
+                    <div class="lg:col-span-2 bg-slate-900 text-white rounded-xl p-5 border border-slate-800 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                                <h3 class="font-bold text-sm text-indigo-300">🏫 Class Whiteboard Analogy (Instance vs Static Fields)</h3>
+                                <div class="space-x-2">
+                                    <button onclick="addEmployeeSim('Alice')" class="bg-indigo-600 hover:bg-indigo-500 text-xs px-2.5 py-1 rounded text-white">
+                                        + Instantiation Employee ("Alice")
+                                    </button>
+                                    <button onclick="addEmployeeSim('Bob')" class="bg-indigo-600 hover:bg-indigo-500 text-xs px-2.5 py-1 rounded text-white">
+                                        + Instantiation Employee ("Bob")
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                <!-- Instance Space -->
+                                <div class="bg-slate-950 p-4 rounded-lg border border-slate-800">
+                                    <div class="text-xs font-bold text-indigo-400 mb-2">HEAP INSTANCES (Distinct Notebooks)</div>
+                                    <div id="instance-list-display" class="space-y-2 text-xs min-h-[140px]">
+                                        <div class="text-slate-500 italic text-center py-6">No Employee objects instantiated yet.</div>
+                                    </div>
+                                </div>
+
+                                <!-- Shared Static Space -->
+                                <div class="bg-slate-950 p-4 rounded-lg border border-indigo-800">
+                                    <div class="text-xs font-bold text-amber-400 mb-2">SHARED METASPACE CLASS VARIABLE</div>
+                                    <div class="bg-slate-900 p-4 rounded text-center border border-slate-800">
+                                        <span class="text-slate-400 text-xs block">Employee.totalEmployees</span>
+                                        <span id="static-counter-val" class="text-3xl font-black text-amber-400 my-2 block">0</span>
+                                        <span class="text-[10px] text-slate-500">Shared single memory slot across ALL instances</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 text-xs text-slate-400 bg-slate-950 p-2 rounded text-center">
+                            Notice how creating new objects creates distinct <code class="text-indigo-300">name</code> fields on Heap, but increments the single shared <code class="text-amber-300">Employee.totalEmployees</code> counter.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- SECTION 6: SWITCH STATEMENT IDENTIFICATION -->
+        <!-- ========================================== -->
+        <section id="sec-switch-case" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div class="border-b border-slate-100 pb-4 mb-4">
+                    <span class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2.5 py-1 rounded-md uppercase">Topic #6 Analysis</span>
+                    <h2 class="text-2xl font-bold text-slate-900 mt-2">How `switch` Statements Identify Cases (`tableswitch` vs. `lookupswitch`)</h2>
+                    <p class="text-sm text-slate-600 mt-1">
+                        Low-level bytecode optimization mechanics: Jump tables, O(1) direct offset lookups, binary searches, String hash code switches, and collision checks.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Switch Type Cards -->
+                    <div class="space-y-3 text-xs">
+                        <div onclick="selectSwitchDemo('tableswitch')" class="p-3 rounded-lg border border-indigo-200 bg-indigo-50 cursor-pointer hover:border-indigo-400 transition" id="card-tableswitch">
+                            <h3 class="font-bold text-indigo-900 text-sm">1. Continuous Integers (`tableswitch`)</h3>
+                            <p class="text-indigo-800 mt-1">Cases like 1, 2, 3, 4. Uses an indexed array jump table. <strong>O(1) Constant Time Complexity</strong>.</p>
+                        </div>
+
+                        <div onclick="selectSwitchDemo('lookupswitch')" class="p-3 rounded-lg border border-slate-200 bg-slate-50 cursor-pointer hover:border-slate-400 transition" id="card-lookupswitch">
+                            <h3 class="font-bold text-slate-900 text-sm">2. Sparse Integers (`lookupswitch`)</h3>
+                            <p class="text-slate-600 mt-1">Cases like 10, 500, 9000. Uses a sorted key table with binary search. <strong>O(log N) Time Complexity</strong>.</p>
+                        </div>
+
+                        <div onclick="selectSwitchDemo('stringswitch')" class="p-3 rounded-lg border border-slate-200 bg-slate-50 cursor-pointer hover:border-slate-400 transition" id="card-stringswitch">
+                            <h3 class="font-bold text-slate-900 text-sm">3. String Switches (Java 7+)</h3>
+                            <p class="text-slate-600 mt-1">Two-step lookup: First computes <code class="bg-slate-200 px-1 rounded">.hashCode()</code> integer switch, then performs <code class="bg-slate-200 px-1 rounded">.equals()</code> safety check.</p>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Lookup Visualizer -->
+                    <div class="lg:col-span-2 bg-slate-900 text-white rounded-xl p-5 border border-slate-800 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                                <h3 class="font-bold text-sm text-indigo-300" id="switch-demo-title">Jump Table Execution (`tableswitch` - O(1))</h3>
+                                <span class="text-xs text-emerald-400 font-mono" id="switch-demo-badge">Bytecode: tableswitch</span>
+                            </div>
+
+                            <!-- Visual Step Area -->
+                            <div class="mt-4 bg-slate-950 p-4 rounded-lg border border-slate-800" id="switch-visual-body">
+                                <!-- Default Content populated by JS -->
+                            </div>
+                        </div>
+
+                        <div class="mt-4 text-xs text-slate-400 bg-slate-950 p-2.5 rounded border border-slate-800 flex items-center justify-between">
+                            <span>Key Takeaway: Switch statement speed outperforms long <code class="text-amber-300">if-else</code> chains due to jump offset tables.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- SECTION 7: OBJECT CREATION TYPES -->
+        <!-- ========================================== -->
+        <section id="sec-objects" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div class="border-b border-slate-100 pb-4 mb-4">
+                    <span class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2.5 py-1 rounded-md uppercase">Topic #7 Analysis</span>
+                    <h2 class="text-2xl font-bold text-slate-900 mt-2">The 5 Primary Ways of Object Instantiation in Java</h2>
+                    <p class="text-sm text-slate-600 mt-1">
+                        Beyond the <code class="bg-slate-100 px-1 rounded text-indigo-600">new</code> operator: Reflection, Memory Cloning, Byte Stream Deserialization, and Factory Methods.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-3" id="object-method-tabs">
+                    <button onclick="showObjMethod(1)" id="obj-tab-1" class="p-3 text-left rounded-lg border border-indigo-600 bg-indigo-50 text-indigo-900 text-xs font-bold">
+                        1. `new` Keyword
+                    </button>
+                    <button onclick="showObjMethod(2)" id="obj-tab-2" class="p-3 text-left rounded-lg border border-slate-200 bg-slate-50 text-slate-700 text-xs font-bold hover:bg-slate-100">
+                        2. Reflection API
+                    </button>
+                    <button onclick="showObjMethod(3)" id="obj-tab-3" class="p-3 text-left rounded-lg border border-slate-200 bg-slate-50 text-slate-700 text-xs font-bold hover:bg-slate-100">
+                        3. Cloning (`clone()`)
+                    </button>
+                    <button onclick="showObjMethod(4)" id="obj-tab-4" class="p-3 text-left rounded-lg border border-slate-200 bg-slate-50 text-slate-700 text-xs font-bold hover:bg-slate-100">
+                        4. Deserialization
+                    </button>
+                    <button onclick="showObjMethod(5)" id="obj-tab-5" class="p-3 text-left rounded-lg border border-slate-200 bg-slate-50 text-slate-700 text-xs font-bold hover:bg-slate-100">
+                        5. Factory Pattern
+                    </button>
+                </div>
+
+                <!-- Dynamic Code Detail Display -->
+                <div class="bg-slate-900 text-white rounded-xl p-5 border border-slate-800" id="obj-method-detail-panel">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- SECTION 8: SYNCHRONIZED INTERNAL WORKING -->
+        <!-- ========================================== -->
+        <section id="sec-synchronized" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div class="border-b border-slate-100 pb-4 mb-4">
+                    <span class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2.5 py-1 rounded-md uppercase">Topic #8 Analysis</span>
+                    <h2 class="text-2xl font-bold text-slate-900 mt-2">`synchronized` Keywords, Object Monitor Locks & Thread State Machine</h2>
+                    <p class="text-sm text-slate-600 mt-1">
+                        Deep dive into Object Header Mark Word, Intrinsic Monitor Locks, <code class="bg-slate-100 px-1 rounded text-indigo-600">monitorenter</code> / <code class="bg-slate-100 px-1 rounded text-indigo-600">monitorexit</code> bytecodes, Entry Set queues, and thread safety.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Monitor Theory -->
+                    <div class="space-y-4 text-xs text-slate-700">
+                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-2">
+                            <h3 class="font-bold text-slate-900 text-sm">🔒 Intrinsic Lock (Monitor)</h3>
+                            <p>Every Object in Java has an internal implicit lock known as a <strong>Monitor</strong> inside its Object Header (Mark Word).</p>
+                            <p>Executing a synchronized block emits <code class="bg-slate-200 px-1 rounded">monitorenter</code> bytecode instruction.</p>
+                            <p>When exiting (normally or via exception), the JVM emits <code class="bg-slate-200 px-1 rounded">monitorexit</code> to release the lock.</p>
+                        </div>
+
+                        <div class="bg-indigo-50 border border-indigo-200 p-4 rounded-lg">
+                            <h3 class="font-bold text-indigo-900 text-sm">🎯 Target Lock Differences</h3>
+                            <ul class="mt-1 space-y-1 text-indigo-800">
+                                <li><strong>Instance Synchronized:</strong> Locks <code class="bg-indigo-100 px-1 rounded">this</code> object instance.</li>
+                                <li><strong>Static Synchronized:</strong> Locks the <code class="bg-indigo-100 px-1 rounded">Class&lt;T&gt;</code> metadata object (applies globally across all instances).</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Canvas Thread Monitor Simulation -->
+                    <div class="lg:col-span-2 bg-slate-900 text-white rounded-xl p-5 border border-slate-800 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                                <h3 class="font-bold text-sm text-indigo-300">🧵 Multi-Thread Monitor Lock Execution Simulator</h3>
+                                <button onclick="simThreadAcquireLock()" class="bg-emerald-600 hover:bg-emerald-500 text-xs px-3 py-1.5 rounded font-medium text-white transition">
+                                    Simulate Thread Competition
+                                </button>
+                            </div>
+
+                            <!-- Monitor Canvas Simulation Box -->
+                            <div class="grid grid-cols-3 gap-3 mt-4">
+                                <!-- Waiting Queue (Entry Set) -->
+                                <div class="bg-slate-950 p-3 rounded border border-slate-800">
+                                    <div class="text-[11px] font-bold text-amber-400 mb-2">ENTRY SET (Blocked Set)</div>
+                                    <div id="thread-entry-set" class="space-y-2 min-h-[120px] text-xs">
+                                        <div class="text-slate-500 italic text-center py-4">Queue empty</div>
+                                    </div>
+                                </div>
+
+                                <!-- Inside Monitor (Lock Owner) -->
+                                <div class="bg-slate-950 p-3 rounded border border-emerald-700 text-center flex flex-col justify-between">
+                                    <div>
+                                        <div class="text-[11px] font-bold text-emerald-400 mb-2">MONITOR LOCK OWNER</div>
+                                        <div id="thread-owner-box" class="p-3 bg-slate-900 border border-slate-700 rounded text-xs text-slate-400">
+                                            No thread holding lock
+                                        </div>
+                                    </div>
+                                    <span id="bytecode-step-label" class="text-[10px] text-slate-500 font-mono mt-2">Ready</span>
+                                </div>
+
+                                <!-- Completed Threads -->
+                                <div class="bg-slate-950 p-3 rounded border border-slate-800">
+                                    <div class="text-[11px] font-bold text-indigo-400 mb-2">EXITED THREADS</div>
+                                    <div id="thread-exited-set" class="space-y-2 min-h-[120px] text-xs">
+                                        <div class="text-slate-500 italic text-center py-4">None yet</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 text-xs text-slate-400 bg-slate-950 p-2 rounded text-center">
+                            Watch threads transition from BLOCKED state to acquiring the Intrinsic Lock via <code class="text-emerald-400">monitorenter</code>.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- SECTION 9: THROWS VS THROW KEYWORD -->
+        <!-- ========================================== -->
+        <section id="sec-exceptions" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div class="border-b border-slate-100 pb-4 mb-4">
+                    <span class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2.5 py-1 rounded-md uppercase">Topic #9 Analysis</span>
+                    <h2 class="text-2xl font-bold text-slate-900 mt-2">`throw` (Action) vs. `throws` (Declaration Warning) Mechanics</h2>
+                    <p class="text-sm text-slate-600 mt-1">
+                        Exception creation, explicit stack frame unwinding, checked exception propagation contracts, and call stack bubbling.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Comparison Card -->
+                    <div class="space-y-4">
+                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 text-xs space-y-3">
+                            <div class="border-b border-slate-200 pb-2">
+                                <h3 class="font-bold text-indigo-900 text-sm">💥 `throw` (Action Command)</h3>
+                                <p class="text-slate-700 mt-1">Used <strong>inside method bodies</strong> to instantiate and explicitly toss an exception object right now.</p>
+                                <code class="bg-slate-200 px-2 py-0.5 rounded text-indigo-700 block mt-1">throw new IllegalArgumentException("Invalid age");</code>
+                            </div>
+
+                            <div>
+                                <h3 class="font-bold text-purple-900 text-sm">⚠️ `throws` (Method Signature Warning)</h3>
+                                <p class="text-slate-700 mt-1">Used in <strong>method signatures</strong> to declare that this method might fail and propagate specific checked exceptions to its caller.</p>
+                                <code class="bg-slate-200 px-2 py-0.5 rounded text-purple-700 block mt-1">public void readFile() throws IOException, SQLException</code>
+                            </div>
+                        </div>
+
+                        <div class="bg-amber-50 border border-amber-200 p-4 rounded-lg text-xs text-amber-900">
+                            <h3 class="font-bold text-sm mb-1">🎭 Kitchen Real-World Analogy</h3>
+                            <p><strong>`throw`:</strong> Chef finds a rotten tomato in the kitchen and actively throws it into the trash can immediately.</p>
+                            <p class="mt-1"><strong>`throws`:</strong> A hazard sign on the kitchen entrance door reading "Warning: Kitchen throws FireHazard & SlipperyFloor". It alerts anyone entering to prepare safety gear!</p>
+                        </div>
+                    </div>
+
+                    <!-- Call Stack Exception Bubble Simulation -->
+                    <div class="bg-slate-900 text-white p-5 rounded-xl border border-slate-800 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                                <h3 class="font-bold text-sm text-indigo-300">🥞 Call Stack Exception Unwinding Simulation</h3>
+                                <button onclick="triggerExceptionStack()" class="bg-red-600 hover:bg-red-500 text-xs px-3 py-1.5 rounded font-medium text-white transition">
+                                    Trigger Exception Bubble
+                                </button>
+                            </div>
+
+                            <div class="mt-4 space-y-2 font-mono text-xs" id="exception-stack-display">
+                                <div class="bg-slate-950 p-3 rounded border border-slate-800 flex justify-between items-center" id="stack-frame-main">
+                                    <span class="text-slate-300">1. main(String[] args)</span>
+                                    <span class="text-slate-500">Enclosed in try-catch</span>
+                                </div>
+                                <div class="bg-slate-950 p-3 rounded border border-slate-800 flex justify-between items-center" id="stack-frame-service">
+                                    <span class="text-slate-300">2. processOrder()</span>
+                                    <span class="text-purple-400">declares `throws IOException`</span>
+                                </div>
+                                <div class="bg-slate-950 p-3 rounded border border-slate-800 flex justify-between items-center" id="stack-frame-dao">
+                                    <span class="text-slate-300">3. writeToDisk()</span>
+                                    <span class="text-red-400">executes `throw new IOException()`</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="exception-status-msg" class="mt-4 text-xs text-slate-400 bg-slate-950 p-2.5 rounded text-center">
+                            Click "Trigger Exception Bubble" to watch exception propagation up the method stack.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- SECTION 10: INTERFACE EVOLUTION (1.8 & 1.9) -->
+        <!-- ========================================== -->
+        <section id="sec-interfaces" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div class="border-b border-slate-100 pb-4 mb-4">
+                    <span class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2.5 py-1 rounded-md uppercase">Topic #10 Analysis</span>
+                    <h2 class="text-2xl font-bold text-slate-900 mt-2">Java 8 & Java 9 Interface Evolution (`default`, `static`, `private` methods)</h2>
+                    <p class="text-sm text-slate-600 mt-1">
+                        Historical timeline of interface contracts, backward compatibility for legacy frameworks (Stream API insertion into `Collection`), static utility grouping, and private encapsulation.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Java Version Timeline Matrix -->
+                    <div class="space-y-3 text-xs">
+                        <div class="bg-slate-50 p-3.5 rounded-lg border border-slate-200">
+                            <div class="font-bold text-slate-900 text-sm">Java 1.0 - 1.7 Interfaces</div>
+                            <p class="text-slate-600 mt-1">Strict Abstract Contracts ONLY. 100% abstract methods with zero bodies. Adding a method broke millions of implementing classes worldwide!</p>
+                        </div>
+
+                        <div class="bg-indigo-50 p-3.5 rounded-lg border border-indigo-200">
+                            <div class="font-bold text-indigo-900 text-sm">Java 1.8 Enhancements</div>
+                            <ul class="text-indigo-800 mt-1 space-y-1">
+                                <li>• <strong>`default` methods:</strong> Provides concrete default fallback logic. Solved backward compatibility.</li>
+                                <li>• <strong>`static` methods:</strong> Utility helpers tied directly to the interface scope.</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-purple-50 p-3.5 rounded-lg border border-purple-200">
+                            <div class="font-bold text-purple-900 text-sm">Java 1.9 Enhancements</div>
+                            <p class="text-purple-800 mt-1">
+                                Introduced <strong>`private` and `private static` methods</strong> inside interfaces to share duplicate code between multiple default methods without exposing helper routines publicly!
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Code Example Preview -->
+                    <div class="lg:col-span-2 bg-slate-900 text-white p-5 rounded-xl border border-slate-800 font-mono text-xs">
+                        <div class="text-indigo-400 font-bold mb-3">// Java 8 & 9 Modern Interface Capability Matrix</div>
+                        <pre class="bg-slate-950 p-4 rounded text-emerald-400 overflow-x-auto"><code><span class="text-indigo-300">public interface</span> <span class="text-amber-300">Vehicle</span> {
+
+    <span class="text-slate-500">// 1. Pre-Java 8: Pure Abstract Method (Required implementation)</span>
+    <span class="text-indigo-300">void</span> startEngine();
+
+    <span class="text-slate-500">// 2. Java 8: Default Method (Optional override, fallback code)</span>
+    <span class="text-indigo-300">default void</span> turnOnAlarm() {
+        logAction(<span class="text-amber-300">"Alarm triggered"</span>); <span class="text-slate-500">// Call Java 9 private method</span>
+        System.out.println(<span class="text-amber-300">"Beep Beep Beep!"</span>);
+    }
+
+    <span class="text-slate-500">// 3. Java 8: Static Utility Method (Called via Vehicle.checkBattery())</span>
+    <span class="text-indigo-300">static void</span> checkBattery() {
+        System.out.println(<span class="text-amber-300">"Battery status: OK"</span>);
+    }
+
+    <span class="text-slate-500">// 4. Java 9: Private Method (Encapsulated shared helper)</span>
+    <span class="text-indigo-300">private void</span> logAction(String msg) {
+        System.out.println(<span class="text-amber-300">"[Interface Log] "</span> + msg);
+    }
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- SECTION 11: MEMORY MANAGEMENT BY JVM -->
+        <!-- ========================================== -->
+        <section id="sec-memory-jvm" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div class="border-b border-slate-100 pb-4 mb-4">
+                    <span class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2.5 py-1 rounded-md uppercase">Topic #11 Analysis</span>
+                    <h2 class="text-2xl font-bold text-slate-900 mt-2">Memory Management by JVM (Stack vs. Heap)</h2>
+                    <p class="text-sm text-slate-600 mt-1">
+                        How Java handles memory automatically via the Java Virtual Machine, eliminating manual allocation/deallocation, focusing on Stack (Thread Execution) and Heap (Object Storage).
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Theory Blocks -->
+                    <div class="space-y-4">
+                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-2">
+                            <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">📚 Stack Memory</h3>
+                            <ul class="text-xs text-slate-700 mt-2 space-y-1">
+                                <li><strong>Purpose:</strong> Used for thread execution. Stores temporary variables, local primitives, and object references.</li>
+                                <li><strong>Behavior:</strong> LIFO (Last In, First Out). Memory freed immediately when a method finishes.</li>
+                                <li><strong>Speed:</strong> Very fast access, limited size.</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-indigo-50 border border-indigo-200 p-4 rounded-lg space-y-2">
+                            <h3 class="font-bold text-indigo-900 text-sm flex items-center gap-2">📦 Heap Memory</h3>
+                            <ul class="text-xs text-indigo-800 mt-2 space-y-1">
+                                <li><strong>Purpose:</strong> Stores objects (created with <code class="bg-indigo-100 px-1 rounded">new</code>) and JRE classes at runtime.</li>
+                                <li><strong>Behavior:</strong> Globally accessible. Dynamically sized. Managed by GC.</li>
+                                <li><strong>Garbage Collection (GC):</strong> Background process that deletes unreferenced objects to prevent memory leaks.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Code Demonstration Box -->
+                    <div class="lg:col-span-2 bg-slate-900 text-white rounded-xl p-5 border border-slate-800 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                                <h3 class="font-bold text-sm text-indigo-300">Technical Demonstration: Stack, Heap & GC</h3>
+                            </div>
+                            <pre class="bg-slate-950 p-4 rounded-lg mt-4 font-mono text-xs overflow-x-auto text-emerald-400"><code><span class="text-slate-500">// 1. 'number' is a primitive, stored entirely in STACK memory</span>
+<span class="text-indigo-300">int</span> number = <span class="text-amber-300">10</span>; 
+
+<span class="text-slate-500">// 2. 'student' is a reference variable stored in STACK memory.</span>
+<span class="text-slate-500">// 'new Student("Alice")' creates an actual object in HEAP memory.</span>
+<span class="text-indigo-300">Student</span> student = <span class="text-indigo-300">new</span> Student(<span class="text-amber-300">"Alice"</span>); 
+
+<span class="text-slate-500">// 3. Break the connection from Stack to Heap.</span>
+student = <span class="text-purple-300">null</span>; 
+
+<span class="text-slate-500">// 4. The Student object "Alice" is now orphaned in the Heap.</span>
+<span class="text-slate-500">// Suggests the JVM to run Garbage Collection to destroy it.</span>
+System.<span class="text-cyan-300">gc</span>();</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- SECTION 12: CORE FEATURES OF JAVA -->
+        <!-- ========================================== -->
+        <section id="sec-core-features" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div class="border-b border-slate-100 pb-4 mb-4">
+                    <span class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2.5 py-1 rounded-md uppercase">Topic #12 Analysis</span>
+                    <h2 class="text-2xl font-bold text-slate-900 mt-2">Core Features: Platform Independent, Portable & Robust</h2>
+                    <p class="text-sm text-slate-600 mt-1">
+                        Exploring the foundational design principles that make Java a leading enterprise language, with real-world analogies and technical proofs.
+                    </p>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- Feature 1: Platform Independent -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="space-y-4">
+                            <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-2">
+                                <h3 class="font-bold text-slate-900 text-sm">🌐 A. Platform Independent (WORA)</h3>
+                                <p class="text-xs text-slate-700">Java compiles code into an intermediate format called <strong>Bytecode</strong>, not machine-specific instructions.</p>
+                                <div class="bg-white p-2 rounded border border-slate-200 text-xs text-slate-600 mt-2">
+                                    <strong>Real-World Analogy:</strong> A <strong>PDF document</strong>. You create it on a Mac, and friends open it on Windows or Linux. As long as they have a PDF Reader (JVM), it works perfectly.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-2 bg-slate-900 text-white rounded-xl p-4 border border-slate-800 font-mono text-xs text-emerald-400">
+                            <div class="text-indigo-300 font-bold mb-2">// Technical Proof: Compilation Flow</div>
+                            <ol class="space-y-1 list-decimal list-inside text-slate-300">
+                                <li>Write <code class="text-emerald-400">Program.java</code></li>
+                                <li>Compile: <code class="text-amber-300">javac Program.java</code></li>
+                                <li>Compiler generates <code class="text-purple-400">Program.class</code> (Bytecode).</li>
+                                <li>Execute <code class="text-purple-400">.class</code> file on <em>any</em> OS with a JVM installed.</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <!-- Feature 2: Portable -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="space-y-4">
+                            <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200 space-y-2">
+                                <h3 class="font-bold text-indigo-900 text-sm">📦 B. Portable</h3>
+                                <p class="text-xs text-indigo-800">Strictly defined data sizes regardless of the underlying hardware or OS architecture.</p>
+                                <div class="bg-white p-2 rounded border border-indigo-100 text-xs text-indigo-700 mt-2">
+                                    <strong>Real-World Analogy:</strong> <strong>ISO shipping containers</strong>. Dimensions are universally standard whether placed on a ship, train, or truck.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-2 bg-slate-900 text-white rounded-xl p-4 border border-slate-800 font-mono text-xs">
+                            <div class="text-indigo-300 font-bold mb-2">// Technical Proof: Strict Data Type Sizes</div>
+                            <div class="space-y-2 text-slate-300">
+                                <p><span class="text-red-400">C/C++:</span> `int` might be 16-bits on old systems, 32-bits on new ones (Leads to bugs!).</p>
+                                <p><span class="text-emerald-400">Java:</span> An <code class="text-amber-300">int</code> is <strong>always</strong> 32 bits.<br>
+                                A <code class="text-amber-300">long</code> is <strong>always</strong> 64 bits.<br>
+                                Regardless of 32-bit Windows or 64-bit Linux environments!</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Feature 3: Robust -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="space-y-4">
+                            <div class="bg-emerald-50 p-4 rounded-lg border border-emerald-200 space-y-2">
+                                <h3 class="font-bold text-emerald-900 text-sm">🛡️ C. Robust</h3>
+                                <p class="text-xs text-emerald-800">Designed to be highly reliable, fault-tolerant, and handles errors gracefully instead of crashing abruptly.</p>
+                                <div class="bg-white p-2 rounded border border-emerald-100 text-xs text-emerald-700 mt-2">
+                                    <strong>Real-World Analogy:</strong> A <strong>modern smart car</strong>. It anticipates failure (lane drift) and gracefully corrects steering or autobrakes instead of destroying the vehicle.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-2 bg-slate-900 text-white rounded-xl p-4 border border-slate-800 font-mono text-xs text-emerald-400 overflow-x-auto">
+                            <div class="text-indigo-300 font-bold mb-2">// Technical Proof: Exception Handling (Robustness)</div>
+                            <pre><code><span class="text-indigo-300">int</span>[] numbers = {<span class="text-amber-300">1</span>, <span class="text-amber-300">2</span>, <span class="text-amber-300">3</span>};
+<span class="text-purple-300">try</span> {
+    <span class="text-slate-500">// Attempting to access an invalid index</span>
+    System.out.println(numbers[<span class="text-amber-300">5</span>]); 
+} <span class="text-purple-300">catch</span> (ArrayIndexOutOfBoundsException e) {
+    <span class="text-slate-500">// Java catches it gracefully instead of crashing</span>
+    System.out.println(<span class="text-amber-300">"Error handled gracefully."</span>);
+}
+<span class="text-slate-500">// Program continues running normally...</span></code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 text-xs py-4 border-t border-slate-800 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center flex flex-col sm:flex-row justify-between items-center gap-2">
+            <span>Java Architecture & Core Technical Interview Deep Dive Application</span>
+            <span class="text-slate-500">Built with HTML5 Canvas, Tailwind CSS, & Chart.js</span>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic & Interactive Engines -->
+    <script>
+        // State Management Object
+        const appState = {
+            activeTab: 'memory',
+            jitChart: null,
+            jitCallCount: 0,
+            switchMode: 'tableswitch',
+            objMethod: 1
+        };
+
+        // Navigation Tab Switching Logic
+        function switchTab(tabId) {
+            appState.activeTab = tabId;
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-50', 'text-indigo-700', 'border-b-2', 'border-indigo-600');
+                btn.classList.add('text-slate-600');
+            });
+
+            const activeSection = document.getElementById(`sec-${tabId}`);
+            if (activeSection) activeSection.classList.remove('hidden');
+
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-indigo-50', 'text-indigo-700', 'border-b-2', 'border-indigo-600');
+                activeBtn.classList.remove('text-slate-600');
+            }
+
+            // Initialize specific charts if JIT tab opened
+            if (tabId === 'jit' && !appState.jitChart) {
+                initJITChart();
+            }
+        }
+
+        // Search Filter for Topics
+        function filterTopics() {
+            const query = document.getElementById('topic-search').value.toLowerCase();
+            const tabs = ['memory', 'wora', 'jit', 'class-jre', 'static-var', 'switch-case', 'objects', 'synchronized', 'exceptions', 'interfaces', 'memory-jvm', 'core-features'];
+            
+            tabs.forEach(tab => {
+                const btn = document.getElementById(`tab-${tab}`);
+                if (btn) {
+                    if (tab.includes(query) || btn.innerText.toLowerCase().includes(query)) {
+                        btn.style.display = 'inline-block';
+                    } else {
+                        btn.style.display = query ? 'none' : 'inline-block';
+                    }
+                }
+            });
+        }
+
+        function resetAllSimulations() {
+            clearMemorySim();
+            if (appState.jitChart) {
+                appState.jitCallCount = 0;
+                appState.jitChart.data.labels = [0];
+                appState.jitChart.data.datasets[0].data = [120];
+                appState.jitChart.update();
+                document.getElementById('jit-counter-display').innerText = 'Total Method Calls: 0';
+                document.getElementById('jit-status-state').innerText = 'JVM Mode: Pure Interpreter (Slow execution per iteration)';
+                document.getElementById('jit-status-dot').className = 'w-3 h-3 rounded-full bg-amber-500';
+            }
+            selectSwitchDemo('tableswitch');
+            showObjMethod(1);
+        }
+
+        // ==========================================
+        // SIMULATION 1: INT VS INTEGER MEMORY
+        // ==========================================
+        function simAllocPrimitive() {
+            const stack = document.getElementById('stack-memory-list');
+            if (stack.children[0]?.innerText.includes('Click a button')) stack.innerHTML = '';
+
+            const item = document.createElement('div');
+            item.className = 'bg-slate-900 border border-emerald-500 p-2 rounded text-xs flex justify-between items-center memory-box';
+            item.innerHTML = `
+                <div>
+                    <span class="font-bold text-emerald-400">int age</span>
+                    <span class="text-slate-400 block text-[10px]">Primitive Value: 30</span>
+                </div>
+                <span class="text-[10px] bg-emerald-950 text-emerald-300 px-1.5 py-0.5 rounded font-mono">4 Bytes (Inline)</span>
+            `;
+            stack.prepend(item);
+            updateGCText('Zero Garbage Collection Impact');
+        }
+
+        function simAllocWrapper() {
+            const stack = document.getElementById('stack-memory-list');
+            const heap = document.getElementById('heap-memory-list');
+
+            if (stack.children[0]?.innerText.includes('Click a button')) stack.innerHTML = '';
+            if (heap.children[0]?.innerText.includes('Heap is currently clean')) heap.innerHTML = '';
+
+            const heapId = '0x' + Math.floor(Math.random()*16777215).toString(16).toUpperCase();
+
+            // Add Stack Reference
+            const stackItem = document.createElement('div');
+            stackItem.className = 'bg-slate-900 border border-purple-500 p-2 rounded text-xs flex justify-between items-center memory-box';
+            stackItem.innerHTML = `
+                <div>
+                    <span class="font-bold text-purple-400">Integer ageRef</span>
+                    <span class="text-slate-400 block text-[10px]">Ref Address: ${heapId}</span>
+                </div>
+                <span class="text-[10px] bg-purple-950 text-purple-300 px-1.5 py-0.5 rounded font-mono">8 Byte Ref</span>
+            `;
+            stack.prepend(stackItem);
+
+            // Add Heap Object
+            const heapItem = document.createElement('div');
+            heapItem.className = 'bg-slate-900 border border-purple-400 p-2 rounded text-xs flex justify-between items-center memory-box';
+            heapItem.innerHTML = `
+                <div>
+                    <span class="font-bold text-purple-300">Integer Object (${heapId})</span>
+                    <span class="text-slate-400 block text-[10px]">Header: 12B | value: 30</span>
+                </div>
+                <span class="text-[10px] bg-purple-900 text-purple-200 px-1.5 py-0.5 rounded font-mono">16 - 24 Bytes</span>
+            `;
+            heap.prepend(heapItem);
+
+            const count = heap.children.length;
+            document.getElementById('heap-usage-label').innerText = `${count} Object(s) Allocated`;
+            updateGCText('High (Object churn requires GC cleaning)');
+        }
+
+        function clearMemorySim() {
+            document.getElementById('stack-memory-list').innerHTML = `<div class="text-xs text-slate-500 italic text-center py-8">Click a button above to allocate variables into Stack/Heap memory.</div>`;
+            document.getElementById('heap-memory-list').innerHTML = `<div class="text-xs text-slate-500 italic text-center py-8">Heap is currently clean. No Wrapper Objects allocated.</div>`;
+            document.getElementById('heap-usage-label').innerText = '0 Objects';
+            updateGCText('None');
+        }
+
+        function updateGCText(txt) {
+            document.getElementById('gc-impact-text').innerText = txt;
+        }
+
+        // ==========================================
+        // SIMULATION 2: WORA PIPELINE
+        // ==========================================
+        function animateWORAPipeline() {
+            const steps = [
+                document.getElementById('wora-step-1'),
+                document.getElementById('wora-step-2'),
+                document.getElementById('wora-step-3')
+            ];
+            const msg = document.getElementById('wora-status-msg');
+
+            steps.forEach(s => s.classList.remove('pulse-highlight', 'border-indigo-500'));
+            
+            msg.innerText = "Step 1: Developer compiles source code using javac compiler...";
+            steps[0].classList.add('pulse-highlight', 'border-indigo-500');
+
+            setTimeout(() => {
+                steps[0].classList.remove('pulse-highlight');
+                steps[1].classList.add('pulse-highlight', 'border-indigo-500');
+                msg.innerText = "Step 2: javac produces platform-independent universal .class Bytecode file.";
+            }, 1500);
+
+            setTimeout(() => {
+                steps[1].classList.remove('pulse-highlight');
+                steps[2].classList.add('pulse-highlight', 'border-indigo-500');
+                msg.innerText = "Step 3: Platform-dependent JVMs on Windows, Mac & Linux read identical Bytecode and translate to OS native instructions!";
+            }, 3000);
+        }
+
+        // ==========================================
+        // SIMULATION 3: JIT PERFORMANCE CHART
+        // ==========================================
+        function initJITChart() {
+            const ctx = document.getElementById('jitPerformanceChart').getContext('2d');
+            appState.jitChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['0 calls', '1,000', '3,000', '5,000', '8,000', '10,000 (HotSpot)', '12,000', '15,000'],
+                    datasets: [{
+                        label: 'Execution Latency Per 1,000 Iterations (ms)',
+                        data: [120, 118, 115, 122, 119, 120, 4, 3], // Drop from 120ms to 3ms upon JIT native compilation!
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 5,
+                        pointBackgroundColor: ['#f59e0b', '#f59e0b', '#f59e0b', '#f59e0b', '#f59e0b', '#ef4444', '#10b981', '#10b981']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#1e293b' },
+                            ticks: { color: '#94a3b8' },
+                            title: { display: true, text: 'Latency (ms) - Lower is Faster', color: '#94a3b8' }
+                        },
+                        x: {
+                            grid: { color: '#1e293b' },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#f8fafc' } }
+                    }
+                }
+            });
+        }
+
+        function runJITSimulation(calls) {
+            appState.jitCallCount += calls;
+            document.getElementById('jit-counter-display').innerText = `Total Method Calls: ${appState.jitCallCount.toLocaleString()}`;
+
+            const dot = document.getElementById('jit-status-dot');
+            const state = document.getElementById('jit-status-state');
+
+            if (appState.jitCallCount >= 10000) {
+                dot.className = 'w-3 h-3 rounded-full bg-emerald-500 animate-pulse';
+                state.innerText = 'JVM Mode: JIT Native Compiled (Stored in Code Cache - Direct CPU Execution at 100x Speed!)';
+                state.className = 'font-bold text-emerald-400';
+            } else {
+                dot.className = 'w-3 h-3 rounded-full bg-amber-500';
+                state.innerText = `JVM Mode: Pure Interpreter (${10000 - appState.jitCallCount} calls left until HotSpot compilation threshold)`;
+                state.className = 'font-bold text-amber-300';
+            }
+        }
+
+        // ==========================================
+        // SIMULATION 5: STATIC WHITEBOARD COUNTER
+        // ==========================================
+        let employeeCount = 0;
+        function addEmployeeSim(name) {
+            employeeCount++;
+            document.getElementById('static-counter-val').innerText = employeeCount;
+
+            const list = document.getElementById('instance-list-display');
+            if (list.innerText.includes('No Employee objects')) list.innerHTML = '';
+
+            const card = document.createElement('div');
+            card.className = 'bg-slate-900 border border-indigo-500/50 p-2 rounded flex justify-between items-center';
+            card.innerHTML = `
+                <span>Employee instance ("${name}")</span>
+                <span class="text-[10px] text-slate-400">Heap Object #${employeeCount}</span>
+            `;
+            list.prepend(card);
+        }
+
+        // ==========================================
+        // SIMULATION 6: SWITCH CASE LOOKUP
+        // ==========================================
+        function selectSwitchDemo(type) {
+            appState.switchMode = type;
+            const title = document.getElementById('switch-demo-title');
+            const badge = document.getElementById('switch-demo-badge');
+            const body = document.getElementById('switch-visual-body');
+
+            ['tableswitch', 'lookupswitch', 'stringswitch'].forEach(t => {
+                const card = document.getElementById(`card-${t}`);
+                if (t === type) {
+                    card.className = 'p-3 rounded-lg border border-indigo-500 bg-indigo-50/20 text-white cursor-pointer';
+                } else {
+                    card.className = 'p-3 rounded-lg border border-slate-800 bg-slate-950 text-slate-400 cursor-pointer';
+                }
+            });
+
+            if (type === 'tableswitch') {
+                title.innerText = 'Indexed Jump Table (`tableswitch` - Continuous Keys)';
+                badge.innerText = 'Time Complexity: O(1)';
+                body.innerHTML = `
+                    <div class="space-y-3 text-xs font-mono">
+                        <div class="text-slate-300">Input expression evaluates to integer: <span class="text-amber-400 font-bold">2</span></div>
+                        <div class="grid grid-cols-4 gap-2 text-center">
+                            <div class="p-2 bg-slate-900 rounded border border-slate-800">Index 0 -> Case 1</div>
+                            <div class="p-2 bg-indigo-600 rounded border border-indigo-400 text-white font-bold animate-bounce">Index 1 -> Case 2 MATCH</div>
+                            <div class="p-2 bg-slate-900 rounded border border-slate-800">Index 2 -> Case 3</div>
+                            <div class="p-2 bg-slate-900 rounded border border-slate-800">Index 3 -> Default</div>
+                        </div>
+                        <div class="text-emerald-400 text-[11px]">Direct array offset jump! Jump offset calculated instantly without checking case 1 or case 3.</div>
+                    </div>
+                `;
+            } else if (type === 'lookupswitch') {
+                title.innerText = 'Sparse Binary Search Table (`lookupswitch`)';
+                badge.innerText = 'Time Complexity: O(log N)';
+                body.innerHTML = `
+                    <div class="space-y-3 text-xs font-mono">
+                        <div class="text-slate-300">Input expression evaluates to integer: <span class="text-amber-400 font-bold">500</span></div>
+                        <div class="flex space-x-2 text-center">
+                            <div class="flex-1 p-2 bg-slate-900 rounded border border-slate-800 text-slate-500">Key 10</div>
+                            <div class="flex-1 p-2 bg-amber-600 rounded border border-amber-400 text-white font-bold">Key 500 (Binary Match)</div>
+                            <div class="flex-1 p-2 bg-slate-900 rounded border border-slate-800 text-slate-500">Key 9000</div>
+                        </div>
+                        <div class="text-amber-300 text-[11px]">Keys are sorted in bytecode. JVM executes binary search across key table.</div>
+                    </div>
+                `;
+            } else if (type === 'stringswitch') {
+                title.innerText = 'Two-Step String Hash Lookup';
+                badge.innerText = 'HashCode Jump + .equals() Safety';
+                body.innerHTML = `
+                    <div class="space-y-3 text-xs font-mono">
+                        <div class="text-slate-300">Switching on String: <span class="text-cyan-300">"JAVA"</span></div>
+                        <div class="p-2.5 bg-slate-900 rounded border border-slate-800 space-y-1">
+                            <div>Step 1: Compute <code class="text-indigo-400">"JAVA".hashCode()</code> -> <span class="text-amber-300">2269729</span></div>
+                            <div>Step 2: Jump to case integer <span class="text-amber-300">2269729</span></div>
+                            <div>Step 3: Execute <code class="text-emerald-400">"JAVA".equals(targetCase)</code> to eliminate collision</div>
+                        </div>
+                        <div class="text-cyan-300 text-[11px]">Protects against hash collision while retaining integer switch performance!</div>
+                    </div>
+                `;
+            }
+        }
+
+        // ==========================================
+        // SIMULATION 7: OBJECT INSTANTIATION TAB
+        // ==========================================
+        function showObjMethod(num) {
+            appState.objMethod = num;
+            for (let i = 1; i <= 5; i++) {
+                const btn = document.getElementById(`obj-tab-${i}`);
+                if (i === num) {
+                    btn.className = 'p-3 text-left rounded-lg border border-indigo-600 bg-indigo-50 text-indigo-900 text-xs font-bold';
+                } else {
+                    btn.className = 'p-3 text-left rounded-lg border border-slate-200 bg-slate-50 text-slate-700 text-xs font-bold hover:bg-slate-100';
+                }
+            }
+
+            const panel = document.getElementById('obj-method-detail-panel');
+            const data = [
+                {
+                    title: "1. The `new` Keyword (Standard Creation)",
+                    code: `MyClass obj = new MyClass();`,
+                    desc: "Allocates memory on the Heap, initializes instance fields to defaults, and invokes the matching constructor.",
+                    constructorCalled: "YES"
+                },
+                {
+                    title: "2. Reflection API (`Constructor.newInstance()`)",
+                    code: `Class<?> clazz = Class.forName("com.example.MyClass");\nMyClass obj = (MyClass) clazz.getDeclaredConstructor().newInstance();`,
+                    desc: "Dynamically instantiates objects at runtime when class names are configured in properties or annotations (used heavily in Spring Framework).",
+                    constructorCalled: "YES"
+                },
+                {
+                    title: "3. Object Cloning (`Object.clone()`)",
+                    code: `MyClass obj2 = (MyClass) obj1.clone();`,
+                    desc: "Duplicates memory layout of an existing object implementing Cloneable. Bypasses constructor invocation completely!",
+                    constructorCalled: "NO (Direct Memory Copy)"
+                },
+                {
+                    title: "4. Deserialization (`ObjectInputStream.readObject()`)",
+                    code: `ObjectInputStream in = new ObjectInputStream(fileStream);\nMyClass obj = (MyClass) in.readObject();`,
+                    desc: "Reconstructs object state directly from a serialized byte stream (e.g. over network or disk). Bypasses constructor invocation!",
+                    constructorCalled: "NO"
+                },
+                {
+                    title: "5. Factory Methods (`List.of()`, `String.valueOf()`)",
+                    code: `List<String> list = List.of("A", "B");\nString str = String.valueOf(100);`,
+                    desc: "Encapsulates creation behind static factory methods. Internally uses `new` or returns cached instances (e.g., IntegerCache).",
+                    constructorCalled: "YES (Encapsulated internally)"
+                }
+            ];
+
+            const item = data[num - 1];
+            panel.innerHTML = `
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <h3 class="font-bold text-sm text-indigo-300">${item.title}</h3>
+                    <span class="text-xs px-2 py-0.5 rounded font-mono ${item.constructorCalled.includes('YES') ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-amber-950 text-amber-300 border border-amber-800'}">
+                        Constructor Called: ${item.constructorCalled}
+                    </span>
+                </div>
+                <p class="text-xs text-slate-300 mt-3">${item.desc}</p>
+                <div class="mt-4 bg-slate-950 p-3 rounded border border-slate-800 font-mono text-xs text-emerald-400">
+                    <pre><code>${item.code}</code></pre>
+                </div>
+            `;
+        }
+
+        // ==========================================
+        // SIMULATION 8: SYNCHRONIZED THREAD MONITOR
+        // ==========================================
+        let threadStep = 0;
+        function simThreadAcquireLock() {
+            const entrySet = document.getElementById('thread-entry-set');
+            const ownerBox = document.getElementById('thread-owner-box');
+            const exitedSet = document.getElementById('thread-exited-set');
+            const stepLabel = document.getElementById('bytecode-step-label');
+
+            if (threadStep === 0) {
+                entrySet.innerHTML = `
+                    <div class="p-1.5 bg-amber-950 border border-amber-700 text-amber-200 rounded text-[11px] flex justify-between">
+                        <span>Thread-1 (Wife)</span>
+                        <span class="font-mono text-[9px]">BLOCKED</span>
+                    </div>
+                    <div class="p-1.5 bg-amber-950 border border-amber-700 text-amber-200 rounded text-[11px] flex justify-between">
+                        <span>Thread-2 (Husband)</span>
+                        <span class="font-mono text-[9px]">BLOCKED</span>
+                    </div>
+                `;
+                ownerBox.className = "p-3 bg-slate-900 border border-slate-700 rounded text-xs text-slate-400";
+                ownerBox.innerText = "Threads queued in Entry Set...";
+                stepLabel.innerText = "Executing bytecode...";
+                threadStep = 1;
+            } else if (threadStep === 1) {
+                entrySet.innerHTML = `
+                    <div class="p-1.5 bg-amber-950 border border-amber-700 text-amber-200 rounded text-[11px] flex justify-between">
+                        <span>Thread-2 (Husband)</span>
+                        <span class="font-mono text-[9px]">WAITING IN QUEUE</span>
+                    </div>
+                `;
+                ownerBox.className = "p-3 bg-emerald-950 border border-emerald-500 rounded text-xs text-emerald-200 font-bold animate-pulse";
+                ownerBox.innerText = "Thread-1 (Wife) holding Lock";
+                stepLabel.innerText = "Bytecode: monitorenter executed";
+                threadStep = 2;
+            } else if (threadStep === 2) {
+                ownerBox.className = "p-3 bg-slate-900 border border-slate-700 rounded text-xs text-slate-400";
+                ownerBox.innerText = "Lock released by Thread-1";
+                if (exitedSet.innerText.includes('None yet')) exitedSet.innerHTML = '';
+                exitedSet.innerHTML += `<div class="p-1 bg-slate-900 border border-indigo-700 text-indigo-300 rounded text-[10px]">Thread-1 Completed</div>`;
+                stepLabel.innerText = "Bytecode: monitorexit executed";
+                threadStep = 3;
+            } else if (threadStep === 3) {
+                entrySet.innerHTML = `<div class="text-slate-500 italic text-center py-4">Queue empty</div>`;
+                ownerBox.className = "p-3 bg-emerald-950 border border-emerald-500 rounded text-xs text-emerald-200 font-bold animate-pulse";
+                ownerBox.innerText = "Thread-2 (Husband) holding Lock";
+                stepLabel.innerText = "Thread-2 acquired monitor lock";
+                threadStep = 4;
+            } else if (threadStep === 4) {
+                ownerBox.className = "p-3 bg-slate-900 border border-slate-700 rounded text-xs text-slate-400";
+                ownerBox.innerText = "No thread holding lock";
+                exitedSet.innerHTML += `<div class="p-1 bg-slate-900 border border-indigo-700 text-indigo-300 rounded text-[10px]">Thread-2 Completed</div>`;
+                stepLabel.innerText = "All threads safely synchronized!";
+                threadStep = 0;
+            }
+        }
+
+        // ==========================================
+        // SIMULATION 9: EXCEPTION STACK BUBBLE
+        // ==========================================
+        function triggerExceptionStack() {
+            const dao = document.getElementById('stack-frame-dao');
+            const service = document.getElementById('stack-frame-service');
+            const main = document.getElementById('stack-frame-main');
+            const msg = document.getElementById('exception-status-msg');
+
+            dao.className = "bg-red-950 border-2 border-red-500 p-3 rounded flex justify-between items-center text-xs animate-bounce";
+            msg.innerText = "1. writeToDisk() hits invalid state -> executes `throw new IOException('Disk full')`!";
+
+            setTimeout(() => {
+                dao.className = "bg-slate-950 p-3 rounded border border-slate-800 flex justify-between items-center text-xs opacity-50";
+                service.className = "bg-purple-950 border-2 border-purple-500 p-3 rounded flex justify-between items-center text-xs animate-bounce";
+                msg.innerText = "2. Method writeToDisk() unwinds stack. processOrder() checks signature: declares `throws IOException`. Bubbles up!";
+            }, 2000);
+
+            setTimeout(() => {
+                service.className = "bg-slate-950 p-3 rounded border border-slate-800 flex justify-between items-center text-xs opacity-50";
+                main.className = "bg-emerald-950 border-2 border-emerald-500 p-3 rounded flex justify-between items-center text-xs";
+                msg.innerText = "3. Exception arrives at main(). Caught safely inside try-catch block! Stack unwinding complete.";
+            }, 4000);
+        }
+
+        // Initialize default view state
+        window.addEventListener('DOMContentLoaded', () => {
+            selectSwitchDemo('tableswitch');
+            showObjMethod(1);
+        });
+    </script>
+</body>
+</html>
