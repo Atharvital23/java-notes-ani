@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Java Interview Masterclass & Concepts Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        java: { 50: '#f0fdf4', 100: '#dcfce7', 500: '#22c55e', 600: '#16a34a', 700: '#15803d', 900: '#14532d' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .code-box {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .keyword { color: #569cd6; }
+        .type { color: #4ec9b0; }
+        .string { color: #ce9178; }
+        .comment { color: #6a9955; }
+        .number { color: #b5cea8; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-50 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-emerald-600 p-2.5 rounded-xl text-white shadow-md">
+                    <i class="fa-brands fa-java text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-white">Java Interview Masterclass</h1>
+                    <p class="text-xs text-slate-400">Comprehensive Deep Dive: Architecture, Memory, & Core Concepts</p>
+                </div>
+                <a href="https://chatgpt.com/share/6a8f2c1f-fbb8-83ee-8253-f0e817e4e4a2" style="color: rgb(14, 236, 21);" target="_blank" >  ✨✨✨</a>
+            </div>
+            <div class="w-full sm:w-72 relative">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                    <i class="fa-solid fa-search"></i>
+                </span>
+                <input type="text" id="searchInput" placeholder="Search concepts (e.g., JVM, SCP, Thread Pool)..." 
+                    class="w-full pl-10 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-emerald-500 transition">
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="max-w-7xl mx-auto px-4 py-8 flex-grow grid grid-cols-1 lg:grid-cols-4 gap-8 w-full">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="lg:col-span-1 space-y-1">
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-400 px-3 mb-2">Interview Topics</h2>
+            <nav id="navMenu" class="space-y-1 sticky top-24">
+                <a href="#jvm-components" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium bg-emerald-600/10 text-emerald-400 border border-emerald-500/30 transition">
+                    <i class="fa-solid fa-microchip w-5 text-center"></i><span>1. JVM Components</span>
+                </a>
+                <a href="#class-loading" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-file-code w-5 text-center"></i><span>2. Class Loading Mechanism</span>
+                </a>
+                <a href="#float-double" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-scale-balanced w-5 text-center"></i><span>3. Float vs Double</span>
+                </a>
+                <a href="#thread-pool" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-layer-group w-5 text-center"></i><span>4. Thread Pool</span>
+                </a>
+                <a href="#wora" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-globe w-5 text-center"></i><span>5. Write Anywhere (WORA)</span>
+                </a>
+                <a href="#scp" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-memory w-5 text-center"></i><span>6. String Constant Pool (SCP)</span>
+                </a>
+                <a href="#hashcode-equals" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-fingerprint w-5 text-center"></i><span>7. hashCode() & equals()</span>
+                </a>
+                <a href="#copy-types" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-clone w-5 text-center"></i><span>8. Deep vs Shallow Copy</span>
+                </a>
+                <a href="#type-casting" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-exchange-alt w-5 text-center"></i><span>9. Type Casting Techniques</span>
+                </a>
+                <a href="#string-hashmap-key" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-key w-5 text-center"></i><span>10. String as HashMap Key</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Content Area -->
+        <main class="lg:col-span-3 space-y-12" id="contentContainer">
+
+            <!-- Topic 1 -->
+            <section id="jvm-components" class="topic-card bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl">
+                <div class="flex items-center space-x-3 mb-4">
+                    <span class="bg-emerald-500/20 text-emerald-400 p-2 rounded-lg"><i class="fa-solid fa-microchip text-xl"></i></span>
+                    <h2 class="text-2xl font-bold text-white">1. Components of JVM</h2>
+                </div>
+                <div class="space-y-4 text-slate-300 text-sm leading-relaxed">
+                    <p><strong class="text-white">Definition:</strong> The Java Virtual Machine (JVM) is an abstract machine that provides a runtime environment in which Java bytecode can be executed and run.</p>
+                    <div>
+                        <h3 class="font-semibold text-white mb-2 text-base">The 3 Most Important Components:</h3>
+                        <ul class="list-disc pl-5 space-y-2">
+                            <li><strong class="text-emerald-400">Class Loader Subsystem:</strong> Responsible for loading (`.class` files), linking (verifying and preparing memory), and initializing classes into the JVM memory.</li>
+                            <li><strong class="text-emerald-400">Runtime Data Area (Memory Area):</strong> Divided into Heap (objects), Stack (methods/local variables), Method Area (class metadata), PC Registers, and Native Method Stacks.</li>
+                            <li><strong class="text-emerald-400">Execution Engine:</strong> Executes the instructions contained in the bytecode. It contains:
+                                <ul class="list-circle pl-5 mt-1 space-y-1 text-slate-400">
+                                    <li><em>Interpreter:</em> Reads and executes bytecode line by line (slower).</li>
+                                    <li><em>JIT (Just-In-Time) Compiler:</em> Compiles frequently used bytecode (hotspots) directly into native machine code for high performance.</li>
+                                    <li><em>Garbage Collector (GC):</em> Automatically frees up heap memory by destroying unreferenced objects.</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                        <h4 class="font-semibold text-emerald-400 mb-1"><i class="fa-solid fa-earth-americas mr-2"></i>Real-World Analogy</h4>
+                        <p class="text-slate-300">Think of JVM as an automobile factory. The <strong>Class Loader</strong> is the parts delivery truck bringing raw components. The <strong>Runtime Data Area</strong> is the assembly floor where parts are sorted and stored. The <strong>Execution Engine (JIT/Interpreter)</strong> is the workforce and machinery building the final car, while the <strong>Garbage Collector</strong> is the cleaning crew clearing away scrap metal and debris.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Topic 2 -->
+            <section id="class-loading" class="topic-card bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl">
+                <div class="flex items-center space-x-3 mb-4">
+                    <span class="bg-emerald-500/20 text-emerald-400 p-2 rounded-lg"><i class="fa-solid fa-file-code text-xl"></i></span>
+                    <h2 class="text-2xl font-bold text-white">2. What is a Class & How JVM Loads It</h2>
+                </div>
+                <div class="space-y-4 text-slate-300 text-sm leading-relaxed">
+                    <p><strong class="text-white">Definition:</strong> A <strong class="text-white">Class</strong> is a blueprint or template from which objects are created. It defines state (fields) and behavior (methods).</p>
+                    <p><strong class="text-white">Class Loading Mechanism:</strong> When you run a Java application, the ClassLoader loads the `.class` file through three main phases:</p>
+                    <ol class="list-decimal pl-5 space-y-2">
+                        <li><strong class="text-white">Loading:</strong> Reads the `.class` binary file from the disk/network and generates a corresponding `Class` object in the Method Area.</li>
+                        <li><strong class="text-white">Linking:</strong> 
+                            <ul class="list-disc pl-5 mt-1 space-y-1 text-slate-400">
+                                <li><em>Verification:</em> Ensures bytecode is safe and valid.</li>
+                                <li><em>Preparation:</em> Allocates memory for static variables and assigns default initial values.</li>
+                                <li><em>Resolution:</em> Replaces symbolic references with direct memory references.</li>
+                            </ul>
+                        </li>
+                        <li><strong class="text-white">Initialization:</strong> Executes static blocks and assigns actual values to static variables.</li>
+                    </ol>
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                        <h4 class="font-semibold text-emerald-400 mb-2"><i class="fa-solid fa-code mr-2"></i>Code Example: Dynamic Class Loading</h4>
+                        <div class="code-box p-3 rounded-lg text-xs overflow-x-auto">
+                            <span class="keyword">public class</span> <span class="type">ClassLoadingDemo</span> {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public static void</span> <span class="keyword">main</span>(<span class="type">String</span>[] args) <span class="keyword">throws</span> <span class="type">Exception</span> {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">// Dynamically load a class at runtime</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="type">Class</span>&lt;?&gt; clazz = <span class="type">Class</span>.<span class="keyword">forName</span>(<span class="string">"java.util.ArrayList"</span>);<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="type">System</span>.out.<span class="keyword">println</span>(<span class="string">"Loaded Class: "</span> + clazz.<span class="keyword">getName</span>());<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Topic 3 -->
+            <section id="float-double" class="topic-card bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl">
+                <div class="flex items-center space-x-3 mb-4">
+                    <span class="bg-emerald-500/20 text-emerald-400 p-2 rounded-lg"><i class="fa-solid fa-scale-balanced text-xl"></i></span>
+                    <h2 class="text-2xl font-bold text-white">3. Difference Between `float` and `double`</h2>
+                </div>
+                <div class="space-y-4 text-slate-300 text-sm leading-relaxed">
+                    <p><strong class="text-white">Definition:</strong> Both are primitive floating-point data types used to store fractional numbers conforming to the IEEE 754 standard.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                            <h4 class="font-semibold text-emerald-400 mb-2">Float (32-bit Single Precision)</h4>
+                            <ul class="list-disc pl-4 space-y-1 text-slate-300 text-xs">
+                                <li>Size: 4 Bytes ($32$ bits)</li>
+                                <li>Precision: ~6 to 7 decimal digits</li>
+                                <li>Suffix: Requires <code class="text-emerald-400">f</code> or <code class="text-emerald-400">F</code> (e.g., <code class="text-emerald-400">float f = 10.5f;</code>)</li>
+                                <li>Use Case: Large arrays of graphics/game coordinates where memory is constrained.</li>
+                            </ul>
+                        </div>
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                            <h4 class="font-semibold text-emerald-400 mb-2">Double (64-bit Double Precision)</h4>
+                            <ul class="list-disc pl-4 space-y-1 text-slate-300 text-xs">
+                                <li>Size: 8 Bytes ($64$ bits)</li>
+                                <li>Precision: ~15 decimal digits</li>
+                                <li>Default: Default type for decimals in Java</li>
+                                <li>Use Case: Scientific calculations, general decimal math, high precision needs.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                        <h4 class="font-semibold text-emerald-400 mb-2"><i class="fa-solid fa-code mr-2"></i>Code Example: Precision Loss</h4>
+                        <div class="code-box p-3 rounded-lg text-xs overflow-x-auto">
+                            <span class="type">float</span> f = <span class="number">123.456789f</span>;<br>
+                            <span class="type">double</span> d = <span class="number">123.45678901234567</span>;<br>
+                            <span class="type">System</span>.out.<span class="keyword">println</span>(f); <span class="comment">// Output: 123.45679 (precision cut off)</span><br>
+                            <span class="type">System</span>.out.<span class="keyword">println</span>(d); <span class="comment">// Output: 123.45678901234567 (full precision)</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Topic 4 -->
+            <section id="thread-pool" class="topic-card bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl">
+                <div class="flex items-center space-x-3 mb-4">
+                    <span class="bg-emerald-500/20 text-emerald-400 p-2 rounded-lg"><i class="fa-solid fa-layer-group text-xl"></i></span>
+                    <h2 class="text-2xl font-bold text-white">4. What is a Thread Pool?</h2>
+                </div>
+                <div class="space-y-4 text-slate-300 text-sm leading-relaxed">
+                    <p><strong class="text-white">Definition:</strong> A Thread Pool is a collection of pre-initialized, reusable worker threads waiting for tasks to be assigned. Instead of creating a new thread for every concurrent task (which is expensive in OS overhead), tasks are submitted to a queue and executed by available pool threads.</p>
+                    <p><strong class="text-white">Why use it?</strong> Reduces thread creation/destruction overhead, improves system responsiveness, and prevents server crashes due to out-of-memory errors from excessive thread creation.</p>
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                        <h4 class="font-semibold text-emerald-400 mb-1"><i class="fa-solid fa-earth-americas mr-2"></i>Real-World Analogy</h4>
+                        <p class="text-slate-300">Think of a bank with 5 customer service tellers (Thread Pool). When customers arrive, they take a ticket and wait in the queue. When a teller finishes with a customer, the next person in line steps up. The bank doesn't hire a brand new employee for every single customer walking through the door.</p>
+                    </div>
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                        <h4 class="font-semibold text-emerald-400 mb-2"><i class="fa-solid fa-code mr-2"></i>Code Example: ExecutorService</h4>
+                        <div class="code-box p-3 rounded-lg text-xs overflow-x-auto">
+                            <span class="keyword">import</span> java.util.concurrent.*;<br><br>
+                            <span class="keyword">public class</span> <span class="type">ThreadPoolDemo</span> {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public static void</span> <span class="keyword">main</span>(<span class="type">String</span>[] args) {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="type">ExecutorService</span> pool = <span class="type">Executors</span>.<span class="keyword">newFixedThreadPool</span>(<span class="number">3</span>);<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt;= <span class="number">5</span>; i++) {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">final int</span> taskId = i;<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pool.<span class="keyword">execute</span>(() -&gt; <span class="type">System</span>.out.<span class="keyword">println</span>(<span class="string">"Task "</span> + taskId + <span class="string">" executed by "</span> + <span class="type">Thread</span>.<span class="keyword">currentThread</span>().<span class="keyword">getName</span>()));<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pool.<span class="keyword">shutdown</span>();<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Topic 5 -->
+            <section id="wora" class="topic-card bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl">
+                <div class="flex items-center space-x-3 mb-4">
+                    <span class="bg-emerald-500/20 text-emerald-400 p-2 rounded-lg"><i class="fa-solid fa-globe text-xl"></i></span>
+                    <h2 class="text-2xl font-bold text-white">5. Meaning of "Write Anywhere" (WORA)</h2>
+                </div>
+                <div class="space-y-4 text-slate-300 text-sm leading-relaxed">
+                    <p><strong class="text-white">Definition:</strong> "Write Once, Run Anywhere" (WORA) is a core slogan of Java coined by Sun Microsystems. It means that Java code can be written once on any operating system (e.g., Windows) and executed on any other operating system (e.g., Linux, macOS) without needing to recompile or rewrite the code.</p>
+                    <p><strong class="text-white">How it works:</strong></p>
+                    <ol class="list-decimal pl-5 space-y-2">
+                        <li>Java source code (<code class="text-emerald-400">.java</code>) is compiled by the Java compiler into platform-independent intermediate code called <strong class="text-white">Bytecode</strong> (<code class="text-emerald-400">.class</code>).</li>
+                        <li>Every operating system has its own implementation of the <strong class="text-white">JVM</strong>.</li>
+                        <li>The JVM on that specific OS translates the universal Bytecode into native machine instructions for that hardware.</li>
+                    </ol>
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                        <h4 class="font-semibold text-emerald-400 mb-1"><i class="fa-solid fa-earth-americas mr-2"></i>Real-World Analogy</h4>
+                        <p class="text-slate-300">Think of Java Bytecode as sheet music. A pianist in New York, a flutist in Tokyo, and a guitarist in London can all read the exact same musical notes (Bytecode), and each instrument plays it according to its own capability (JVM translating for Windows/Linux/Mac).</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Topic 6 -->
+            <section id="scp" class="topic-card bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl">
+                <div class="flex items-center space-x-3 mb-4">
+                    <span class="bg-emerald-500/20 text-emerald-400 p-2 rounded-lg"><i class="fa-solid fa-memory text-xl"></i></span>
+                    <h2 class="text-2xl font-bold text-white">6. String Constant Pool (SCP) & Allocation</h2>
+                </div>
+                <div class="space-y-4 text-slate-300 text-sm leading-relaxed">
+                    <p><strong class="text-white">Definition:</strong> The String Constant Pool (SCP) is a special storage area inside the Java Heap memory dedicated exclusively to storing unique string literals to optimize memory usage.</p>
+                    <p><strong class="text-white">How JVM allocates and stores strings:</strong></p>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li><strong class="text-white">Using String Literals (<code class="text-emerald-400">String s = "Hello";</code>):</strong> JVM checks the SCP first. If the string already exists, a reference to the existing string is returned. If not, a new string is created in the SCP.</li>
+                        <li><strong class="text-white">Using <code class="text-emerald-400">new</code> Keyword (<code class="text-emerald-400">String s = new String("Hello");</code>):</strong> Creates two objects: one in the normal Heap area and another in the SCP (if not already present).</li>
+                        <li><strong class="text-white">The <code class="text-emerald-400">intern()</code> Method:</strong> When called on a heap string, it checks if the string is in the SCP. If present, returns the SCP reference; otherwise, adds it to the SCP.</li>
+                    </ul>
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                        <h4 class="font-semibold text-emerald-400 mb-2"><i class="fa-solid fa-code mr-2"></i>Code Example: SCP & Equality</h4>
+                        <div class="code-box p-3 rounded-lg text-xs overflow-x-auto">
+                            <span class="type">String</span> s1 = <span class="string">"Java"</span>; <span class="comment">// stored in SCP</span><br>
+                            <span class="type">String</span> s2 = <span class="string">"Java"</span>; <span class="comment">// reuses s1 from SCP</span><br>
+                            <span class="type">String</span> s3 = <span class="keyword">new</span> <span class="type">String</span>(<span class="string">"Java"</span>); <span class="comment">// created in Heap</span><br><br>
+                            <span class="type">System</span>.out.<span class="keyword">println</span>(s1 == s2); <span class="comment">// true (same memory reference)</span><br>
+                            <span class="type">System</span>.out.<span class="keyword">println</span>(s1 == s3); <span class="comment">// false (Heap vs SCP)</span><br>
+                            <span class="type">System</span>.out.<span class="keyword">println</span>(s1.<span class="keyword">equals</span>(s3)); <span class="comment">// true (same content)</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Topic 7 -->
+            <section id="hashcode-equals" class="topic-card bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl">
+                <div class="flex items-center space-x-3 mb-4">
+                    <span class="bg-emerald-500/20 text-emerald-400 p-2 rounded-lg"><i class="fa-solid fa-fingerprint text-xl"></i></span>
+                    <h2 class="text-2xl font-bold text-white">7. How `hashCode()` and `equals()` Work</h2>
+                </div>
+                <div class="space-y-4 text-slate-300 text-sm leading-relaxed">
+                    <p><strong class="text-white">Definition:</strong> `hashCode()` and `equals()` are methods inherited from the root <code class="text-emerald-400">java.lang.Object</code> class, vital for comparing objects and storing them in hash-based data structures like <code class="text-emerald-400">HashMap</code>, <code class="text-emerald-400">HashSet</code>, and <code class="text-emerald-400">Hashtable</code>.</p>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li><strong class="text-white">Does it generate a new hash code or use the one in Object class?</strong> By default, the <code class="text-emerald-400">hashCode()</code> method in the <code class="text-emerald-400">Object</code> class generates an integer hash based on the object's memory address in the heap. However, in classes like <code class="text-emerald-400">String</code>, <code class="text-emerald-400">Integer</code>, or custom POJOs, <code class="text-emerald-400">hashCode()</code> is <strong class="text-white">overridden</strong> to calculate a hash value based on the object's actual field values.</li>
+                        <li><strong class="text-white">How Objects are Compared in a HashMap:</strong>
+                            <ol class="list-decimal pl-5 mt-1 space-y-1 text-slate-400">
+                                <li>When putting or getting a key, <code class="text-emerald-400">hashCode()</code> is called to determine which bucket index to look into.</li>
+                                <li>If multiple objects fall into the same bucket (collision), <code class="text-emerald-400">equals()</code> is called to check if the keys are logically identical.</li>
+                            </ol>
+                        </li>
+                    </ul>
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                        <h4 class="font-semibold text-emerald-400 mb-2"><i class="fa-solid fa-code mr-2"></i>Code Example: Overriding Contract</h4>
+                        <div class="code-box p-3 rounded-lg text-xs overflow-x-auto">
+                            <span class="keyword">class</span> <span class="type">Student</span> {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="type">int</span> id;<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="type">String</span> name;<br><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;@Override<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public int</span> <span class="keyword">hashCode</span>() {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> <span class="type">Objects</span>.<span class="keyword">hash</span>(id, name);<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;}<br><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;@Override<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public boolean</span> <span class="keyword">equals</span>(<span class="type">Object</span> obj) {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span> (<span class="keyword">this</span> == obj) <span class="keyword">return true</span>;<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span> (obj == <span class="keyword">null</span> || getClass() != obj.getClass()) <span class="keyword">return false</span>;<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="type">Student</span> s = (<span class="type">Student</span>) obj;<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> id == s.id && <span class="type">Objects</span>.<span class="keyword">equals</span>(name, s.name);<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Topic 8 -->
+            <section id="copy-types" class="topic-card bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl">
+                <div class="flex items-center space-x-3 mb-4">
+                    <span class="bg-emerald-500/20 text-emerald-400 p-2 rounded-lg"><i class="fa-solid fa-clone text-xl"></i></span>
+                    <h2 class="text-2xl font-bold text-white">8. Deep Copy vs. Shallow Copy</h2>
+                </div>
+                <div class="space-y-4 text-slate-300 text-sm leading-relaxed">
+                    <p><strong class="text-white">Definition:</strong> These are two ways of duplicating objects in Java.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                            <h4 class="font-semibold text-emerald-400 mb-2">Shallow Copy</h4>
+                            <p class="text-xs text-slate-300 mb-2">Creates a new object, but copies primitive fields by value and reference fields by address (pointers). Modifying a nested object in the copy affects the original object.</p>
+                            <span class="text-xs bg-slate-800 text-slate-400 px-2 py-1 rounded">Achieved via: <code class="text-emerald-400">super.clone()</code></span>
+                        </div>
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                            <h4 class="font-semibold text-emerald-400 mb-2">Deep Copy</h4>
+                            <p class="text-xs text-slate-300 mb-2">Creates a completely independent clone. Both primitive fields and all nested reference objects are recursively cloned. Modifying the copy has zero impact on the original.</p>
+                            <span class="text-xs bg-slate-800 text-slate-400 px-2 py-1 rounded">Achieved via: Copy constructors / Serialization</span>
+                        </div>
+                    </div>
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                        <h4 class="font-semibold text-emerald-400 mb-1"><i class="fa-solid fa-earth-americas mr-2"></i>Real-World Analogy</h4>
+                        <p class="text-slate-300">A <strong>Shallow Copy</strong> is like making a digital shortcut or hyperlink to a shared Google Doc (if someone edits the target document, both see changes). A <strong>Deep Copy</strong> is printing a physical photocopy and handing it to another person to edit in isolation.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Topic 9 -->
+            <section id="type-casting" class="topic-card bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl">
+                <div class="flex items-center space-x-3 mb-4">
+                    <span class="bg-emerald-500/20 text-emerald-400 p-2 rounded-lg"><i class="fa-solid fa-exchange-alt text-xl"></i></span>
+                    <h2 class="text-2xl font-bold text-white">9. Type Casting Techniques in Industry</h2>
+                </div>
+                <div class="space-y-4 text-slate-300 text-sm leading-relaxed">
+                    <p><strong class="text-white">Definition:</strong> Type casting is the process of converting a variable from one data type to another. In enterprise Java, casting falls into two primary categories:</p>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li><strong class="text-white">1. Primitive Type Casting:</strong>
+                            <ul class="list-circle pl-5 mt-1 space-y-1 text-slate-400">
+                                <li><em>Widening (Implicit):</em> Small type to large type (<code class="text-emerald-400">int</code> to <code class="text-emerald-400">double</code>). Handled automatically by JVM.</li>
+                                <li><em>Narrowing (Explicit):</em> Large type to small type (<code class="text-emerald-400">double</code> to <code class="text-emerald-400">int</code>). Requires explicit syntax with potential precision loss (<code class="text-emerald-400">(int) 9.87</code>).</li>
+                            </ul>
+                        </li>
+                        <li><strong class="text-white">2. Reference Type Casting (Polymorphism):</strong>
+                            <ul class="list-circle pl-5 mt-1 space-y-1 text-slate-400">
+                                <li><em>Upcasting (Implicit):</em> Subclass reference to Superclass reference (<code class="text-emerald-400">Animal a = new Dog();</code>). Safe and standard in polymorphism.</li>
+                                <li><em>Downcasting (Explicit):</em> Superclass reference back to Subclass reference (<code class="text-emerald-400">Dog d = (Dog) a;</code>). Requires an explicit check using <code class="text-emerald-400">instanceof</code> to avoid <code class="text-emerald-400">ClassCastException</code>.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                        <h4 class="font-semibold text-emerald-400 mb-2"><i class="fa-solid fa-code mr-2"></i>Code Example: Safe Downcasting</h4>
+                        <div class="code-box p-3 rounded-lg text-xs overflow-x-auto">
+                            <span class="type">Animal</span> a = <span class="keyword">new</span> <span class="type">Dog</span>(); <span class="comment">// Upcasting</span><br>
+                            <span class="keyword">if</span> (a <span class="keyword">instanceof</span> <span class="type">Dog</span>) {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="type">Dog</span> d = (<span class="type">Dog</span>) a; <span class="comment">// Safe explicit Downcasting</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;d.<span class="keyword">bark</span>();<br>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Topic 10 -->
+            <section id="string-hashmap-key" class="topic-card bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl">
+                <div class="flex items-center space-x-3 mb-4">
+                    <span class="bg-emerald-500/20 text-emerald-400 p-2 rounded-lg"><i class="fa-solid fa-key text-xl"></i></span>
+                    <h2 class="text-2xl font-bold text-white">10. Why `String` is Suitable as a HashMap Key</h2>
+                </div>
+                <div class="space-y-4 text-slate-300 text-sm leading-relaxed">
+                    <p><strong class="text-white">Definition:</strong> In Java, <code class="text-emerald-400">String</code> is the most commonly used key in <code class="text-emerald-400">HashMap</code> due to specific architectural design choices:</p>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li><strong class="text-white">1. Immutability:</strong> Strings are immutable. Once created, their internal state cannot be modified. This is <strong class="text-white">crucial</strong> because if a key's value changed after being inserted into a HashMap, its <code class="text-emerald-400">hashCode()</code> would change, making the key unretrievable from its bucket (causing memory leaks or missing data).</li>
+                        <li><strong class="text-white">2. Cached hashCode():</strong> Since strings are immutable, their hash code is computed once and cached (memoized) during the first hash calculation. Subsequent lookups in HashMaps are extremely fast because recalculating the hash is unnecessary.</li>
+                        <li><strong class="text-white">3. Thread Safety:</strong> Because they are immutable, multiple threads can access a String key concurrently without risk of data corruption or race conditions.</li>
+                    </ul>
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                        <h4 class="font-semibold text-emerald-400 mb-1"><i class="fa-solid fa-earth-americas mr-2"></i>Real-World Analogy</h4>
+                        <p class="text-slate-300">Think of a HashMap key like a permanent postal address code (e.g., "ZIP-10001"). If the postal code kept shifting or changing digits randomly after you mailed a letter, the post office would never be able to locate your package. Because a String is immutable, its address signature remains permanently fixed and reliable.</p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 border-t border-slate-700 mt-12 py-6 text-center text-xs text-slate-400">
+        <p>Generated for your Java Technical Interview Preparation. Good luck with your interviews! 🚀</p>
+    </footer>
+
+    <!-- Interactive Filtering Script -->
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const topicCards = document.querySelectorAll('.topic-card');
+        const navItems = document.querySelectorAll('.nav-item');
+
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            topicCards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                if (text.includes(term)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+
+        // Highlight active nav item on scroll
+        window.addEventListener('scroll', () => {
+            let current = '';
+            topicCards.forEach(card => {
+                const cardTop = card.offsetTop;
+                if (pageYOffset >= cardTop - 150) {
+                    current = card.getAttribute('id');
+                }
+            });
+
+            navItems.forEach(item => {
+                item.classList.remove('bg-emerald-600/10', 'text-emerald-400', 'border', 'border-emerald-500/30');
+                item.classList.add('text-slate-300');
+                if (item.getAttribute('href').includes(current)) {
+                    item.classList.add('bg-emerald-600/10', 'text-emerald-400', 'border', 'border-emerald-500/30');
+                    item.classList.remove('text-slate-300');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
