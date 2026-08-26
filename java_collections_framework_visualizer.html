@@ -12,7 +12,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
-    /* Custom Scrollbars */
     ::-webkit-scrollbar {
       width: 6px;
       height: 6px;
@@ -28,7 +27,6 @@
       background: #475569;
     }
 
-    /* D3 Styling & Glow Filters */
     .link {
       fill: none;
       stroke-width: 2px;
@@ -61,7 +59,6 @@
         radial-gradient(circle, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
     }
 
-    /* Active Tab Styling */
     .tab-btn.active {
       border-bottom-color: #6366f1;
       color: #818cf8;
@@ -71,7 +68,6 @@
 </head>
 <body class="h-full flex flex-col font-sans overflow-hidden bg-slate-950 text-slate-100">
 
-  <!-- Header & Toolbar -->
   <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur px-6 py-3 flex flex-wrap items-center justify-between gap-4 z-20 shadow-lg">
     <div class="flex items-center space-x-3">
       <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-amber-500 flex items-center justify-center text-white shadow-lg">
@@ -80,9 +76,9 @@
       <div>
         <h1 class="text-lg font-bold tracking-wide text-white flex items-center gap-2">
           Java Collections Framework
-          <span class="text-xs font-semibold px-2 py-0.5 rounded bg-indigo-950 border border-indigo-700 text-indigo-300">JDK 21+ Interactive Tree</span>
+          <span class="text-xs font-semibold px-2 py-0.5 rounded bg-indigo-950 border border-indigo-700 text-indigo-300">JDK 21+ Correct Hierarchy Tree</span>
         </h1>
-        <p class="text-xs text-slate-400">Explore List, Set, Queue, Map, Concurrent Collections & Sequenced Collections with rules, Big-O, code, memory & interview Q&A</p>
+        <p class="text-xs text-slate-400">Accurate standard hierarchy: Iterable &rarr; Collection &rarr; List, Set, Queue, Deque & Map roots with full operational methods</p>
       </div>
     </div>
 
@@ -106,17 +102,18 @@
       <button id="filter-concurrent" class="filter-btn px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all text-rose-400 hover:bg-rose-950/40">
         <i class="fa-solid fa-bolt text-[10px] mr-1"></i> Concurrent
       </button>
-      <button id="filter-sequenced" class="filter-btn px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all text-sky-400 hover:bg-sky-950/40">
-        <i class="fa-solid fa-arrows-left-right text-[10px] mr-1"></i> Sequenced (JDK 21)
-      </button>
     </div>
 
-    <!-- Search & Quick Controls -->
+    <!-- Search, Diagrams & Quick Controls -->
     <div class="flex items-center gap-3">
+      <button id="btn-show-diagrams" class="px-3 py-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/50 text-indigo-300 text-xs font-medium flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-images"></i> View Diagrams
+      </button>
+
       <div class="relative">
         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
-        <input type="text" id="search-input" placeholder="Search collection (e.g. ConcurrentHashMap)..." 
-               class="bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-8 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 w-64 shadow-inner transition-all">
+        <input type="text" id="search-input" placeholder="Search collection (e.g. TreeSet, Hashtable)..." 
+               class="bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-8 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 w-60 shadow-inner transition-all">
         <button id="clear-search" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 text-xs">
           <i class="fa-solid fa-xmark"></i>
         </button>
@@ -136,7 +133,6 @@
     </div>
   </header>
 
-  <!-- Main Viewport -->
   <div class="flex-1 relative flex overflow-hidden">
     
     <!-- SVG Tree Canvas -->
@@ -183,8 +179,8 @@
       </div>
     </div>
 
-    <!-- Right Detail Drawer -->
-    <aside id="detail-drawer" class="w-[500px] border-l border-slate-800 bg-slate-900/95 backdrop-blur h-full flex flex-col shadow-2xl z-20 transform translate-x-full transition-transform duration-300 ease-in-out absolute right-0 top-0">
+    <!-- Detail Drawer -->
+    <aside id="detail-drawer" class="w-[520px] border-l border-slate-800 bg-slate-900/95 backdrop-blur h-full flex flex-col shadow-2xl z-20 transform translate-x-full transition-transform duration-300 ease-in-out absolute right-0 top-0">
       
       <!-- Drawer Header -->
       <div class="p-4 border-b border-slate-800 flex items-center justify-between">
@@ -205,27 +201,36 @@
         <!-- Navigation Tabs -->
         <div class="flex border-b border-slate-800 mt-4 gap-4 text-xs font-medium">
           <button id="tab-specs-btn" class="tab-btn active pb-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition">
-            <i class="fa-solid fa-sliders mr-1"></i> Specs & Complexity
+            <i class="fa-solid fa-sliders mr-1"></i> Specs & Methods
           </button>
           <button id="tab-code-btn" class="tab-btn pb-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition">
             <i class="fa-solid fa-code mr-1"></i> Code & Real-World
           </button>
           <button id="tab-qa-btn" class="tab-btn pb-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition">
-            <i class="fa-solid fa-clipboard-question mr-1"></i> Compare & Interview Q&A
+            <i class="fa-solid fa-clipboard-question mr-1"></i> Compare & Q&A
           </button>
         </div>
       </div>
 
-      <!-- Drawer Content Area -->
       <div class="p-6 overflow-y-auto flex-1 space-y-6">
         
-        <!-- TAB 1: Specs & Complexity -->
+        <!-- TAB 1: Specs, Methods & Complexity -->
         <div id="tab-specs" class="tab-content space-y-5">
           <!-- Overview -->
           <div class="space-y-1.5">
             <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Description & Internal Structure</h3>
             <div id="drawer-desc" class="text-xs text-slate-300 leading-relaxed bg-slate-950/60 p-3 rounded-lg border border-slate-800/80">
               Select a node to inspect details.
+            </div>
+          </div>
+
+          <!-- Applicable Operations & Methods Section -->
+          <div class="space-y-2">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
+              <i class="fa-solid fa-gears"></i> Applicable Methods for Performing Operations
+            </h3>
+            <div id="drawer-methods" class="grid grid-cols-1 gap-2 text-xs">
+              <!-- Dynamically populated methods -->
             </div>
           </div>
 
@@ -299,7 +304,6 @@
           </div>
         </div>
 
-        <!-- TAB 2: Code & Real-World -->
         <div id="tab-code" class="tab-content hidden space-y-5">
           <!-- When to Use -->
           <div class="space-y-1.5">
@@ -331,7 +335,6 @@
           </div>
         </div>
 
-        <!-- TAB 3: Compare & Interview Q&A -->
         <div id="tab-qa" class="tab-content hidden space-y-5">
           <!-- Comparison vs Alternatives -->
           <div class="space-y-1.5">
@@ -355,628 +358,505 @@
 
   </div>
 
-  <!-- JavaScript Application Logic -->
+  <div id="diagrams-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-6 hidden">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-5xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+      <!-- Modal Header -->
+      <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/50">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-images text-indigo-400"></i>
+          <h2 class="text-sm font-bold text-white tracking-wide">Java Collections & Map Architecture Hierarchy Diagrams</h2>
+        </div>
+        <button id="close-modal" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6 overflow-y-auto space-y-8 flex-1 bg-slate-950/40">
+        <div>
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-indigo-400 mb-3 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-indigo-500"></span> 1. Collection Framework Hierarchy (Iterable &rarr; List, Set, Queue, Deque)
+          </h3>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex justify-center">
+            <img src="Collection Hierarchy Diagram.jpeg" alt="Collection Hierarchy Diagram" class="max-h-[400px] object-contain rounded-lg shadow-lg border border-slate-800/60" />
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-amber-400 mb-3 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span> 2. Map Framework Hierarchy (Map &rarr; HashMap, TreeMap, Hashtable, etc.)
+          </h3>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex justify-center">
+            <img src="Map Hierarchy Diagram.jpeg" alt="Map Hierarchy Diagram" class="max-h-[400px] object-contain rounded-lg shadow-lg border border-slate-800/60" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 border-t border-slate-800 bg-slate-950/50 flex justify-end">
+        <button id="close-modal-btn" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition shadow">
+          Close Diagrams
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // Complete Java Collections Hierarchy Dataset with full code, memory profiles, Big-O, real world, and interview Q&As
+    // Corrected Java Collections Hierarchy Dataset with applicable methods for operations
     const hierarchyData = {
-      name: "java.util.Collection",
+      name: "Java Collections Framework",
       type: "interface",
       pkg: "java.util",
       jdk: "JDK 1.2+",
-      desc: "The root interface in the collection hierarchy (excluding maps). Represents a group of objects known as elements. JDK 21 retrofitted SequencedCollection into this hierarchy.",
-      rules: {
-        duplicates: "Depends on subtype (List=Yes, Set=No)",
-        nulls: "Depends on implementation",
-        order: "Depends on implementation",
-        threadSafe: "No (Use java.util.concurrent)"
-      },
-      complexity: {
-        access: "Varies",
-        accessNote: "Subtype dependent",
-        search: "O(n)",
-        searchNote: "Linear check across elements",
-        insert: "O(1) / O(log n)",
-        insertNote: "Depends on collection structure",
-        delete: "O(n)",
-        deleteNote: "Shift or search required",
-        memory: "Base interface pointer overhead. Implementation dependent."
-      },
-      whenToUse: "Use Collection as a parameter type in method signatures when you want to accept any List, Set, or Queue without forcing caller implementation.",
-      realWorld: "Designing high-level utility APIs (e.g. Collections.unmodifiableCollection) that process arbitrary lists, sets, or queues regardless of underlying memory layout.",
-      code: `import java.util.*;
-
-public class CollectionDemo {
-    public static void main(String[] args) {
-        Collection<String> items = new ArrayList<>();
-        items.add("Java 21");
-        items.add("Spring Boot");
-        items.add("Kafka");
-
-        System.out.println("Collection Size: " + items.size());
-        System.out.println("Contains Kafka? " + items.contains("Kafka"));
-
-        // Iterating using Iterable interface method
-        items.forEach(item -> System.out.println("Item: " + item));
-    }
-}`,
-      comparison: "Collection is the super-interface for List, Set, and Queue. Map is NOT a child of Collection because Map works with Key-Value pairs rather than single elements.",
-      interview: [
-        {
-          q: "Why doesn't Map extend the Collection interface?",
-          a: "Map works with Key-Value pairs (Map.Entry<K,V>), whereas Collection handles individual elements (E). Method signatures like add(E) make no sense for maps which require put(K, V)."
-        },
-        {
-          q: "What is the difference between Collection and Collections?",
-          a: "Collection is a root interface in java.util. Collections is a utility class containing static helper methods (e.g. Collections.sort(), Collections.synchronizedList(), Collections.unmodifiableMap())."
-        }
+      desc: "Root umbrella for the Java Collections Framework, bridging Iterable, Collection, and Map architectures.",
+      rules: { duplicates: "N/A", nulls: "N/A", order: "N/A", threadSafe: "N/A" },
+      complexity: { access: "N/A", search: "N/A", insert: "N/A", delete: "N/A", memory: "Standard interface root." },
+      whenToUse: "Parent architecture root.",
+      realWorld: "Core Java standard library design.",
+      methods: [
+        { name: "iterator()", sig: "Iterator<E> iterator()", desc: "Returns an iterator over elements in proper sequence." },
+        { name: "forEach()", sig: "default void forEach(Consumer)", desc: "Performs the given action for each element until all elements have been processed." }
       ],
+      code: `// Root Java Collections Framework`,
+      comparison: "Splits into Iterable/Collection and Map hierarchies.",
+      interview: [{ q: "What are the two main root interfaces in Java Collections?", a: "Collection and Map." }],
       children: [
         {
-          name: "SequencedCollection",
+          name: "java.lang.Iterable",
           type: "interface",
-          pkg: "java.util",
-          jdk: "JDK 21+",
-          desc: "Introduced in Java 21 (JEP 431). Represents a collection with a defined encounter order. Provides uniform methods to access first/last elements and obtain a reversed view.",
-          rules: {
-            duplicates: "Subtype dependent",
-            nulls: "Subtype dependent",
-            order: "Strict Encounter Order Guaranteed",
-            threadSafe: "Subtype dependent"
-          },
-          complexity: {
-            access: "O(1)",
-            accessNote: "getFirst() and getLast() direct fetch",
-            search: "O(n)",
-            searchNote: "Forward or reverse traversal",
-            insert: "O(1)",
-            insertNote: "addFirst() and addLast()",
-            delete: "O(1)",
-            deleteNote: "removeFirst() and removeLast()",
-            memory: "Zero overhead view wrappers when calling reversed()."
-          },
-          whenToUse: "Use when you need a unified API to handle ordered data (List, Deque, LinkedHashSet) and perform bidirectional processing.",
-          realWorld: "Breadcrumb navigation engines, recent audit trail processing where reversing order and grabbing endpoints is frequent.",
-          code: `import java.util.*;
-
-public class SequencedCollectionDemo {
-    public static void main(String[] args) {
-        // SequencedCollection implemented by LinkedHashSet in Java 21
-        SequencedCollection<String> sequence = new LinkedHashSet<>();
-        sequence.add("First");
-        sequence.add("Middle");
-        sequence.add("Last");
-
-        sequence.addFirst("Zero");
-        sequence.addLast("End");
-
-        System.out.println("First Element: " + sequence.getFirst()); // Zero
-        System.out.println("Last Element: " + sequence.getLast());   // End
-
-        // Get live reversed view without copying memory!
-        SequencedCollection<String> reversed = sequence.reversed();
-        System.out.println("Reversed View: " + reversed);
-    }
-}`,
-          comparison: "Prior to Java 21, fetching the last element of a List was list.get(list.size()-1), Deque was deque.getLast(), and SortedSet was set.last(). SequencedCollection unifies this under getLast().",
-          interview: [
-            {
-              q: "What problem does SequencedCollection solve in JDK 21?",
-              a: "Before JDK 21, Java lacked a common interface for collections with a defined encounter order. Accessing first/last elements and reversing collections was inconsistent across List, Deque, and LinkedHashSet."
-            }
-          ]
-        },
-        {
-          name: "java.util.List",
-          type: "list",
-          pkg: "java.util",
-          jdk: "JDK 1.2+",
-          desc: "An ordered collection (sequence) that allows duplicates and precise positional index access.",
-          rules: {
-            duplicates: "Allowed",
-            nulls: "Allowed (multiple)",
-            order: "Maintains Insertion Order",
-            threadSafe: "No"
-          },
-          complexity: {
-            access: "O(1) / O(n)",
-            accessNote: "O(1) for ArrayList, O(n) for LinkedList",
-            search: "O(n)",
-            searchNote: "Linear search",
-            insert: "O(1) / O(n)",
-            insertNote: "Amortized O(1) at end",
-            delete: "O(n)",
-            deleteNote: "Shift required for array lists",
-            memory: "Low to moderate memory overhead."
-          },
-          whenToUse: "Use List when element ordering matters, duplicates must be retained, and access by numeric index is required.",
-          realWorld: "Order items in an e-commerce shopping cart, timeline tweets, paginated search results.",
-          code: `import java.util.*;
-
-public class ListDemo {
-    public static void main(String[] args) {
-        List<String> list = new ArrayList<>(List.of("Apple", "Banana", "Apple"));
-        list.add(1, "Cherry"); // Positional insertion
-
-        System.out.println("Element at index 2: " + list.get(2));
-        System.out.println("SubList (0 to 2): " + list.subList(0, 2));
-    }
-}`,
-          comparison: "List vs Set: List allows duplicates and maintains order. Set prohibits duplicates and may not guarantee order.",
-          interview: [
-            {
-              q: "Why does List.of() create an immutable list?",
-              a: "Introduced in Java 9, List.of() returns an unmodifiable list backed by compact internal array structures that reject nulls and throw UnsupportedOperationException on modifications."
-            }
+          pkg: "java.lang",
+          jdk: "JDK 1.5+",
+          desc: "Root interface for all collections that can be iterated over using the enhanced for-loop or Iterator.",
+          rules: { duplicates: "Depends", nulls: "Depends", order: "Encounter order", threadSafe: "No" },
+          complexity: { access: "O(1)", search: "O(n)", insert: "N/A", delete: "N/A", memory: "Iterator object overhead." },
+          whenToUse: "When writing custom iterable data structures.",
+          realWorld: "Powering for-each loops across all collections.",
+          methods: [
+            { name: "iterator()", sig: "Iterator<T> iterator()", desc: "Returns an Iterator over a set of elements of type T." },
+            { name: "spliterator()", sig: "default Spliterator<T> spliterator()", desc: "Creates a Spliterator over the elements described by this Iterable." }
           ],
+          code: `Iterable<String> list = List.of("A", "B");\nfor(String s : list) System.out.println(s);`,
+          comparison: "Iterable provides iterator(); Collection adds size(), contains(), add(), etc.",
+          interview: [{ q: "What is the difference between Iterable and Iterator?", a: "Iterable is a target of the for-each loop and produces an Iterator. Iterator is the cursor used to traverse elements." }],
           children: [
             {
-              name: "ArrayList",
-              type: "list",
+              name: "java.util.Collection",
+              type: "interface",
               pkg: "java.util",
               jdk: "JDK 1.2+",
-              desc: "Dynamic resizable array implementation of List. Automatically grows capacity by 50% when full: newCapacity = oldCapacity + (oldCapacity >> 1).",
-              rules: {
-                duplicates: "Allowed",
-                nulls: "Allowed",
-                order: "Insertion Order",
-                threadSafe: "No (Use Collections.synchronizedList)"
-              },
-              complexity: {
-                access: "O(1)",
-                accessNote: "Direct array index memory offset",
-                search: "O(n)",
-                searchNote: "Linear scan through elements",
-                insert: "O(1) Amortized",
-                insertNote: "O(n) worst case when array reallocates",
-                delete: "O(n)",
-                deleteNote: "System.arraycopy element left shift",
-                memory: "Contiguous memory array. ~4-8 bytes overhead per element reference pointer. High cache locality."
-              },
-              whenToUse: "Default go-to List choice! Ideal when read/access operations dominate and insertions mainly happen at the end.",
-              realWorld: "In-memory database query result sets, REST API JSON payload collections.",
-              code: `import java.util.*;
-
-public class ArrayListDemo {
-    public static void main(String[] args) {
-        // Initialize with default initial capacity 10
-        List<Integer> numbers = new ArrayList<>(20);
-        numbers.add(10);
-        numbers.add(20);
-        numbers.add(30);
-
-        // Fast random access
-        int secondVal = numbers.get(1); // O(1)
-        
-        // Custom sorting
-        numbers.sort(Comparator.reverseOrder());
-        System.out.println("Sorted ArrayList: " + numbers);
-    }
-}`,
-              comparison: "ArrayList vs LinkedList: ArrayList is significantly faster for random access and iteration due to CPU cache spatial locality. LinkedList is only better for continuous additions/deletions at head/tail.",
-              interview: [
+              desc: "The primary root interface in the collection hierarchy. Represents a group of objects known as elements.",
+              rules: { duplicates: "Depends", nulls: "Depends", order: "Depends", threadSafe: "No" },
+              complexity: { access: "Varies", search: "O(n)", insert: "Varies", delete: "O(n)", memory: "Base interface." },
+              whenToUse: "Use as method parameter type for generic collection processing.",
+              realWorld: "Utility methods in java.util.Collections.",
+              methods: [
+                { name: "add(E e)", sig: "boolean add(E e)", desc: "Ensures that this collection contains the specified element." },
+                { name: "remove(Object o)", sig: "boolean remove(Object o)", desc: "Removes a single instance of the specified element from this collection." },
+                { name: "contains(Object o)", sig: "boolean contains(Object o)", desc: "Returns true if this collection contains the specified element." },
+                { name: "size()", sig: "int size()", desc: "Returns the number of elements in this collection." },
+                { name: "clear()", sig: "void clear()", desc: "Removes all of the elements from this collection." }
+              ],
+              code: `Collection<String> col = new ArrayList<>();\ncol.add("Java");`,
+              comparison: "Super-interface for List, Set, and Queue.",
+              interview: [{ q: "Is Map a child of Collection?", a: "No, Map represents key-value associations and stands separate from Collection." }],
+              children: [
                 {
-                  q: "How does ArrayList growth/resizing work?",
-                  a: "When full, ArrayList creates a new array with capacity = oldCapacity + (oldCapacity >> 1) [50% growth], copies elements via System.arraycopy(), and discards old array."
+                  name: "SequencedCollection",
+                  type: "interface",
+                  pkg: "java.util",
+                  jdk: "JDK 21+",
+                  desc: "Introduced in Java 21 (JEP 431). Represents a collection with a defined encounter order, allowing uniform first/last access and reversed views.",
+                  rules: { duplicates: "Subtype dependent", nulls: "Subtype dependent", order: "Strict encounter order", threadSafe: "Subtype dependent" },
+                  complexity: { access: "O(1)", search: "O(n)", insert: "O(1)", delete: "O(1)", memory: "Zero overhead views." },
+                  whenToUse: "When working with ordered collections requiring bidirectional processing.",
+                  realWorld: "Breadcrumbs and recent audit trails.",
+                  methods: [
+                    { name: "addFirst(E e)", sig: "void addFirst(E e)", desc: "Adds an element at the first position." },
+                    { name: "addLast(E e)", sig: "void addLast(E e)", desc: "Adds an element at the last position." },
+                    { name: "getFirst()", sig: "E getFirst()", desc: "Gets the first element." },
+                    { name: "getLast()", sig: "E getLast()", desc: "Gets the last element." },
+                    { name: "reversed()", sig: "SequencedCollection<E> reversed()", desc: "Returns a reverse-ordered view." }
+                  ],
+                  code: `SequencedCollection<String> seq = new LinkedHashSet<>();\nseq.addFirst("First");\nseq.addLast("Last");`,
+                  comparison: "Unifies getFirst() / getLast() across List, Deque, and LinkedHashSet.",
+                  interview: [{ q: "What new interface was added in Java 21 for ordered collections?", a: "SequencedCollection, SequencedSet, and SequencedMap." }]
                 },
                 {
-                  q: "Why is ArrayList usually faster than LinkedList even for insertions?",
-                  a: "LinkedList node creation requires heavy heap allocation (Node object overhead) and scattered pointer references causing CPU cache misses. ArrayList contiguous array copy is heavily optimized by JVM memory operations."
-                }
-              ]
-            },
-            {
-              name: "LinkedList",
-              type: "list",
-              pkg: "java.util",
-              jdk: "JDK 1.2+",
-              desc: "Doubly-linked list implementation of List and Deque. Each element is wrapped in a Node object containing 'item', 'next', and 'prev' pointers.",
-              rules: {
-                duplicates: "Allowed",
-                nulls: "Allowed",
-                order: "Insertion Order",
-                threadSafe: "No"
-              },
-              complexity: {
-                access: "O(n)",
-                accessNote: "Must traverse from head or tail pointer",
-                search: "O(n)",
-                searchNote: "Traverses list nodes",
-                insert: "O(1) at Head/Tail",
-                insertNote: "O(n) if inserting at arbitrary index",
-                delete: "O(1) at Head/Tail",
-                deleteNote: "Unlinks node pointers",
-                memory: "Heavy memory overhead! 24 bytes overhead per element for Node object + 2 reference pointers."
-              },
-              whenToUse: "Rarely needed in modern Java. Use when implementing double-ended queue operations (though ArrayDeque is generally superior).",
-              realWorld: "Historical implementation of undo-redo history stacks or LRU node chains.",
-              code: `import java.util.*;
-
-public class LinkedListDemo {
-    public static void main(String[] args) {
-        LinkedList<String> queue = new LinkedList<>();
-        queue.addFirst("Urgent Task");
-        queue.addLast("Standard Task");
-
-        System.out.println("Head Element: " + queue.peekFirst());
-        System.out.println("Popped Head: " + queue.pollFirst());
-    }
-}`,
-              comparison: "LinkedList vs ArrayDeque: ArrayDeque uses contiguous array and has no node allocation overhead, making ArrayDeque faster as both Stack and Queue than LinkedList.",
-              interview: [
+                  name: "java.util.List",
+                  type: "list",
+                  pkg: "java.util",
+                  jdk: "JDK 1.2+",
+                  desc: "An ordered collection (sequence) allowing duplicate elements and precise positional index access.",
+                  rules: { duplicates: "Allowed", nulls: "Allowed", order: "Insertion Order", threadSafe: "No" },
+                  complexity: { access: "O(1) / O(n)", search: "O(n)", insert: "O(1) / O(n)", delete: "O(n)", memory: "Array or Node pointers." },
+                  whenToUse: "When element order and index access are required.",
+                  realWorld: "Shopping cart items, timeline feeds.",
+                  methods: [
+                    { name: "get(int index)", sig: "E get(int index)", desc: "Returns the element at the specified position." },
+                    { name: "set(int index, E element)", sig: "E set(int index, E element)", desc: "Replaces the element at the specified position." },
+                    { name: "add(int index, E element)", sig: "void add(int index, E element)", desc: "Inserts the element at the specified position." },
+                    { name: "remove(int index)", sig: "E remove(int index)", desc: "Removes the element at the specified position." },
+                    { name: "indexOf(Object o)", sig: "int indexOf(Object o)", desc: "Returns the index of the first occurrence of the specified element." }
+                  ],
+                  code: `List<String> list = new ArrayList<>();\nlist.add("Apple");`,
+                  comparison: "List allows duplicates and index lookup; Set does not.",
+                  interview: [{ q: "Why use List?", a: "To maintain index-based positions and duplicates." }],
+                  children: [
+                    {
+                      name: "ArrayList",
+                      type: "list",
+                      pkg: "java.util",
+                      jdk: "JDK 1.2+",
+                      desc: "Dynamic resizable array implementation of List. Automatically grows capacity by 50% when full.",
+                      rules: { duplicates: "Allowed", nulls: "Allowed", order: "Insertion Order", threadSafe: "No" },
+                      complexity: { access: "O(1)", search: "O(n)", insert: "O(1) Amortized", delete: "O(n)", memory: "Contiguous array. High cache locality." },
+                      whenToUse: "Default List choice when random access/reads dominate.",
+                      realWorld: "REST API JSON data arrays, in-memory result lists.",
+                      methods: [
+                        { name: "ensureCapacity(int minCapacity)", sig: "void ensureCapacity(int minCapacity)", desc: "Increases capacity if necessary to ensure it can hold at least minCapacity elements." },
+                        { name: "trimToSize()", sig: "void trimToSize()", desc: "Trims the capacity of this ArrayList instance to be the list's current size." },
+                        { name: "get(int index)", sig: "E get(int index)", desc: "Returns element at index in O(1)." },
+                        { name: "add(E e)", sig: "boolean add(E e)", desc: "Appends element to the end." }
+                      ],
+                      code: `List<String> list = new ArrayList<>();\nlist.add("Java");\nString s = list.get(0);`,
+                      comparison: "ArrayList is fast for random access; LinkedList is fast for head/tail insertions.",
+                      interview: [{ q: "How does ArrayList resize?", a: "New capacity = oldCapacity + (oldCapacity >> 1) [50% growth], copying via System.arraycopy()." }]
+                    },
+                    {
+                      name: "LinkedList",
+                      type: "list",
+                      pkg: "java.util",
+                      jdk: "JDK 1.2+",
+                      desc: "Doubly-linked list implementation of List and Deque. Each element is wrapped in a Node object.",
+                      rules: { duplicates: "Allowed", nulls: "Allowed", order: "Insertion Order", threadSafe: "No" },
+                      complexity: { access: "O(n)", search: "O(n)", insert: "O(1) at ends", delete: "O(1) at ends", memory: "Heavy node wrapper overhead (24 bytes per node)." },
+                      whenToUse: "When implementing double-ended queue operations.",
+                      realWorld: "Undo-redo history stacks.",
+                      methods: [
+                        { name: "addFirst(E e)", sig: "void addFirst(E e)", desc: "Inserts element at the beginning." },
+                        { name: "addLast(E e)", sig: "void addLast(E e)", desc: "Inserts element at the end." },
+                        { name: "removeFirst()", sig: "E removeFirst()", desc: "Removes and returns first element." },
+                        { name: "removeLast()", sig: "E removeLast()", desc: "Removes and returns last element." }
+                      ],
+                      code: `LinkedList<String> list = new LinkedList<>();\nlist.addFirst("Start");`,
+                      comparison: "LinkedList has high memory overhead compared to ArrayList.",
+                      interview: [{ q: "Why is ArrayList usually preferred over LinkedList?", a: "ArrayList has better CPU cache locality and lower memory overhead." }]
+                    },
+                    {
+                      name: "Vector",
+                      type: "list",
+                      pkg: "java.util",
+                      jdk: "JDK 1.0+",
+                      desc: "Legacy synchronized resizable array implementation. Similar to ArrayList but thread-safe due to method-level synchronization.",
+                      rules: { duplicates: "Allowed", nulls: "Allowed", order: "Insertion Order", threadSafe: "Synchronized (Legacy)" },
+                      complexity: { access: "O(1)", search: "O(n)", insert: "O(1) Amortized", delete: "O(n)", memory: "Contiguous array with synchronization locks." },
+                      whenToUse: "Legacy codebases only. Use ArrayList or CopyOnWriteArrayList in modern Java.",
+                      realWorld: "Legacy Java 1.0 system components.",
+                      methods: [
+                        { name: "addElement(E obj)", sig: "synchronized void addElement(E obj)", desc: "Adds component to the end (Legacy method)." },
+                        { name: "elementAt(int index)", sig: "synchronized E elementAt(int index)", desc: "Returns component at specified index." },
+                        { name: "capacity()", sig: "synchronized int capacity()", desc: "Returns current capacity of the vector." }
+                      ],
+                      code: `Vector<String> v = new Vector<>();\nv.add("Legacy");`,
+                      comparison: "Vector synchronizes every method, creating thread contention. ArrayList is non-synchronized.",
+                      interview: [{ q: "What is the difference between ArrayList and Vector?", a: "Vector is synchronized and grows by 100% (or capacityIncrement), whereas ArrayList is non-synchronized and grows by 50%." }],
+                      children: [
+                        {
+                          name: "Stack",
+                          type: "list",
+                          pkg: "java.util",
+                          jdk: "JDK 1.0+",
+                          desc: "Legacy LIFO (Last-In-First-Out) stack implementation extending Vector.",
+                          rules: { duplicates: "Allowed", nulls: "Allowed", order: "LIFO Stack Order", threadSafe: "Synchronized (Legacy)" },
+                          complexity: { access: "O(1) top", search: "O(n)", insert: "O(1)", delete: "O(1)", memory: "Vector array backing." },
+                          whenToUse: "Legacy code. Use ArrayDeque for modern Stack operations.",
+                          realWorld: "Method call stack emulation in legacy apps.",
+                          methods: [
+                            { name: "push(E item)", sig: "E push(E item)", desc: "Pushes item onto the top of this stack." },
+                            { name: "pop()", sig: "synchronized E pop()", desc: "Removes and returns object at the top of this stack." },
+                            { name: "peek()", sig: "synchronized E peek()", desc: "Looks at object at top of stack without removing it." },
+                            { name: "empty()", sig: "boolean empty()", desc: "Tests if stack is empty." }
+                          ],
+                          code: `Stack<String> stack = new Stack<>();\nstack.push("Item");\nString top = stack.pop();`,
+                          comparison: "Stack extends Vector. ArrayDeque is the modern replacement for Stack.",
+                          interview: [{ q: "Why is java.util.Stack discouraged in modern Java?", a: "Because it extends Vector, inheriting synchronized method locks, and ArrayDeque is much faster." }]
+                        }
+                      ]
+                    },
+                    {
+                      name: "CopyOnWriteArrayList",
+                      type: "concurrent",
+                      pkg: "java.util.concurrent",
+                      jdk: "JDK 1.5+",
+                      desc: "Thread-safe variant of ArrayList where all mutative operations make a fresh copy of the underlying array.",
+                      rules: { duplicates: "Allowed", nulls: "Allowed", order: "Insertion Order", threadSafe: "Thread-Safe (Lock-free reads)" },
+                      complexity: { access: "O(1)", search: "O(n)", insert: "O(n) copy", delete: "O(n) copy", memory: "High temporary memory allocation during writes." },
+                      whenToUse: "Read-heavy event listener lists where writes are rare.",
+                      realWorld: "WebSocket subscriber notification lists.",
+                      methods: [
+                        { name: "addIfAbsent(E e)", sig: "boolean addIfAbsent(E e)", desc: "Appends element if not already present." },
+                        { name: "get(int index)", sig: "E get(int index)", desc: "Lock-free O(1) read." }
+                      ],
+                      code: `CopyOnWriteArrayList<String> list = new CopyOnWriteArrayList<>();\nlist.add("Listener");`,
+                      comparison: "COWArrayList avoids ConcurrentModificationException by iterating over an immutable snapshot array.",
+                      interview: [{ q: "When should you use CopyOnWriteArrayList?", a: "When reads vastly outnumber writes (e.g. 99% reads, 1% writes)." }]
+                    }
+                  ]
+                },
                 {
-                  q: "What are the memory drawbacks of LinkedList?",
-                  a: "Each element requires a Node object overhead (24 bytes in 64-bit JVM) plus two 64-bit pointers (16 bytes). A LinkedList of 1,000 integers takes ~4x more RAM than an ArrayList of 1,000 integers."
-                }
-              ]
-            },
-            {
-              name: "CopyOnWriteArrayList",
-              type: "concurrent",
-              pkg: "java.util.concurrent",
-              jdk: "JDK 1.5+",
-              desc: "A thread-safe variant of ArrayList where all mutative operations (add, set, remove) make a fresh copy of the underlying array.",
-              rules: {
-                duplicates: "Allowed",
-                nulls: "Allowed",
-                order: "Insertion Order",
-                threadSafe: "Thread-Safe (Lock-free reads)"
-              },
-              complexity: {
-                access: "O(1)",
-                accessNote: "Lock-free array reference read",
-                search: "O(n)",
-                searchNote: "Linear scan on snapshot array",
-                insert: "O(n)",
-                insertNote: "Creates brand new full array copy!",
-                delete: "O(n)",
-                deleteNote: "Copies entire array excluding target",
-                memory: "High temporary memory allocation during write operations."
-              },
-              whenToUse: "Ideal for event listener/observer lists where reads vastly outnumber writes (e.g. 1000 reads per 1 write). Iterators never throw ConcurrentModificationException.",
-              realWorld: "Managing active WebSocket event subscribers or UI listener callbacks.",
-              code: `import java.util.concurrent.CopyOnWriteArrayList;
-
-public class CopyOnWriteDemo {
-    public static void main(String[] args) {
-        CopyOnWriteArrayList<String> listeners = new CopyOnWriteArrayList<>();
-        listeners.add("AuthListener");
-        listeners.add("AuditListener");
-
-        // Safe concurrent iteration without explicit synchronization!
-        for (String listener : listeners) {
-            System.out.println("Notifying: " + listener);
-            listeners.add("NewListenerDuringIter"); // Safe! Operates on copy
-        }
-        System.out.println("Final Size: " + listeners.size());
-    }
-}`,
-              comparison: "CopyOnWriteArrayList vs Collections.synchronizedList: CopyOnWriteArrayList allows completely lock-free reads and iteration. SynchronizedList locks the entire list during reads.",
-              interview: [
+                  name: "java.util.Set",
+                  type: "set",
+                  pkg: "java.util",
+                  jdk: "JDK 1.2+",
+                  desc: "A collection containing no duplicate elements, modeling mathematical sets.",
+                  rules: { duplicates: "Strictly Prohibited", nulls: "At most one null", order: "Depends", threadSafe: "No" },
+                  complexity: { access: "N/A", search: "O(1) / O(log n)", insert: "O(1) / O(log n)", delete: "O(1) / O(log n)", memory: "Varies by implementation." },
+                  whenToUse: "When uniqueness must be enforced.",
+                  realWorld: "Unique user IDs, permission sets.",
+                  methods: [
+                    { name: "add(E e)", sig: "boolean add(E e)", desc: "Adds element if not already present." },
+                    { name: "remove(Object o)", sig: "boolean remove(Object o)", desc: "Removes element from set." },
+                    { name: "contains(Object o)", sig: "boolean contains(Object o)", desc: "Checks for presence." }
+                  ],
+                  code: `Set<String> set = new HashSet<>();\nset.add("Admin");`,
+                  comparison: "Set rejects duplicates; List allows duplicates.",
+                  interview: [{ q: "How does Set ensure uniqueness?", a: "By checking hashCode() and equals() before adding." }],
+                  children: [
+                    {
+                      name: "HashSet",
+                      type: "set",
+                      pkg: "java.util",
+                      jdk: "JDK 1.2+",
+                      desc: "Backed by a HashMap instance. Stores elements as keys with dummy values.",
+                      rules: { duplicates: "No", nulls: "Allows 1 null", order: "Unordered", threadSafe: "No" },
+                      complexity: { access: "N/A", search: "O(1)", insert: "O(1)", delete: "O(1)", memory: "HashMap node overhead." },
+                      whenToUse: "Default Set choice for ultra-fast uniqueness checks.",
+                      realWorld: "Visited URL tracking in crawlers.",
+                      methods: [
+                        { name: "add(E e)", sig: "boolean add(E e)", desc: "Adds element in O(1) time." },
+                        { name: "contains(Object o)", sig: "boolean contains(Object o)", desc: "Returns true if set contains element in O(1)." }
+                      ],
+                      code: `Set<String> set = new HashSet<>();\nset.add("A");`,
+                      comparison: "HashSet is unordered; LinkedHashSet preserves insertion order; TreeSet is sorted.",
+                      interview: [{ q: "What must custom objects override for HashSet?", a: "hashCode() and equals()." }]
+                    },
+                    {
+                      name: "LinkedHashSet",
+                      type: "set",
+                      pkg: "java.util",
+                      jdk: "JDK 1.4+",
+                      desc: "Extends HashSet and implements SequencedSet (JDK 21). Maintains a doubly-linked list across entries to preserve insertion order.",
+                      rules: { duplicates: "No", nulls: "Allows 1 null", order: "Insertion Order", threadSafe: "No" },
+                      complexity: { access: "N/A", search: "O(1)", insert: "O(1)", delete: "O(1)", memory: "HashSet + doubly-linked list pointers." },
+                      whenToUse: "When you need Set uniqueness combined with predictable insertion order.",
+                      realWorld: "Recent search query history tags.",
+                      methods: [
+                        { name: "getFirst()", sig: "E getFirst()", desc: "Returns first element (Java 21)." },
+                        { name: "getLast()", sig: "E getLast()", desc: "Returns last element (Java 21)." }
+                      ],
+                      code: `Set<String> set = new LinkedHashSet<>();\nset.add("First");`,
+                      comparison: "LinkedHashSet maintains insertion order iteration at a tiny memory cost over HashSet.",
+                      interview: [{ q: "Does LinkedHashSet reorder on re-insertion?", a: "No, insertion order is preserved from first add." }]
+                    },
+                    {
+                      name: "SortedSet",
+                      type: "set",
+                      pkg: "java.util",
+                      jdk: "JDK 1.2+",
+                      desc: "A Set that further provides a total ordering on its elements (natural or Comparator).",
+                      rules: { duplicates: "No", nulls: "No nulls", order: "Sorted Order", threadSafe: "No" },
+                      complexity: { access: "O(log n)", search: "O(log n)", insert: "O(log n)", delete: "O(log n)", memory: "Tree node overhead." },
+                      whenToUse: "When sorted uniqueness is required.",
+                      realWorld: "Sorted priority lists.",
+                      methods: [
+                        { name: "first()", sig: "E first()", desc: "Returns first (lowest) element." },
+                        { name: "last()", sig: "E last()", desc: "Returns last (highest) element." },
+                        { name: "subSet(E from, E to)", sig: "SortedSet<E> subSet(E from, E to)", desc: "Returns view of portion of set." }
+                      ],
+                      code: `SortedSet<String> set = new TreeSet<>();`,
+                      comparison: "SortedSet extends Set with sorting capabilities.",
+                      interview: [{ q: "What is the primary implementation of SortedSet?", a: "TreeSet." }],
+                      children: [
+                        {
+                          name: "NavigableSet",
+                          type: "interface",
+                          pkg: "java.util",
+                          jdk: "JDK 1.6+",
+                          desc: "Extends SortedSet with navigation methods reporting closest matches (e.g. lower, floor, ceiling, higher).",
+                          rules: { duplicates: "No", nulls: "No nulls", order: "Sorted Navigable", threadSafe: "No" },
+                          complexity: { access: "O(log n)", search: "O(log n)", insert: "O(log n)", delete: "O(log n)", memory: "Tree node structure." },
+                          whenToUse: "When searching for closest items in sorted ranges.",
+                          realWorld: "Price range filtering in e-commerce.",
+                          methods: [
+                            { name: "ceiling(E e)", sig: "E ceiling(E e)", desc: "Returns least element >= e, or null if none." },
+                            { name: "floor(E e)", sig: "E floor(E e)", desc: "Returns greatest element <= e, or null if none." },
+                            { name: "higher(E e)", sig: "E higher(E e)", desc: "Returns least element > e." },
+                            { name: "lower(E e)", sig: "E lower(E e)", desc: "Returns greatest element < e." }
+                          ],
+                          code: `NavigableSet<Integer> set = new TreeSet<>();\nInteger closest = set.ceiling(50);`,
+                          comparison: "NavigableSet adds navigation query methods to SortedSet.",
+                          interview: [{ q: "What method finds the greatest element less than or equal to key?", a: "floor(key)." }],
+                          children: [
+                            {
+                              name: "TreeSet",
+                              type: "set",
+                              pkg: "java.util",
+                              jdk: "JDK 1.2+",
+                              desc: "NavigableSet implementation backed by a TreeMap (Red-Black Tree). Elements are sorted by natural order or Comparator.",
+                              rules: { duplicates: "No", nulls: "Prohibited (NullPointerException)", order: "Sorted", threadSafe: "No" },
+                              complexity: { access: "O(log n)", search: "O(log n)", insert: "O(log n)", delete: "O(log n)", memory: "Red-Black tree node pointers." },
+                              whenToUse: "When elements must remain continuously sorted.",
+                              realWorld: "Leaderboards, sorted time slots.",
+                              methods: [
+                                { name: "add(E e)", sig: "boolean add(E e)", desc: "Inserts element in sorted Red-Black tree position in O(log n)." },
+                                { name: "headSet(E to)", sig: "SortedSet<E> headSet(E to)", desc: "Returns elements strictly less than to." }
+                              ],
+                              code: `NavigableSet<Integer> set = new TreeSet<>();\nset.add(42);\nset.add(10);`,
+                              comparison: "TreeSet uses compareTo() for uniqueness instead of equals().",
+                              interview: [{ q: "Why does TreeSet throw NullPointerException on null?", a: "Because it compares elements using compareTo(), which fails on null." }]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
                 {
-                  q: "Why does CopyOnWriteArrayList iterator not throw ConcurrentModificationException?",
-                  a: "The iterator works on an immutable snapshot array captured at the exact moment the iterator was created. Writes create a new array and do not alter the snapshot array."
-                }
-              ]
-            }
-          ]
-        },
-        {
-          name: "java.util.Set",
-          type: "set",
-          pkg: "java.util",
-          jdk: "JDK 1.2+",
-          desc: "A Collection that contains no duplicate elements. Models the mathematical set abstraction.",
-          rules: {
-            duplicates: "STRICTLY PROHIBITED",
-            nulls: "At most ONE null element (impl dependent)",
-            order: "Depends on implementation",
-            threadSafe: "No"
-          },
-          complexity: {
-            access: "N/A",
-            accessNote: "No index-based positional access",
-            search: "O(1) / O(log n)",
-            searchNote: "O(1) for HashSet, O(log n) for TreeSet",
-            insert: "O(1) / O(log n)",
-            insertNote: "Prevents duplicates upon insert",
-            delete: "O(1) / O(log n)",
-            deleteNote: "Hash bucket or tree balance update",
-            memory: "Varies by implementation."
-          },
-          whenToUse: "Use Set whenever uniqueness must be enforced and duplicate items must be rejected.",
-          realWorld: "Unique IP address logs, user role permission sets, deduplicating search filters.",
-          code: `import java.util.*;
-
-public class SetDemo {
-    public static void main(String[] args) {
-        Set<String> roles = new HashSet<>();
-        roles.add("ADMIN");
-        roles.add("USER");
-        boolean addedDuplicate = roles.add("ADMIN"); // Returns false!
-
-        System.out.println("Added duplicate ADMIN? " + addedDuplicate);
-        System.out.println("Roles Set: " + roles);
-    }
-}`,
-          comparison: "Set vs List: Set guarantees uniqueness and lacks integer index access. List allows duplicates and maintains index positions.",
-          interview: [
-            {
-              q: "How does Set enforce uniqueness?",
-              a: "Implementations like HashSet invoke hashCode() to locate the hash bucket and then equals() to confirm equality before inserting."
-            }
-          ],
-          children: [
-            {
-              name: "HashSet",
-              type: "set",
-              pkg: "java.util",
-              jdk: "JDK 1.2+",
-              desc: "Backed by a HashMap instance. Stores elements as keys in the internal HashMap with a dummy 'PRESENT' value object.",
-              rules: {
-                duplicates: "No",
-                nulls: "Allows 1 null",
-                order: "NO ORDER GUARANTEE (Unordered)",
-                threadSafe: "No"
-              },
-              complexity: {
-                access: "N/A",
-                accessNote: "Must use Iterator or for-each",
-                search: "O(1) Average",
-                searchNote: "O(log n) worst case if bucket treeified",
-                insert: "O(1) Average",
-                insertNote: "Hash collision fallback to Tree/Chain",
-                delete: "O(1) Average",
-                deleteNote: "Direct hash key removal",
-                memory: "Substantial overhead. Each entry allocates a HashMap.Node containing hash, key, value, and next pointer."
-              },
-              whenToUse: "Default Set implementation when you need ultra-fast lookup/uniqueness checks and don't care about element ordering.",
-              realWorld: "Checking blacklisted JWT tokens, tracking visited URLs in a web crawler.",
-              code: `import java.util.*;
-
-public class HashSetDemo {
-    public static void main(String[] args) {
-        Set<String> visitedUrls = new HashSet<>();
-        visitedUrls.add("https://example.com/home");
-        visitedUrls.add("https://example.com/about");
-
-        if (visitedUrls.contains("https://example.com/home")) {
-            System.out.println("URL already crawled!");
-        }
-    }
-}`,
-              comparison: "HashSet vs TreeSet: HashSet is O(1) and unordered. TreeSet is O(log n) and maintains natural/Comparator sorted order.",
-              interview: [
-                {
-                  q: "Why must custom objects override hashCode() and equals() when stored in HashSet?",
-                  a: "HashSet relies on hashCode() to determine the array bucket index. If two equal objects produce different hash codes, they will land in different buckets, violating uniqueness."
-                }
-              ]
-            },
-            {
-              name: "LinkedHashSet",
-              type: "set",
-              pkg: "java.util",
-              jdk: "JDK 1.4+",
-              desc: "Extends HashSet and implements SequencedSet (JDK 21). Maintains a doubly-linked list running through all entries to preserve insertion order.",
-              rules: {
-                duplicates: "No",
-                nulls: "Allows 1 null",
-                order: "Insertion Order Preserved",
-                threadSafe: "No"
-              },
-              complexity: {
-                access: "O(1)",
-                accessNote: "getFirst() / getLast() in JDK 21",
-                search: "O(1)",
-                searchNote: "Hash table bucket lookup",
-                insert: "O(1)",
-                insertNote: "Hash bucket write + linked list update",
-                delete: "O(1)",
-                deleteNote: "Unlink node pointers",
-                memory: "Slightly higher memory than HashSet due to extra doubly-linked list pointers."
-              },
-              whenToUse: "Use when you need Set uniqueness combined with predictable insertion order iteration.",
-              realWorld: "Deduplicated recent user search queries display widget.",
-              code: `import java.util.*;
-
-public class LinkedHashSetDemo {
-    public static void main(String[] args) {
-        Set<String> tags = new LinkedHashSet<>();
-        tags.add("Java");
-        tags.add("Spring");
-        tags.add("Docker");
-
-        // Iterates strictly in insertion order: Java -> Spring -> Docker
-        tags.forEach(System.out::println);
-    }
-}`,
-              comparison: "LinkedHashSet vs HashSet: LinkedHashSet incurs tiny pointer overhead to maintain a doubly linked list, preserving insertion order during iteration.",
-              interview: [
-                {
-                  q: "Does LinkedHashSet reorder an element if re-inserted?",
-                  a: "No. Re-inserting an existing key into a LinkedHashSet does not affect its position in the insertion-order linked list."
-                }
-              ]
-            },
-            {
-              name: "TreeSet",
-              type: "set",
-              pkg: "java.util",
-              jdk: "JDK 1.2+",
-              desc: "Backed by a TreeMap (Red-Black Tree balance binary search tree). Elements are sorted according to natural ordering or custom Comparator.",
-              rules: {
-                duplicates: "No",
-                nulls: "NOT ALLOWED (NullPointerException on compare)",
-                order: "Sorted Order (Natural or Comparator)",
-                threadSafe: "No"
-              },
-              complexity: {
-                access: "O(log n)",
-                accessNote: "first(), last(), floor(), ceiling()",
-                search: "O(log n)",
-                searchNote: "Binary search down tree nodes",
-                insert: "O(log n)",
-                insertNote: "Red-Black Tree rotation & rebalancing",
-                delete: "O(log n)",
-                deleteNote: "Tree node removal & rebalancing",
-                memory: "Tree node allocation with parent, left, right, and color boolean pointers."
-              },
-              whenToUse: "Use when you need a deduplicated set that must continuously remain sorted or perform range queries.",
-              realWorld: "Gaming leaderboard score ranks, scheduling calendar appointment time slots.",
-              code: `import java.util.*;
-
-public class TreeSetDemo {
-    public static void main(String[] args) {
-        NavigableSet<Integer> scores = new TreeSet<>();
-        scores.addAll(List.of(85, 42, 99, 73, 61));
-
-        System.out.println("Sorted Scores: " + scores); // [42, 61, 73, 85, 99]
-        System.out.println("Highest Score: " + scores.last());
-        System.out.println("Scores < 70: " + scores.headSet(70));
-    }
-}`,
-              comparison: "TreeSet vs HashSet: TreeSet uses compareTo()/compare() instead of equals() to test uniqueness. Elements in TreeSet must implement Comparable or provide a Comparator.",
-              interview: [
-                {
-                  q: "How does TreeSet determine duplicate elements?",
-                  a: "TreeSet uses compareTo() or Comparator.compare(). If compare(a, b) == 0, the elements are treated as duplicates, even if equals() returns false!"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          name: "java.util.Queue",
-          type: "queue",
-          pkg: "java.util",
-          jdk: "JDK 1.5+",
-          desc: "A collection designed for holding elements prior to processing. Typically orders elements in FIFO (First-In-First-Out) or priority order.",
-          rules: {
-            duplicates: "Allowed",
-            nulls: "Prohibited in modern implementations",
-            order: "FIFO / Priority order",
-            threadSafe: "Varies (BlockingQueue variants are thread-safe)"
-          },
-          complexity: {
-            access: "O(1)",
-            accessNote: "peek() / element() inspect head",
-            search: "O(n)",
-            searchNote: "Traverse queue items",
-            insert: "O(1) / O(log n)",
-            insertNote: "offer() / add()",
-            delete: "O(1) / O(log n)",
-            deleteNote: "poll() / remove() head item",
-            memory: "Efficient array or node structures."
-          },
-          whenToUse: "Use Queue for asynchronous task scheduling, message buffers, and worker thread task distribution.",
-          realWorld: "Print spooler jobs, web server request processing queues.",
-          code: `import java.util.*;
-
-public class QueueDemo {
-    public static void main(String[] args) {
-        Queue<String> requests = new LinkedList<>();
-        requests.offer("Req 1");
-        requests.offer("Req 2");
-
-        System.out.println("Processing: " + requests.poll()); // Req 1
-    }
-}`,
-          comparison: "Queue methods offer()/poll()/peek() return special values (false/null) on failure, whereas add()/remove()/element() throw exceptions.",
-          interview: [
-            {
-              q: "Why offer() over add() in Queue?",
-              a: "When working with bounded queues, add() throws IllegalStateException if capacity is full, while offer() gracefully returns false."
-            }
-          ],
-          children: [
-            {
-              name: "PriorityQueue",
-              type: "queue",
-              pkg: "java.util",
-              jdk: "JDK 1.5+",
-              desc: "An unbounded priority queue backed by a balanced binary min-heap array. Elements are ordered by natural ordering or Comparator.",
-              rules: {
-                duplicates: "Allowed",
-                nulls: "NOT ALLOWED",
-                order: "Heap Priority Order (Head is smallest element)",
-                threadSafe: "No (Use PriorityBlockingQueue)"
-              },
-              complexity: {
-                access: "O(1)",
-                accessNote: "peek() gets min heap root",
-                search: "O(n)",
-                searchNote: "Linear scan across heap array",
-                insert: "O(log n)",
-                insertNote: "Sift-up heap rebalance",
-                delete: "O(log n)",
-                deleteNote: "poll() triggers sift-down heap rebalance",
-                memory: "Dynamic array element storage. Compact memory footprint."
-              },
-              whenToUse: "Use when processing items based on priority rank rather than insertion order.",
-              realWorld: "Dijkstra's shortest path graph algorithm, OS CPU process scheduler queues.",
-              code: `import java.util.*;
-
-public class PriorityQueueDemo {
-    public static void main(String[] args) {
-        // Max-Heap PriorityQueue via custom comparator
-        Queue<Integer> highPrioFirst = new PriorityQueue<>(Comparator.reverseOrder());
-        highPrioFirst.offer(10);
-        highPrioFirst.offer(50);
-        highPrioFirst.offer(30);
-
-        System.out.println("Highest Priority Polled: " + highPrioFirst.poll()); // 50
-    }
-}`,
-              comparison: "PriorityQueue vs Standard Queue: PriorityQueue does NOT follow FIFO. Head element is always the minimum/maximum priority element.",
-              interview: [
-                {
-                  q: "What is the time complexity to build a PriorityQueue from an existing list?",
-                  a: "Using the heapify algorithm (constructor passing Collection), building a PriorityQueue takes O(n) time, faster than inserting elements individually O(n log n)."
-                }
-              ]
-            },
-            {
-              name: "ArrayDeque",
-              type: "queue",
-              pkg: "java.util",
-              jdk: "JDK 1.6+",
-              desc: "Resizable array implementation of Deque (Double Ended Queue). Has no capacity restrictions and outperforms Stack and LinkedList.",
-              rules: {
-                duplicates: "Allowed",
-                nulls: "STRICTLY PROHIBITED",
-                order: "Insertion / Stack / Queue Order",
-                threadSafe: "No"
-              },
-              complexity: {
-                access: "O(1)",
-                accessNote: "peekFirst() / peekLast()",
-                search: "O(n)",
-                searchNote: "Array traversal",
-                insert: "O(1) Amortized",
-                insertNote: "Circular array pointer push",
-                delete: "O(1)",
-                deleteNote: "Circular array head/tail pop",
-                memory: "Contiguous circular array buffer. Extremely lightweight."
-              },
-              whenToUse: "The OFFICIAL recommended class for both LIFO Stacks (replacing legacy Stack) and FIFO Deques in Java!",
-              realWorld: "Browser navigation back/forward stack, expression parser evaluator.",
-              code: `import java.util.*;
-
-public class ArrayDequeDemo {
-    public static void main(String[] args) {
-        Deque<String> stack = new ArrayDeque<>();
-        stack.push("Page 1");
-        stack.push("Page 2");
-
-        System.out.println("Current Page: " + stack.peek()); // Page 2
-        System.out.println("Popped: " + stack.pop());       // Page 2
-    }
-}`,
-              comparison: "ArrayDeque vs Legacy Stack: Legacy java.util.Stack extends Vector and synchronizes every method causing slow performance. ArrayDeque is non-synchronized and faster.",
-              interview: [
-                {
-                  q: "Why is ArrayDeque preferred over Stack and LinkedList?",
-                  a: "ArrayDeque is backed by a circular array without object allocation overhead per node (unlike LinkedList) and lacks legacy method synchronization locks (unlike Stack)."
+                  name: "java.util.Queue",
+                  type: "queue",
+                  pkg: "java.util",
+                  jdk: "JDK 1.5+",
+                  desc: "Collection designed for holding elements prior to processing in FIFO or priority order.",
+                  rules: { duplicates: "Allowed", nulls: "Prohibited in modern implementations", order: "FIFO / Priority", threadSafe: "Varies" },
+                  complexity: { access: "O(1)", search: "O(n)", insert: "O(1) / O(log n)", delete: "O(1) / O(log n)", memory: "Efficient structures." },
+                  whenToUse: "Task scheduling and message queues.",
+                  realWorld: "Print server job queues.",
+                  methods: [
+                    { name: "offer(E e)", sig: "boolean offer(E e)", desc: "Inserts element into queue." },
+                    { name: "poll()", sig: "E poll()", desc: "Retrieves and removes head of queue." },
+                    { name: "peek()", sig: "E peek()", desc: "Retrieves, but does not remove, head of queue." }
+                  ],
+                  code: `Queue<String> q = new LinkedList<>();\nq.offer("Task");`,
+                  comparison: "Queue methods offer/poll return special values on failure; add/remove throw exceptions.",
+                  interview: [{ q: "What is the difference between offer() and add()?", a: "offer() returns false if capacity is full; add() throws an exception." }],
+                  children: [
+                    {
+                      name: "PriorityQueue",
+                      type: "queue",
+                      pkg: "java.util",
+                      jdk: "JDK 1.5+",
+                      desc: "Unbounded priority queue backed by a balanced binary min-heap array. Ordered by natural order or Comparator.",
+                      rules: { duplicates: "Allowed", nulls: "Prohibited", order: "Heap Priority Order", threadSafe: "No" },
+                      complexity: { access: "O(1)", search: "O(n)", insert: "O(log n)", delete: "O(log n)", memory: "Dynamic array heap." },
+                      whenToUse: "Processing items by priority rank.",
+                      realWorld: "Dijkstra's shortest path algorithm.",
+                      methods: [
+                        { name: "offer(E e)", sig: "boolean offer(E e)", desc: "Inserts element into priority heap in O(log n)." },
+                        { name: "poll()", sig: "E poll()", desc: "Removes highest priority element in O(log n)." }
+                      ],
+                      code: `Queue<Integer> pq = new PriorityQueue<>();\npq.offer(10);`,
+                      comparison: "PriorityQueue orders by priority, not FIFO.",
+                      interview: [{ q: "What is the time complexity of heapify in PriorityQueue?", a: "O(n)." }]
+                    },
+                    {
+                      name: "java.util.Deque",
+                      type: "queue",
+                      pkg: "java.util",
+                      jdk: "JDK 1.6+",
+                      desc: "Double-ended queue supporting element insertion and removal at both ends.",
+                      rules: { duplicates: "Allowed", nulls: "Prohibited", order: "LIFO / FIFO", threadSafe: "No" },
+                      complexity: { access: "O(1)", search: "O(n)", insert: "O(1)", delete: "O(1)", memory: "Array or Node pointers." },
+                      whenToUse: "When stack or double-ended queue operations are required.",
+                      realWorld: "Browser history back/forward buffers.",
+                      methods: [
+                        { name: "addFirst(E e)", sig: "void addFirst(E e)", desc: "Inserts at front." },
+                        { name: "addLast(E e)", sig: "void addLast(E e)", desc: "Inserts at tail." },
+                        { name: "pollFirst()", sig: "E pollFirst()", desc: "Removes from front." },
+                        { name: "pollLast()", sig: "E pollLast()", desc: "Removes from tail." }
+                      ],
+                      code: `Deque<String> deque = new ArrayDeque<>();\ndeque.addFirst("A");`,
+                      comparison: "Deque unifies Stack and Queue operations.",
+                      interview: [{ q: "What class implements Deque recommended over Stack?", a: "ArrayDeque." }],
+                      children: [
+                        {
+                          name: "ArrayDeque",
+                          type: "queue",
+                          pkg: "java.util",
+                          jdk: "JDK 1.6+",
+                          desc: "Resizable circular array implementation of Deque. Outperforms Stack and LinkedList.",
+                          rules: { duplicates: "Allowed", nulls: "Prohibited", order: "LIFO / FIFO", threadSafe: "No" },
+                          complexity: { access: "O(1)", search: "O(n)", insert: "O(1) Amortized", delete: "O(1)", memory: "Contiguous circular buffer." },
+                          whenToUse: "Recommended for all Stack and Queue use cases.",
+                          realWorld: "Expression evaluators, DFS graph search.",
+                          methods: [
+                            { name: "push(E e)", sig: "void push(E e)", desc: "Pushes element onto stack (front)." },
+                            { name: "pop()", sig: "E pop()", desc: "Pops element from stack." },
+                            { name: "addFirst(E e)", sig: "void addFirst(E e)", desc: "Circular array head insertion." }
+                          ],
+                          code: `Deque<String> stack = new ArrayDeque<>();\nstack.push("Item");\nString item = stack.pop();`,
+                          comparison: "ArrayDeque has no node allocation overhead and no legacy synchronization locks.",
+                          interview: [{ q: "Why is ArrayDeque faster than LinkedList?", a: "No node object allocation overhead and superior CPU cache locality." }]
+                        }
+                      ]
+                    },
+                    {
+                      name: "BlockingQueue",
+                      type: "interface",
+                      pkg: "java.util.concurrent",
+                      jdk: "JDK 1.5+",
+                      desc: "A Queue that additionally supports operations that wait for the queue to become non-empty when retrieving, and space to become available when storing.",
+                      rules: { duplicates: "Allowed", nulls: "Prohibited", order: "FIFO", threadSafe: "Thread-Safe" },
+                      complexity: { access: "O(1)", search: "O(n)", insert: "O(1)", delete: "O(1)", memory: "Lock and condition queue overhead." },
+                      whenToUse: "Producer-Consumer multi-threaded pipelines.",
+                      realWorld: "Worker thread task dispatchers.",
+                      methods: [
+                        { name: "put(E e)", sig: "void put(E e) throws InterruptedException", desc: "Inserts element, blocking if necessary." },
+                        { name: "take()", sig: "E take() throws InterruptedException", desc: "Retrieves and removes head, waiting if empty." },
+                        { name: "remainingCapacity()", sig: "int remainingCapacity()", desc: "Returns remaining capacity." }
+                      ],
+                      code: `BlockingQueue<String> bq = new ArrayBlockingQueue<>(100);\nbq.put("Task");`,
+                      comparison: "BlockingQueue blocks threads on empty/full conditions.",
+                      interview: [{ q: "What is put() vs offer() in BlockingQueue?", a: "put() blocks until space is available; offer() returns false or times out." }],
+                      children: [
+                        {
+                          name: "LinkedBlockingQueue",
+                          type: "concurrent",
+                          pkg: "java.util.concurrent",
+                          jdk: "JDK 1.5+",
+                          desc: "Optionally-bounded blocking queue backed by linked nodes. Uses separate locks for puts and takes for high throughput.",
+                          rules: { duplicates: "Allowed", nulls: "Prohibited", order: "FIFO", threadSafe: "Thread-Safe (Dual Lock)" },
+                          complexity: { access: "O(1)", search: "O(n)", insert: "O(1)", delete: "O(1)", memory: "Node wrappers + ReentrantLocks." },
+                          whenToUse: "Producer-consumer queue with high concurrency.",
+                          realWorld: "Thread pool task execution queues.",
+                          methods: [
+                            { name: "put(E e)", sig: "void put(E e)", desc: "Thread-safe blocking insert." },
+                            { name: "take()", sig: "E take()", desc: "Thread-safe blocking remove." }
+                          ],
+                          code: `BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>(1000);`,
+                          comparison: "LinkedBlockingQueue uses separate put and take locks, reducing lock contention.",
+                          interview: [{ q: "How does LinkedBlockingQueue achieve high concurrency?", a: "By using separate locks for head and tail operations." }]
+                        },
+                        {
+                          name: "PriorityBlockingQueue",
+                          type: "concurrent",
+                          pkg: "java.util.concurrent",
+                          jdk: "JDK 1.5+",
+                          desc: "Unbounded thread-safe priority blocking queue backed by a binary heap.",
+                          rules: { duplicates: "Allowed", nulls: "Prohibited", order: "Priority Order", threadSafe: "Thread-Safe" },
+                          complexity: { access: "O(1)", search: "O(n)", insert: "O(log n)", delete: "O(log n)", memory: "Heap array + ReentrantLock." },
+                          whenToUse: "Thread-safe priority task scheduling.",
+                          realWorld: "Priority-based job schedulers in distributed servers.",
+                          methods: [
+                            { name: "put(E e)", sig: "void put(E e)", desc: "Inserts into heap (unbounded, never blocks on full)." },
+                            { name: "take()", sig: "E take()", desc: "Blocks if priority queue is empty." }
+                          ],
+                          code: `BlockingQueue<String> pbq = new PriorityBlockingQueue<>();`,
+                          comparison: "Thread-safe equivalent of PriorityQueue with blocking retrieval.",
+                          interview: [{ q: "Is PriorityBlockingQueue bounded?", a: "Unbounded (though resource exhaustion can occur if memory runs out)." }]
+                        }
+                      ]
+                    }
+                  ]
                 }
               ]
             }
@@ -984,241 +864,275 @@ public class ArrayDequeDemo {
         },
         {
           name: "java.util.Map",
-          type: "map",
+          type: "interface",
           pkg: "java.util",
           jdk: "JDK 1.2+",
-          desc: "An object that maps keys to values. A map cannot contain duplicate keys; each key maps to at most one value.",
-          rules: {
-            duplicates: "Keys MUST be unique; Values can duplicate",
-            nulls: "Depends on implementation",
-            order: "Depends on implementation",
-            threadSafe: "No (Use ConcurrentHashMap)"
-          },
-          complexity: {
-            access: "O(1) / O(log n)",
-            accessNote: "get(key) lookup",
-            search: "O(n)",
-            searchNote: "containsValue() scan",
-            insert: "O(1) / O(log n)",
-            insertNote: "put(key, value)",
-            delete: "O(1) / O(log n)",
-            deleteNote: "remove(key)",
-            memory: "Node entry pair allocations."
-          },
-          whenToUse: "Use Map whenever you need fast key-based dictionary lookups, indexing, or key-value caching.",
-          realWorld: "User profile cache by User ID, HTTP Header key-value pairs.",
-          code: `import java.util.*;
-
-public class MapDemo {
-    public static void main(String[] args) {
-        Map<String, Integer> inventory = new HashMap<>();
-        inventory.put("Laptops", 15);
-        inventory.put("Phones", 40);
-
-        // Compute default if absent (JDK 8)
-        inventory.computeIfAbsent("Tablets", k -> 10);
-        System.out.println("Inventory Map: " + inventory);
-    }
-}`,
-          comparison: "Map is not a Collection, but provides Collection Views via keySet(), values(), and entrySet().",
-          interview: [
-            {
-              q: "What new functional Map methods were added in Java 8?",
-              a: "computeIfAbsent(), computeIfPresent(), merge(), getOrDefault(), putIfAbsent(), and forEach()."
-            }
+          desc: "An object that maps keys to values. Maps cannot contain duplicate keys; each key maps to at most one value. Stands separate from Collection.",
+          rules: { duplicates: "Unique keys required", nulls: "Depends on implementation", order: "Depends", threadSafe: "No" },
+          complexity: { access: "O(1) / O(log n)", search: "O(n)", insert: "O(1) / O(log n)", delete: "O(1) / O(log n)", memory: "Key-value entry node pairs." },
+          whenToUse: "For dictionary lookups, caching, and key-value mappings.",
+          realWorld: "User session stores, configuration dictionaries.",
+          methods: [
+            { name: "put(K key, V value)", sig: "V put(K key, V value)", desc: "Associates specified value with specified key." },
+            { name: "get(Object key)", sig: "V get(Object key)", desc: "Returns value to which specified key is mapped." },
+            { name: "remove(Object key)", sig: "V remove(Object key)", desc: "Removes mapping for key if present." },
+            { name: "containsKey(Object key)", sig: "boolean containsKey(Object key)", desc: "Returns true if map contains mapping for key." },
+            { name: "keySet()", sig: "Set<K> keySet()", desc: "Returns Set view of keys." }
           ],
+          code: `Map<String, String> map = new HashMap<>();\nmap.put("Key", "Value");`,
+          comparison: "Map works with Key-Value pairs; Collection works with single elements.",
+          interview: [{ q: "Why doesn't Map extend Collection?", a: "Because Map works with key-value pairs (Map.Entry), whereas Collection works with individual elements." }],
           children: [
             {
               name: "HashMap",
               type: "map",
               pkg: "java.util",
               jdk: "JDK 1.2+",
-              desc: "Hash table implementation backing array of buckets (Node<K,V>[]). In JDK 8+, buckets switch from linked lists to Red-Black Trees when bin count > 8 (TREEIFY_THRESHOLD).",
-              rules: {
-                duplicates: "Unique Keys required",
-                nulls: "Allows 1 null key & multiple null values",
-                order: "UNORDERED",
-                threadSafe: "No (Can enter infinite loop during concurrent resize in Java 7)"
-              },
-              complexity: {
-                access: "O(1) Average",
-                accessNote: "O(log n) worst case if bucket treeified",
-                search: "O(1) key / O(n) value",
-                searchNote: "Direct hash bucket offset",
-                insert: "O(1) Average",
-                insertNote: "Resizes when size > capacity * loadFactor (0.75)",
-                delete: "O(1) Average",
-                deleteNote: "Direct node key deletion",
-                memory: "Default initial capacity = 16. Default load factor = 0.75. Node contains hash, key, value, next."
-              },
-              whenToUse: "The standard default Map choice for general key-value caching and lookups.",
-              realWorld: "In-memory database index, session state cache.",
-              code: `import java.util.*;
-
-public class HashMapDemo {
-    public static void main(String[] args) {
-        Map<String, String> userSessions = new HashMap<>();
-        userSessions.put("session_123", "User_Alice");
-        userSessions.put("session_456", "User_Bob");
-
-        System.out.println("Lookup: " + userSessions.get("session_123"));
-    }
-}`,
-              comparison: "HashMap vs Hashtable: HashMap is non-synchronized, faster, and allows null keys/values. Hashtable is synchronized legacy code.",
-              interview: [
-                {
-                  q: "Explain HashMap performance changes introduced in Java 8.",
-                  a: "In Java 8, when hash collisions cause a bucket list length to exceed 8 and table capacity >= 64, the bucket turns into a Red-Black Tree, improving worst-case search time from O(n) to O(log n)."
-                }
-              ]
+              desc: "Hash table implementation backing an array of buckets. Converts bucket lists to Red-Black Trees when bin count > 8 in Java 8+.",
+              rules: { duplicates: "Unique keys", nulls: "Allows 1 null key & multiple null values", order: "Unordered", threadSafe: "No" },
+              complexity: { access: "O(1) Avg", search: "O(1) key / O(n) value", insert: "O(1) Avg", delete: "O(1) Avg", memory: "Bucket array + Node entries." },
+              whenToUse: "Default Map choice for general key-value lookups.",
+              realWorld: "In-memory caches, configuration property maps.",
+              methods: [
+                { name: "put(K k, V v)", sig: "V put(K k, V v)", desc: "Stores key-value pair in hash bucket in O(1)." },
+                { name: "get(Object k)", sig: "V get(Object k)", desc: "Retrieves value by hashing key in O(1)." },
+                { name: "getOrDefault(Object k, V def)", sig: "V getOrDefault(Object k, V def)", desc: "Returns value or default if absent." },
+                { name: "putIfAbsent(K k, V v)", sig: "V putIfAbsent(K k, V v)", desc: "Puts only if key is not already associated." }
+              ],
+              code: `Map<String, Integer> map = new HashMap<>();\nmap.put("Score", 95);`,
+              comparison: "HashMap is non-synchronized and faster than Hashtable; allows null keys.",
+              interview: [{ q: "How did Java 8 improve HashMap?", a: "Bucket collision lists turn into Red-Black Trees when size exceeds 8, improving worst-case search from O(n) to O(log n)." }]
             },
             {
               name: "LinkedHashMap",
               type: "map",
               pkg: "java.util",
               jdk: "JDK 1.4+",
-              desc: "Hash table and doubly linked list implementation of Map. Implements SequencedMap (JDK 21). Preserves insertion order or access order.",
-              rules: {
-                duplicates: "Unique Keys",
-                nulls: "Allows 1 null key",
-                order: "Insertion Order OR Access Order (for LRU Cache)",
-                threadSafe: "No"
-              },
-              complexity: {
-                access: "O(1)",
-                accessNote: "Hash lookup + doubly-linked list touch",
-                search: "O(1) key",
-                searchNote: "Hash table bucket lookup",
-                insert: "O(1)",
-                insertNote: "Hash write + link pointers update",
-                delete: "O(1)",
-                deleteNote: "Unlink entry nodes",
-                memory: "Slightly higher overhead than HashMap due to before/after linked list pointers."
-              },
-              whenToUse: "Perfect for creating Least Recently Used (LRU) Caches by overriding removeEldestEntry()!",
-              realWorld: "In-memory LRU cache eviction buffer for database query responses.",
-              code: `import java.util.*;
-
-public class LRUCacheDemo {
-    public static void main(String[] args) {
-        // Simple LRU Cache capped at 3 entries
-        Map<Integer, String> lruCache = new LinkedHashMap<>(16, 0.75f, true) {
-            @Override
-            protected boolean removeEldestEntry(Map.Entry<Integer, String> eldest) {
-                return size() > 3; // Evict when size exceeds 3
-            }
-        };
-
-        lruCache.put(1, "A");
-        lruCache.put(2, "B");
-        lruCache.put(3, "C");
-        lruCache.get(1); // Access key 1 (moves it to back)
-        lruCache.put(4, "D"); // Key 2 will be evicted!
-
-        System.out.println("LRU Cache Contents: " + lruCache);
-    }
-}`,
-              comparison: "LinkedHashMap vs HashMap: LinkedHashMap maintains a doubly-linked list across entries, making iteration order predictable.",
-              interview: [
+              desc: "Hash table and doubly-linked list implementation of Map. Implements SequencedMap (JDK 21). Preserves insertion or access order.",
+              rules: { duplicates: "Unique keys", nulls: "Allows 1 null key", order: "Insertion or Access Order", threadSafe: "No" },
+              complexity: { access: "O(1)", search: "O(1)", insert: "O(1)", delete: "O(1)", memory: "HashMap + doubly-linked list pointers." },
+              whenToUse: "Building LRU caches or predictable iteration order maps.",
+              realWorld: "LRU cache eviction buffers.",
+              methods: [
+                { name: "removeEldestEntry(Map.Entry eldest)", sig: "protected boolean removeEldestEntry(Map.Entry eldest)", desc: "Returns true if eldest entry should be removed (used for LRU caches)." },
+                { name: "put(K k, V v)", sig: "V put(K k, V v)", desc: "Inserts while maintaining linked order." }
+              ],
+              code: `Map<Integer, String> lru = new LinkedHashMap<>(16, 0.75f, true);\nlru.put(1, "A");`,
+              comparison: "LinkedHashMap maintains entry links to preserve order, unlike unordered HashMap.",
+              interview: [{ q: "How do you implement an LRU cache with LinkedHashMap?", a: "Pass accessOrder=true in constructor and override removeEldestEntry()." }]
+            },
+            {
+              name: "SortedMap",
+              type: "interface",
+              pkg: "java.util",
+              jdk: "JDK 1.2+",
+              desc: "A Map that further provides a total ordering on its keys.",
+              rules: { duplicates: "Unique keys", nulls: "No null keys", order: "Sorted by key", threadSafe: "No" },
+              complexity: { access: "O(log n)", search: "O(log n)", insert: "O(log n)", delete: "O(log n)", memory: "Tree node structures." },
+              whenToUse: "When key-sorted maps are required.",
+              realWorld: "Sorted configuration indices.",
+              methods: [
+                { name: "firstKey()", sig: "K firstKey()", desc: "Returns first (lowest) key." },
+                { name: "lastKey()", sig: "K lastKey()", desc: "Returns last (highest) key." },
+                { name: "subMap(K from, K to)", sig: "SortedMap<K,V> subMap(K from, K to)", desc: "Returns view of portion of map." }
+              ],
+              code: `SortedMap<String, String> sm = new TreeMap<>();`,
+              comparison: "SortedMap extends Map with key sorting.",
+              interview: [{ q: "What is the primary implementation of SortedMap?", a: "TreeMap." }],
+              children: [
                 {
-                  q: "How do you build a quick LRU cache using standard Java classes?",
-                  a: "Instantiate LinkedHashMap with accessOrder=true in constructor and override removeEldestEntry() to return true when size() > maxCapacity."
+                  name: "NavigableMap",
+                  type: "interface",
+                  pkg: "java.util",
+                  jdk: "JDK 1.6+",
+                  desc: "Extends SortedMap with navigation methods returning closest matches for given keys.",
+                  rules: { duplicates: "Unique keys", nulls: "No null keys", order: "Navigable sorted", threadSafe: "No" },
+                  complexity: { access: "O(log n)", search: "O(log n)", insert: "O(log n)", delete: "O(log n)", memory: "Tree node structure." },
+                  whenToUse: "When searching for key ranges or closest key matches.",
+                  realWorld: "Financial order book matching engines.",
+                  methods: [
+                    { name: "ceilingKey(K key)", sig: "K ceilingKey(K key)", desc: "Returns least key >= key." },
+                    { name: "floorKey(K key)", sig: "K floorKey(K key)", desc: "Returns greatest key <= key." },
+                    { name: "higherKey(K key)", sig: "K higherKey(K key)", desc: "Returns least key > key." },
+                    { name: "lowerKey(K key)", sig: "K lowerKey(K key)", desc: "Returns greatest key < key." }
+                  ],
+                  code: `NavigableMap<Integer, String> nm = new TreeMap<>();\nInteger lower = nm.lowerKey(50);`,
+                  comparison: "NavigableMap adds methods like ceilingKey, floorKey, subMap.",
+                  interview: [{ q: "What interface provides subMap and navigable key queries?", a: "NavigableMap." }],
+                  children: [
+                    {
+                      name: "TreeMap",
+                      type: "map",
+                      pkg: "java.util",
+                      jdk: "JDK 1.2+",
+                      desc: "NavigableMap implementation backed by a Red-Black Tree. Keys are sorted naturally or via Comparator.",
+                      rules: { duplicates: "Unique keys", nulls: "Prohibited keys (NullPointerException)", order: "Sorted Key Order", threadSafe: "No" },
+                      complexity: { access: "O(log n)", search: "O(log n)", insert: "O(log n)", delete: "O(log n)", memory: "Red-Black tree node pointers." },
+                      whenToUse: "When map keys must remain continuously sorted.",
+                      realWorld: "Time-series data indexing, stock ticker symbol maps.",
+                      methods: [
+                        { name: "put(K k, V v)", sig: "V put(K k, V v)", desc: "Inserts key in sorted order in O(log n)." },
+                        { name: "ceilingEntry(K k)", sig: "Map.Entry<K,V> ceilingEntry(K k)", desc: "Returns entry with least key >= k." }
+                      ],
+                      code: `NavigableMap<String, Double> prices = new TreeMap<>();\nprices.put("AAPL", 185.50);`,
+                      comparison: "TreeMap guarantees O(log n) performance and sorted keys; HashMap is O(1) unordered.",
+                      interview: [{ q: "Why can't TreeMap have null keys?", a: "Because it compares keys using compareTo(), which throws NullPointerException on null." }]
+                    }
+                  ]
                 }
               ]
             },
             {
-              name: "TreeMap",
+              name: "Hashtable",
+              type: "map",
+              pkg: "java.util",
+              jdk: "JDK 1.0+",
+              desc: "Legacy synchronized hash table map implementation. Prohibits null keys and null values.",
+              rules: { duplicates: "Unique keys", nulls: "NO NULL KEYS OR VALUES ALLOWED", order: "Unordered", threadSafe: "Synchronized (Legacy)" },
+              complexity: { access: "O(1) Avg", search: "O(1)", insert: "O(1)", delete: "O(1)", memory: "Hash table with synchronization locks." },
+              whenToUse: "Legacy codebases only. Use ConcurrentHashMap or HashMap in modern Java.",
+              realWorld: "Legacy system components.",
+              methods: [
+                { name: "put(K k, V v)", sig: "synchronized V put(K k, V v)", desc: "Synchronized put operation." },
+                { name: "get(Object k)", sig: "synchronized V get(Object k)", desc: "Synchronized get operation." },
+                { name: "keys()", sig: "Enumeration<K> keys()", desc: "Returns enumeration of keys (Legacy)." }
+              ],
+              code: `Hashtable<String, String> ht = new Hashtable<>();\nht.put("Key", "Value");`,
+              comparison: "Hashtable synchronizes every method, causing lock contention. HashMap is non-synchronized and faster.",
+              interview: [{ q: "What is the difference between HashMap and Hashtable?", a: "HashMap is non-synchronized, permits 1 null key and multiple null values, and is faster. Hashtable is fully synchronized and rejects all null keys and values." }],
+              children: [
+                {
+                  name: "Properties",
+                  type: "map",
+                  pkg: "java.util",
+                  jdk: "JDK 1.0+",
+                  desc: "Legacy persistent set of properties. Extends Hashtable<Object,Object> and is designed to store String key-value configuration pairs.",
+                  rules: { duplicates: "Unique keys", nulls: "No nulls", order: "Unordered", threadSafe: "Synchronized" },
+                  complexity: { access: "O(1)", search: "O(1)", insert: "O(1)", delete: "O(1)", memory: "Hashtable backing." },
+                  whenToUse: "Loading application configuration `.properties` files.",
+                  realWorld: "Spring application.properties configuration loaders.",
+                  methods: [
+                    { name: "getProperty(String key)", sig: "String getProperty(String key)", desc: "Searches for property with specified key." },
+                    { name: "load(InputStream in)", sig: "synchronized void load(InputStream in)", desc: "Reads property list from input stream." },
+                    { name: "store(OutputStream out, String comments)", sig: "void store(OutputStream out, String comments)", desc: "Writes property list to output stream." }
+                  ],
+                  code: `Properties props = new Properties();\nprops.load(new FileInputStream("config.properties"));\nString db = props.getProperty("db.url");`,
+                  comparison: "Properties is specialized for reading/writing configuration files.",
+                  interview: [{ q: "What class is used to load configuration properties files in Java?", a: "java.util.Properties." }]
+                }
+              ]
+            },
+            {
+              name: "WeakHashMap",
               type: "map",
               pkg: "java.util",
               jdk: "JDK 1.2+",
-              desc: "Red-Black Tree based NavigableMap implementation. Keys are naturally sorted or sorted via custom Comparator.",
-              rules: {
-                duplicates: "Unique Keys",
-                nulls: "NO NULL KEYS ALLOWED",
-                order: "Sorted Key Order",
-                threadSafe: "No"
-              },
-              complexity: {
-                access: "O(log n)",
-                accessNote: "Tree traversal",
-                search: "O(log n)",
-                searchNote: "Binary search across keys",
-                insert: "O(log n)",
-                insertNote: "Tree balance rotation",
-                delete: "O(log n)",
-                deleteNote: "Tree rebalance",
-                memory: "Entry node overhead with left, right, parent, color pointers."
-              },
-              whenToUse: "Use when key-value pairs must remain continuously sorted by key or when range operations (subMap) are needed.",
-              realWorld: "Financial order book matching engines, time-series data indexing.",
-              code: `import java.util.*;
-
-public class TreeMapDemo {
-    public static void main(String[] args) {
-        NavigableMap<String, Double> stockPrices = new TreeMap<>();
-        stockPrices.put("AAPL", 185.50);
-        stockPrices.put("GOOGL", 140.25);
-        stockPrices.put("MSFT", 410.00);
-
-        System.out.println("Sorted Stock Map: " + stockPrices);
-        System.out.println("First Stock: " + stockPrices.firstEntry());
-    }
-}`,
-              comparison: "TreeMap vs HashMap: TreeMap guarantees O(log n) performance and key ordering. HashMap offers O(1) performance but no key ordering.",
-              interview: [
-                {
-                  q: "Why can't TreeMap accept null keys?",
-                  a: "TreeMap invokes compareTo() or compare() to position keys in the Red-Black Tree. Calling compareTo() on null throws NullPointerException."
-                }
-              ]
+              desc: "Hash table based Map implementation with weak keys. An entry in a WeakHashMap is automatically removed when its key is no longer in ordinary use.",
+              rules: { duplicates: "Unique keys", nulls: "Allows nulls", order: "Unordered", threadSafe: "No" },
+              complexity: { access: "O(1) Avg", search: "O(1)", insert: "O(1)", delete: "O(1)", memory: "WeakReference key tracking overhead." },
+              whenToUse: "Implementing object caches where keys can be garbage-collected if no longer referenced elsewhere.",
+              realWorld: "Metadata lookup tables and object metadata caches.",
+              methods: [
+                { name: "put(K k, V v)", sig: "V put(K k, V v)", desc: "Stores key wrapped in WeakReference." },
+                { name: "get(Object k)", sig: "V get(Object k)", desc: "Retrieves value associated with weak key." }
+              ],
+              code: `Map<Object, String> weakMap = new WeakHashMap<>();\nObject key = new Object();\nweakMap.put(key, "Metadata");\nkey = null; // Eligible for GC and automatic map removal`,
+              comparison: "WeakHashMap keys are wrapped in WeakReferences, allowing GC to reclaim them automatically.",
+              interview: [{ q: "When are entries removed from WeakHashMap?", a: "When the key object is garbage collected because there are no strong references to it." }]
             },
             {
-              name: "ConcurrentHashMap",
-              type: "concurrent",
+              name: "IdentityHashMap",
+              type: "map",
+              pkg: "java.util",
+              jdk: "JDK 1.4+",
+              desc: "Hash table map implementation based on reference equality (==) instead of object equality (equals()) when comparing keys.",
+              rules: { duplicates: "Unique keys (by ==)", nulls: "Allows nulls", order: "Unordered", threadSafe: "No" },
+              complexity: { access: "O(1) Avg", search: "O(1)", insert: "O(1)", delete: "O(1)", memory: "Linear-probe table array." },
+              whenToUse: "Topology preservation, serialization, and deep-copy algorithms where reference equality matters.",
+              realWorld: "Object serialization cycle detection graphs.",
+              methods: [
+                { name: "put(K k, V v)", sig: "V put(K k, V v)", desc: "Stores key using reference equality (k1 == k2)." },
+                { name: "get(Object k)", sig: "V get(Object k)", desc: "Looks up key by reference equality." }
+              ],
+              code: `Map<String, String> map = new IdentityHashMap<>();\nString k1 = new String("key");\nString k2 = new String("key");\nmap.put(k1, "First");\nmap.put(k2, "Second"); // Both stored because k1 != k2 by reference!`,
+              comparison: "IdentityHashMap uses reference equality (k1 == k2) rather than equals().",
+              interview: [{ q: "How does IdentityHashMap differ from HashMap?", a: "IdentityHashMap uses reference equality (==) for keys instead of equals() and hashCode()." }]
+            },
+            {
+              name: "ConcurrentMap",
+              type: "interface",
               pkg: "java.util.concurrent",
               jdk: "JDK 1.5+",
-              desc: "High-performance, thread-safe hash map. Uses lock-striping in JDK 7, and CAS (Compare-And-Swap) with bucket-level synchronized locks in JDK 8+.",
-              rules: {
-                duplicates: "Unique Keys",
-                nulls: "STRICTLY PROHIBITS NULL KEYS & NULL VALUES!",
-                order: "Unordered",
-                threadSafe: "Fully Thread-Safe (Highly Concurrent)"
-              },
-              complexity: {
-                access: "O(1) Lock-free",
-                accessNote: "Volatile reads without locking",
-                search: "O(1)",
-                searchNote: "Hash bucket lookup",
-                insert: "O(1)",
-                insertNote: "CAS for empty bucket / bucket lock for collision",
-                delete: "O(1)",
-                deleteNote: "Atomic node removal",
-                memory: "Slight memory overhead for concurrent bin node control structures."
-              },
-              whenToUse: "The GOLD STANDARD for high-concurrency multi-threaded web applications and global server caches.",
-              realWorld: "Spring Framework bean registry cache, active multi-threaded web session storage.",
-              code: `import java.util.concurrent.ConcurrentHashMap;
-
-public class ConcurrentHashMapDemo {
-    public static void main(String[] args) {
-        ConcurrentHashMap<String, Integer> pageViews = new ConcurrentHashMap<>();
-        
-        // Atomic thread-safe update!
-        pageViews.merge("home_page", 1, Integer::sum);
-        pageViews.merge("home_page", 1, Integer::sum);
-
-        System.out.println("Home Page Views: " + pageViews.get("home_page")); // 2
-    }
-}`,
-              comparison: "ConcurrentHashMap vs Collections.synchronizedMap: ConcurrentHashMap locks individual bucket nodes only during writes (high concurrency). SynchronizedMap locks the entire map for all reads/writes (chokepoint lock contention).",
-              interview: [
+              desc: "A Map providing thread-safe atomic putIfAbsent, remove, and replace operations.",
+              rules: { duplicates: "Unique keys", nulls: "Prohibited in implementations", order: "Unordered", threadSafe: "Thread-Safe" },
+              complexity: { access: "O(1)", search: "O(1)", insert: "O(1)", delete: "O(1)", memory: "Concurrent structures." },
+              whenToUse: "Multi-threaded key-value storage.",
+              realWorld: "Global application caches.",
+              methods: [
+                { name: "putIfAbsent(K k, V v)", sig: "V putIfAbsent(K k, V v)", desc: "Atomic put if absent." },
+                { name: "remove(Object k, Object v)", sig: "boolean remove(Object k, Object v)", desc: "Atomic remove if matches value." },
+                { name: "replace(K k, V oldV, V newV)", sig: "boolean replace(K k, V oldV, V newV)", desc: "Atomic conditional replace." }
+              ],
+              code: `ConcurrentMap<String, String> cmap = new ConcurrentHashMap<>();\ncmap.putIfAbsent("Key", "Val");`,
+              comparison: "ConcurrentMap adds atomic conditional operations to Map.",
+              interview: [{ q: "What atomic method was added in ConcurrentMap?", a: "putIfAbsent(), remove(key, value), and replace(key, oldVal, newVal)." }],
+              children: [
                 {
-                  q: "Why are null keys and values prohibited in ConcurrentHashMap?",
-                  a: "To eliminate ambiguity in concurrent access. If map.get(key) returns null, you cannot distinguish whether the key was absent or the value was explicitly null without calling containsKey(), which creates a race condition in multi-threaded code."
+                  name: "ConcurrentHashMap",
+                  type: "concurrent",
+                  pkg: "java.util.concurrent",
+                  jdk: "JDK 1.5+",
+                  desc: "High-performance thread-safe hash map using CAS and bucket-level locks (Java 8+). Prohibits null keys and null values.",
+                  rules: { duplicates: "Unique keys", nulls: "STRICTLY PROHIBITS NULL KEYS & VALUES", order: "Unordered", threadSafe: "Fully Thread-Safe (Lock-free reads)" },
+                  complexity: { access: "O(1) Lock-free", search: "O(1)", insert: "O(1) CAS", delete: "O(1)", memory: "Concurrent bin nodes." },
+                  whenToUse: "The gold standard for high-concurrency multi-threaded web applications.",
+                  realWorld: "Spring Framework bean registry cache, web session stores.",
+                  methods: [
+                    { name: "putIfAbsent(K k, V v)", sig: "V putIfAbsent(K k, V v)", desc: "Atomic insertion if key absent." },
+                    { name: "computeIfAbsent(K k, Function mappingFunction)", sig: "V computeIfAbsent(K k, Function mappingFunction)", desc: "Computes value atomically if key absent." },
+                    { name: "merge(K k, V v, BiFunction remappingFunction)", sig: "V merge(K k, V v, BiFunction remappingFunction)", desc: "Atomic merge operation." }
+                  ],
+                  code: `ConcurrentMap<String, Integer> map = new ConcurrentHashMap<>();\nmap.merge("visits", 1, Integer::sum);`,
+                  comparison: "ConcurrentHashMap locks only individual buckets during writes, whereas Collections.synchronizedMap locks the entire map.",
+                  interview: [{ q: "Why does ConcurrentHashMap forbid nulls?", a: "To prevent ambiguity in multi-threaded checks where get() returning null could mean key is absent or value is explicitly null." }]
                 },
                 {
-                  q: "How does ConcurrentHashMap achieve concurrency in Java 8?",
-                  a: "It uses CAS (Compare-And-Swap) for inserting into empty buckets and locks only the first Node of a specific bucket bin during collisions instead of locking the whole table."
+                  name: "ConcurrentNavigableMap",
+                  type: "interface",
+                  pkg: "java.util.concurrent",
+                  jdk: "JDK 1.6+",
+                  desc: "A ConcurrentMap supporting NavigableMap operations concurrently.",
+                  rules: { duplicates: "Unique keys", nulls: "No nulls", order: "Sorted Key Order", threadSafe: "Thread-Safe" },
+                  complexity: { access: "O(log n)", search: "O(log n)", insert: "O(log n)", delete: "O(log n)", memory: "Skip list node pointers." },
+                  whenToUse: "When concurrent sorted map operations and range queries are needed.",
+                  realWorld: "Concurrent financial order books.",
+                  methods: [
+                    { name: "subMap(K from, K to)", sig: "ConcurrentNavigableMap<K,V> subMap(K from, K to)", desc: "Concurrent sorted submap view." },
+                    { name: "headMap(K to)", sig: "ConcurrentNavigableMap<K,V> headMap(K to)", desc: "Concurrent head map view." }
+                  ],
+                  code: `ConcurrentNavigableMap<String, Double> cnm = new ConcurrentSkipListMap<>();`,
+                  comparison: "Combines NavigableMap sorting with thread safety.",
+                  interview: [{ q: "What is the concurrent sorted map implementation?", a: "ConcurrentSkipListMap." }],
+                  children: [
+                    {
+                      name: "ConcurrentSkipListMap",
+                      type: "concurrent",
+                      pkg: "java.util.concurrent",
+                      jdk: "JDK 1.6+",
+                      desc: "Thread-safe scalable concurrent navigable map backed by a Skip List data structure.",
+                      rules: { duplicates: "Unique keys", nulls: "No nulls", order: "Sorted Key Order", threadSafe: "Thread-Safe (Lock-free skip list)" },
+                      complexity: { access: "O(log n)", search: "O(log n)", insert: "O(log n)", delete: "O(log n)", memory: "Skip list tower pointers." },
+                      whenToUse: "Concurrent sorted maps with high multi-threaded read/write contention.",
+                      realWorld: "Concurrent leaderboards and sorted caches.",
+                      methods: [
+                        { name: "put(K k, V v)", sig: "V put(K k, V v)", desc: "Thread-safe skip-list sorted insert in O(log n)." },
+                        { name: "ceilingEntry(K k)", sig: "Map.Entry<K,V> ceilingEntry(K k)", desc: "Thread-safe ceiling lookup." }
+                      ],
+                      code: `ConcurrentNavigableMap<Integer, String> map = new ConcurrentSkipListMap<>();\nmap.put(10, "Gold");`,
+                      comparison: "ConcurrentSkipListMap provides concurrent sorted navigation without locking the entire map.",
+                      interview: [{ q: "What data structure backs ConcurrentSkipListMap?", a: "A randomized Skip List providing O(log n) concurrent search, insert, and delete." }]
+                    }
+                  ]
                 }
               ]
             }
@@ -1238,7 +1152,6 @@ public class ConcurrentHashMapDemo {
       return { fill: '#1e293b', border: '#64748b', text: '#f1f5f9' };
     }
 
-    // App State Variables
     let rootData;
     let svg, gTree, zoomBehavior;
     let i = 0;
@@ -1246,12 +1159,10 @@ public class ConcurrentHashMapDemo {
     let activeFilter = 'all';
     let currentSelectedNode = null;
 
-    // Dimensions
     const container = document.getElementById('tree-container');
     let width = container.clientWidth;
     let height = container.clientHeight;
 
-    // Initialize D3 Layout
     function initTree() {
       svg = d3.select("#tree-container").append("svg")
         .attr("width", "100%")
@@ -1260,31 +1171,25 @@ public class ConcurrentHashMapDemo {
 
       gTree = svg.append("g").attr("id", "tree-group");
 
-      // Configure Zoom / Pan
       zoomBehavior = d3.zoom()
-        .scaleExtent([0.2, 2.5])
+        .scaleExtent([0.15, 2.5])
         .on("zoom", (event) => {
           gTree.attr("transform", event.transform);
         });
 
       svg.call(zoomBehavior);
 
-      // Construct Hierarchy
       rootData = d3.hierarchy(hierarchyData, d => d.children);
       rootData.x0 = height / 2;
       rootData.y0 = 80;
 
-      // Center initial view
-      const initialTransform = d3.zoomIdentity.translate(80, height / 2 - 40).scale(0.85);
+      const initialTransform = d3.zoomIdentity.translate(80, height / 2 - 40).scale(0.75);
       svg.call(zoomBehavior.transform, initialTransform);
 
       update(rootData);
-
-      // Select root by default
       showDetails(rootData);
     }
 
-    // Expand / Collapse Helpers
     function collapseBranch(d) {
       if (d.children) {
         d._children = d.children;
@@ -1303,21 +1208,18 @@ public class ConcurrentHashMapDemo {
       }
     }
 
-    // D3 Update Loop
     function update(source) {
-      const treeLayout = d3.tree().nodeSize([48, 260]);
+      const treeLayout = d3.tree().nodeSize([48, 280]);
       const treeData = treeLayout(rootData);
 
       const nodes = treeData.descendants();
       const links = treeData.links();
 
-      nodes.forEach(d => { d.y = d.depth * 280; });
+      nodes.forEach(d => { d.y = d.depth * 300; });
 
-      // --- NODES SELECTION ---
       const node = gTree.selectAll('g.node')
         .data(nodes, d => d.id || (d.id = ++i));
 
-      // Enter Nodes
       const nodeEnter = node.enter().append('g')
         .attr('class', 'node')
         .attr('transform', d => `translate(${source.y0},${source.x0})`)
@@ -1328,10 +1230,9 @@ public class ConcurrentHashMapDemo {
           update(d);
         });
 
-      // Node Card
       nodeEnter.append('rect')
         .attr('class', 'node-card')
-        .attr('width', 220)
+        .attr('width', 230)
         .attr('height', 38)
         .attr('x', 0)
         .attr('y', -19)
@@ -1340,14 +1241,12 @@ public class ConcurrentHashMapDemo {
         .style('stroke', d => getNodeColor(d).border)
         .style('stroke-width', '1.5px');
 
-      // Category Tag Dot
       nodeEnter.append('circle')
         .attr('cx', 12)
         .attr('cy', 0)
         .attr('r', 5)
         .style('fill', d => getNodeColor(d).border);
 
-      // Node Label
       nodeEnter.append('text')
         .attr('x', 24)
         .attr('y', 4)
@@ -1360,10 +1259,9 @@ public class ConcurrentHashMapDemo {
           return parts[parts.length - 1];
         });
 
-      // Expand / Collapse Circle Indicator
       const toggleGroup = nodeEnter.append('g')
         .attr('class', 'toggle-group')
-        .attr('transform', 'translate(220, 0)')
+        .attr('transform', 'translate(230, 0)')
         .style('display', d => (d.children || d._children) ? 'block' : 'none');
 
       toggleGroup.append('circle')
@@ -1380,7 +1278,6 @@ public class ConcurrentHashMapDemo {
         .style('fill', '#94a3b8')
         .text(d => d._children ? '+' : '-');
 
-      // UPDATE Nodes
       const nodeUpdate = nodeEnter.merge(node);
 
       nodeUpdate.transition()
@@ -1397,19 +1294,16 @@ public class ConcurrentHashMapDemo {
       nodeUpdate.select('.toggle-icon')
         .text(d => d._children ? '+' : '-');
 
-      // Filter Opacity Dimming
       nodeUpdate.style('opacity', d => {
         if (activeFilter === 'all') return 1;
-        if (activeFilter === 'list' && (d.data.type === 'list' || d.data.type === 'interface')) return 1;
-        if (activeFilter === 'set' && (d.data.type === 'set' || d.data.type === 'interface')) return 1;
-        if (activeFilter === 'queue' && (d.data.type === 'queue' || d.data.type === 'interface')) return 1;
-        if (activeFilter === 'map' && (d.data.type === 'map' || d.data.type === 'interface')) return 1;
-        if (activeFilter === 'concurrent' && (d.data.type === 'concurrent' || d.data.type === 'interface')) return 1;
-        if (activeFilter === 'sequenced' && (d.data.jdk === 'JDK 21+' || d.data.name.includes('Sequenced'))) return 1;
+        if (activeFilter === 'list' && (d.data.type === 'list' || d.data.name.includes('List') || d.data.name.includes('Iterable') || d.data.name.includes('Collection'))) return 1;
+        if (activeFilter === 'set' && (d.data.type === 'set' || d.data.name.includes('Set'))) return 1;
+        if (activeFilter === 'queue' && (d.data.type === 'queue' || d.data.name.includes('Queue') || d.data.name.includes('Deque'))) return 1;
+        if (activeFilter === 'map' && (d.data.type === 'map' || d.data.name.includes('Map') || d.data.name.includes('Hashtable') || d.data.name.includes('Properties'))) return 1;
+        if (activeFilter === 'concurrent' && (d.data.type === 'concurrent' || d.data.name.includes('Concurrent') || d.data.name.includes('CopyOnWrite'))) return 1;
         return 0.2;
       });
 
-      // EXIT Nodes
       const nodeExit = node.exit().transition()
         .duration(duration)
         .attr('transform', d => `translate(${source.y},${source.x})`)
@@ -1417,7 +1311,6 @@ public class ConcurrentHashMapDemo {
 
       nodeExit.select('rect').attr('width', 0).attr('height', 0);
 
-      // --- LINKS SELECTION ---
       const link = gTree.selectAll('path.link')
         .data(links, d => d.target.id);
 
@@ -1453,7 +1346,7 @@ public class ConcurrentHashMapDemo {
     }
 
     function diagonal(s, t) {
-      const sourceX = s.y + 220;
+      const sourceX = s.y + 230;
       const sourceY = s.x;
       const targetX = t.y;
       const targetY = t.x;
@@ -1474,19 +1367,16 @@ public class ConcurrentHashMapDemo {
       }
     }
 
-    // Display Detail Drawer Information
     function showDetails(d) {
       currentSelectedNode = d;
       const data = d.data;
       const drawer = document.getElementById('detail-drawer');
 
-      // Badges
       const badge = document.getElementById('drawer-badge');
       const jdk = document.getElementById('drawer-jdk');
       badge.textContent = data.type.toUpperCase();
       jdk.textContent = data.jdk || "JDK 1.2+";
 
-      // Color badge based on category
       if (data.type === 'list') {
         badge.className = 'px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-indigo-950 text-indigo-300 border border-indigo-800';
       } else if (data.type === 'set') {
@@ -1501,12 +1391,30 @@ public class ConcurrentHashMapDemo {
         badge.className = 'px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-sky-950 text-sky-300 border border-sky-800';
       }
 
-      // Title & Pkg
       document.getElementById('drawer-title').textContent = data.name.split('.').pop();
       document.getElementById('drawer-pkg').textContent = `Package: ${data.pkg || 'java.util'}`;
       document.getElementById('drawer-desc').textContent = data.desc || 'No description available.';
 
-      // Rules Grid
+      // Render applicable methods for performing operations
+      const methodsContainer = document.getElementById('drawer-methods');
+      methodsContainer.innerHTML = '';
+      if (data.methods && data.methods.length > 0) {
+        data.methods.forEach(m => {
+          const mBox = document.createElement('div');
+          mBox.className = 'bg-slate-950 p-2.5 rounded-lg border border-slate-800 space-y-1';
+          mBox.innerHTML = `
+            <div class="flex items-center justify-between font-mono text-[11px] text-indigo-300 font-semibold">
+              <span>${m.name}</span>
+            </div>
+            <div class="text-[10px] font-mono text-slate-400 bg-slate-900/80 px-2 py-0.5 rounded border border-slate-800/60">${m.sig}</div>
+            <p class="text-[11px] text-slate-300">${m.desc}</p>
+          `;
+          methodsContainer.appendChild(mBox);
+        });
+      } else {
+        methodsContainer.innerHTML = '<div class="text-xs text-slate-500 italic bg-slate-950 p-2.5 rounded-lg border border-slate-800">Standard interface methods apply.</div>';
+      }
+
       if (data.rules) {
         document.getElementById('rule-duplicates').textContent = data.rules.duplicates || 'N/A';
         document.getElementById('rule-nulls').textContent = data.rules.nulls || 'N/A';
@@ -1514,7 +1422,6 @@ public class ConcurrentHashMapDemo {
         document.getElementById('rule-thread').textContent = data.rules.threadSafe || 'N/A';
       }
 
-      // Big-O Profile
       if (data.complexity) {
         document.getElementById('comp-access').textContent = data.complexity.access || 'N/A';
         document.getElementById('comp-access-note').textContent = data.complexity.accessNote || '';
@@ -1527,13 +1434,10 @@ public class ConcurrentHashMapDemo {
         document.getElementById('drawer-memory').textContent = data.complexity.memory || 'Standard reference pointers.';
       }
 
-      // Code & Real World
       document.getElementById('drawer-whentouse').textContent = data.whenToUse || 'General usage.';
       document.getElementById('drawer-realworld').textContent = data.realWorld || 'Standard software architecture usage.';
       document.getElementById('drawer-code').textContent = data.code || `// Code example for ${data.name}`;
-
-      // Comparison & Interview Q&A
-      document.getElementById('drawer-comparison').textContent = data.comparison || 'Direct subtype of Collection interface.';
+      document.getElementById('drawer-comparison').textContent = data.comparison || 'Subtype of Collections architecture.';
 
       const interviewContainer = document.getElementById('drawer-interview');
       interviewContainer.innerHTML = '';
@@ -1559,7 +1463,6 @@ public class ConcurrentHashMapDemo {
       drawer.classList.remove('translate-x-full');
     }
 
-    // Search Logic
     function handleSearch(query) {
       if (!query.trim()) {
         d3.selectAll('.node').classed('node--highlighted', false);
@@ -1604,7 +1507,6 @@ public class ConcurrentHashMapDemo {
       }
     }
 
-    // Copy Code Helper
     function copyCodeToClipboard() {
       const codeElement = document.getElementById('drawer-code');
       navigator.clipboard.writeText(codeElement.textContent).then(() => {
@@ -1617,19 +1519,32 @@ public class ConcurrentHashMapDemo {
       });
     }
 
-    // Event Initialization
     document.addEventListener('DOMContentLoaded', () => {
       initTree();
 
-      // Drawer Close
       document.getElementById('close-drawer').addEventListener('click', () => {
         document.getElementById('detail-drawer').classList.add('translate-x-full');
       });
 
-      // Copy Code
+      // Diagrams Modal handlers
+      const diagramsModal = document.getElementById('diagrams-modal');
+      document.getElementById('btn-show-diagrams').addEventListener('click', () => {
+        diagramsModal.classList.remove('hidden');
+      });
+      document.getElementById('close-modal').addEventListener('click', () => {
+        diagramsModal.classList.add('hidden');
+      });
+      document.getElementById('close-modal-btn').addEventListener('click', () => {
+        diagramsModal.classList.add('hidden');
+      });
+      diagramsModal.addEventListener('click', (e) => {
+        if (e.target === diagramsModal) {
+          diagramsModal.classList.add('hidden');
+        }
+      });
+
       document.getElementById('copy-code-btn').addEventListener('click', copyCodeToClipboard);
 
-      // Tab Switching
       const tabBtns = document.querySelectorAll('.tab-btn');
       const tabContents = document.querySelectorAll('.tab-content');
 
@@ -1645,7 +1560,6 @@ public class ConcurrentHashMapDemo {
         });
       });
 
-      // Search Inputs
       const searchInput = document.getElementById('search-input');
       searchInput.addEventListener('input', (e) => handleSearch(e.target.value));
 
@@ -1654,7 +1568,6 @@ public class ConcurrentHashMapDemo {
         handleSearch('');
       });
 
-      // Filters
       const filterBtns = document.querySelectorAll('.filter-btn');
       filterBtns.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -1668,7 +1581,6 @@ public class ConcurrentHashMapDemo {
         });
       });
 
-      // View Controls
       document.getElementById('btn-expand-all').addEventListener('click', () => {
         rootData.children.forEach(expandBranch);
         update(rootData);
@@ -1680,7 +1592,7 @@ public class ConcurrentHashMapDemo {
       });
 
       document.getElementById('btn-reset-zoom').addEventListener('click', () => {
-        const initialTransform = d3.zoomIdentity.translate(80, height / 2 - 40).scale(0.85);
+        const initialTransform = d3.zoomIdentity.translate(80, height / 2 - 40).scale(0.75);
         svg.transition().duration(500).call(zoomBehavior.transform, initialTransform);
       });
 
