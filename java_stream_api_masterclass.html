@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Java Stream API Visualizer & Interview Guide</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Highlight.js for Java syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/java.min.js"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
+        }
+        code {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b; 
+        }
+        
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-link.active {
+            background-color: #3b82f6;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Diagram Animations */
+        .flow-arrow {
+            animation: pulse-arrow 2s infinite;
+        }
+        @keyframes pulse-arrow {
+            0% { transform: translateX(0); opacity: 0.5; }
+            50% { transform: translateX(5px); opacity: 1; }
+            100% { transform: translateX(0); opacity: 0.5; }
+        }
+
+        .water-drop {
+            animation: drop-fall 2s infinite linear;
+        }
+        @keyframes drop-fall {
+            0% { transform: translateY(-10px); opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { transform: translateY(40px); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden text-slate-200">
+
+    <aside class="w-72 bg-slate-900 border-r border-slate-700 flex flex-col h-full z-10 shrink-0 hidden md:flex">
+        <div class="p-6 border-b border-slate-700">
+            <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-400 flex items-center gap-2">
+                <i class="fa-solid fa-water text-blue-400"></i> Stream API
+            </h1>
+            <p class="text-xs text-slate-400 mt-2">Visualizer & Interview Guide</p>
+        </div>
+        <nav class="flex-1 overflow-y-auto p-4 space-y-2" id="sidebar-nav">
+            <a href="#intro" class="nav-link active flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-colors hover:bg-slate-800">
+                <i class="fa-solid fa-book-open w-5"></i> Introduction
+            </a>
+            <a href="#pipeline" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-colors hover:bg-slate-800 text-slate-400">
+                <i class="fa-solid fa-diagram-project w-5"></i> Stream Pipeline
+            </a>
+            <a href="#creation" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-colors hover:bg-slate-800 text-slate-400">
+                <i class="fa-solid fa-wand-magic-sparkles w-5"></i> Creating Streams
+            </a>
+            <a href="#intermediate" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-colors hover:bg-slate-800 text-slate-400">
+                <i class="fa-solid fa-filter w-5"></i> Intermediate Ops
+            </a>
+            <a href="#terminal" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-colors hover:bg-slate-800 text-slate-400">
+                <i class="fa-solid fa-flag-checkered w-5"></i> Terminal Ops
+            </a>
+            <a href="#types" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-colors hover:bg-slate-800 text-slate-400">
+                <i class="fa-solid fa-layer-group w-5"></i> Types of Streams
+            </a>
+            <a href="#vs-collection" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-colors hover:bg-slate-800 text-slate-400">
+                <i class="fa-solid fa-not-equal w-5"></i> Stream vs Collection
+            </a>
+            <a href="#file-io" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-colors hover:bg-slate-800 text-slate-400">
+                <i class="fa-solid fa-file-code w-5"></i> File Operations
+            </a>
+            <a href="#map-vs-flatmap" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-colors hover:bg-slate-800 text-slate-400">
+                <i class="fa-solid fa-code-compare w-5"></i> Map vs FlatMap
+            </a>
+            <a href="#interview" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-colors hover:bg-slate-800 text-slate-400">
+                <i class="fa-solid fa-briefcase w-5"></i> Real-world / Interview
+            </a>
+        </nav>
+    </aside>
+
+    <main class="flex-1 h-full overflow-y-auto bg-slate-900 scroll-smooth relative" id="main-content">
+        <!-- Mobile Header -->
+        <div class="md:hidden sticky top-0 bg-slate-900 border-b border-slate-700 p-4 z-20 flex justify-between items-center glass-panel">
+            <h1 class="text-xl font-bold text-blue-400"><i class="fa-solid fa-water"></i> Stream API</h1>
+        </div>
+
+        <div class="max-w-5xl mx-auto p-6 md:p-10 pb-32 space-y-16">
+            
+            <section id="intro" class="scroll-mt-20">
+                <div class="inline-block px-3 py-1 bg-blue-900/50 text-blue-300 rounded-full text-xs font-semibold tracking-wider mb-4 border border-blue-700/50">THE BASICS</div>
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">What is the Stream API?</h2>
+                <div class="glass-panel p-6 md:p-8 rounded-2xl shadow-xl">
+                    <p class="text-lg leading-relaxed text-slate-300 mb-6">
+                        Introduced in Java 8, the Stream API (<code>java.util.stream</code>) is a modern, functional approach to processing collections of objects. A Stream is <strong>not</strong> a data structure that stores elements; instead, it conveys elements from a source through a pipeline of computational operations.
+                    </p>
+                    
+                    <div class="grid md:grid-cols-3 gap-4 mt-8">
+                        <div class="bg-slate-800/50 p-5 rounded-xl border border-slate-700 hover:border-blue-500 transition-colors">
+                            <i class="fa-solid fa-code text-2xl text-blue-400 mb-3"></i>
+                            <h3 class="font-bold text-white mb-2">Declarative</h3>
+                            <p class="text-sm text-slate-400">Write concise and expressive code instead of explicit loops.</p>
+                        </div>
+                        <div class="bg-slate-800/50 p-5 rounded-xl border border-slate-700 hover:border-teal-500 transition-colors">
+                            <i class="fa-solid fa-bed text-2xl text-teal-400 mb-3"></i>
+                            <h3 class="font-bold text-white mb-2">Lazy Evaluation</h3>
+                            <p class="text-sm text-slate-400">Intermediate operations execute only when a terminal operation is invoked.</p>
+                        </div>
+                        <div class="bg-slate-800/50 p-5 rounded-xl border border-slate-700 hover:border-purple-500 transition-colors">
+                            <i class="fa-solid fa-diagram-project text-2xl text-purple-400 mb-3"></i>
+                            <h3 class="font-bold text-white mb-2">Pipeline Processing</h3>
+                            <p class="text-sm text-slate-400">Multiple operations can be chained together efficiently.</p>
+                        </div>
+                        <div class="bg-slate-800/50 p-5 rounded-xl border border-slate-700 hover:border-orange-500 transition-colors">
+                            <i class="fa-solid fa-microchip text-2xl text-orange-400 mb-3"></i>
+                            <h3 class="font-bold text-white mb-2">Parallel Processing</h3>
+                            <p class="text-sm text-slate-400">Supports multi-core processors using parallel streams.</p>
+                        </div>
+                        <div class="bg-slate-800/50 p-5 rounded-xl border border-slate-700 hover:border-red-500 transition-colors">
+                            <i class="fa-solid fa-box-open text-2xl text-red-400 mb-3"></i>
+                            <h3 class="font-bold text-white mb-2">No Data Storage</h3>
+                            <p class="text-sm text-slate-400">Streams process data without storing it in memory.</p>
+                        </div>
+                        <div class="bg-slate-800/50 p-5 rounded-xl border border-slate-700 hover:border-green-500 transition-colors">
+                            <i class="fa-solid fa-bolt text-2xl text-green-400 mb-3"></i>
+                            <h3 class="font-bold text-white mb-2">Functional</h3>
+                            <p class="text-sm text-slate-400">Supports lambda expressions and method references seamlessly.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="pipeline" class="scroll-mt-20">
+                <div class="inline-block px-3 py-1 bg-teal-900/50 text-teal-300 rounded-full text-xs font-semibold tracking-wider mb-4 border border-teal-700/50">VISUALIZATION</div>
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">The Stream Pipeline</h2>
+                <div class="glass-panel p-8 rounded-2xl shadow-xl overflow-x-auto">
+                    <p class="text-slate-300 mb-8">Every Stream operation follows a standard lifecycle consisting of three parts. The pipeline acts like an assembly line for data.</p>
+                    
+                    <!-- Diagram -->
+                    <div class="min-w-[800px] flex items-center justify-between gap-4 p-4 bg-slate-800/50 rounded-xl border border-slate-700">
+                        <!-- 1. Source -->
+                        <div class="w-1/4 bg-slate-700 p-6 rounded-xl border-2 border-dashed border-slate-500 text-center relative shadow-lg">
+                            <div class="absolute -top-3 -left-3 bg-slate-900 w-8 h-8 rounded-full flex items-center justify-center font-bold border border-slate-600">1</div>
+                            <i class="fa-solid fa-database text-3xl text-slate-300 mb-2"></i>
+                            <h3 class="font-bold text-white">Source</h3>
+                            <p class="text-xs text-slate-400 mt-2">List, Set, Array, I/O Channel</p>
+                        </div>
+
+                        <!-- Arrow -->
+                        <div class="flex flex-col items-center justify-center flow-arrow">
+                            <span class="text-[10px] text-teal-400 font-bold mb-1">stream()</span>
+                            <i class="fa-solid fa-arrow-right-long text-2xl text-teal-400"></i>
+                        </div>
+
+                        <!-- 2. Intermediate -->
+                        <div class="w-1/3 bg-blue-900/30 p-6 rounded-xl border-2 border-blue-500/50 text-center relative shadow-lg overflow-hidden">
+                            <div class="absolute -top-3 -left-3 bg-slate-900 w-8 h-8 rounded-full flex items-center justify-center font-bold border border-blue-600">2</div>
+                            <i class="fa-solid fa-gears text-3xl text-blue-400 mb-2"></i>
+                            <h3 class="font-bold text-white">Intermediate Operations</h3>
+                            <p class="text-xs text-blue-200 mt-2 text-center">Transforms streams lazily.<br>Returns a new Stream.</p>
+                            <div class="mt-3 flex flex-wrap justify-center gap-1">
+                                <span class="text-[10px] bg-blue-800 px-2 py-1 rounded text-blue-100">filter</span>
+                                <span class="text-[10px] bg-blue-800 px-2 py-1 rounded text-blue-100">map</span>
+                                <span class="text-[10px] bg-blue-800 px-2 py-1 rounded text-blue-100">sorted</span>
+                            </div>
+                        </div>
+
+                        <!-- Arrow -->
+                        <div class="flex flex-col items-center justify-center flow-arrow">
+                            <i class="fa-solid fa-arrow-right-long text-2xl text-purple-400"></i>
+                            <span class="text-[10px] text-purple-400 font-bold mt-1">Triggers execution</span>
+                        </div>
+
+                        <!-- 3. Terminal -->
+                        <div class="w-1/4 bg-purple-900/30 p-6 rounded-xl border-2 border-purple-500/50 text-center relative shadow-lg">
+                            <div class="absolute -top-3 -left-3 bg-slate-900 w-8 h-8 rounded-full flex items-center justify-center font-bold border border-purple-600">3</div>
+                            <i class="fa-solid fa-flag-checkered text-3xl text-purple-400 mb-2"></i>
+                            <h3 class="font-bold text-white">Terminal Operation</h3>
+                            <p class="text-xs text-purple-200 mt-2">Produces a non-stream result (List, int, void, etc.)</p>
+                            <div class="mt-3 flex flex-wrap justify-center gap-1">
+                                <span class="text-[10px] bg-purple-800 px-2 py-1 rounded text-purple-100">collect</span>
+                                <span class="text-[10px] bg-purple-800 px-2 py-1 rounded text-purple-100">forEach</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="creation" class="scroll-mt-20">
+                <div class="inline-block px-3 py-1 bg-yellow-900/50 text-yellow-300 rounded-full text-xs font-semibold tracking-wider mb-4 border border-yellow-700/50">GETTING STARTED</div>
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">Creating Streams</h2>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="glass-panel p-6 rounded-xl shadow-lg border-l-4 border-l-yellow-500">
+                        <h3 class="text-xl font-bold mb-3 flex items-center gap-2"><i class="fa-brands fa-java text-yellow-500"></i> From Collections</h3>
+                        <p class="text-sm text-slate-400 mb-4">The most common way. Create a stream directly from a List, Set or any Collection using <code>stream()</code>.</p>
+                        <pre><code class="language-java rounded-lg text-sm">List&lt;String&gt; list = Arrays.asList("Java", "Python", "C++");
+Stream&lt;String&gt; stream1 = list.stream();</code></pre>
+                    </div>
+                    
+                    <div class="glass-panel p-6 rounded-xl shadow-lg border-l-4 border-l-yellow-500">
+                        <h3 class="text-xl font-bold mb-3 flex items-center gap-2"><i class="fa-brands fa-java text-yellow-500"></i> From Arrays</h3>
+                        <p class="text-sm text-slate-400 mb-4">Use <code>Arrays.stream(array)</code> to convert an array into a stream.</p>
+                        <pre><code class="language-java rounded-lg text-sm">String[] arr = {"A", "B", "C"};
+Stream&lt;String&gt; stream2 = Arrays.stream(arr);</code></pre>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-xl shadow-lg border-l-4 border-l-yellow-500">
+                        <h3 class="text-xl font-bold mb-3 flex items-center gap-2"><i class="fa-brands fa-java text-yellow-500"></i> Stream.of()</h3>
+                        <p class="text-sm text-slate-400 mb-4">Create a stream from a fixed set of values directly.</p>
+                        <pre><code class="language-java rounded-lg text-sm">Stream&lt;Integer&gt; stream3 = Stream.of(1, 2, 3, 4, 5);</code></pre>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-xl shadow-lg border-l-4 border-l-yellow-500">
+                        <h3 class="text-xl font-bold mb-3 flex items-center gap-2"><i class="fa-brands fa-java text-yellow-500"></i> Infinite Streams</h3>
+                        <p class="text-sm text-slate-400 mb-4">Generate an unbounded sequence using <code>iterate()</code>. Use <code>limit()</code> to avoid infinite loop.</p>
+                        <pre><code class="language-java rounded-lg text-sm">Stream&lt;Integer&gt; stream4 = Stream.iterate(1, n -> n + 1)
+                                .limit(5);
+stream4.forEach(System.out::println);</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section id="intermediate" class="scroll-mt-20">
+                <div class="inline-block px-3 py-1 bg-blue-900/50 text-blue-300 rounded-full text-xs font-semibold tracking-wider mb-4 border border-blue-700/50">THE MIDDLE STAGE</div>
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">Intermediate Operations</h2>
+                <p class="text-slate-300 mb-6">These operations return a new Stream. They are <strong>lazy</strong>, meaning they don't process data until a terminal operation is called.</p>
+                
+                <div class="space-y-4">
+                    <!-- Filter -->
+                    <div class="glass-panel rounded-xl overflow-hidden shadow-lg border border-slate-700">
+                        <div class="flex flex-col md:flex-row">
+                            <div class="md:w-1/3 bg-slate-800 p-6 border-r border-slate-700">
+                                <h3 class="text-xl font-bold text-blue-400 font-mono mb-2">filter(Predicate)</h3>
+                                <p class="text-sm text-slate-300 mb-4">Keeps elements that match the given condition (where Predicate returns true).</p>
+                                <div class="flex items-center gap-2 text-xs text-slate-400">
+                                    <span class="bg-slate-700 px-2 py-1 rounded">Stateless</span>
+                                </div>
+                            </div>
+                            <div class="md:w-2/3 p-0">
+                                <pre class="!m-0 h-full"><code class="language-java h-full flex items-center !bg-transparent text-sm p-6">// Keep only even numbers
+List&lt;Integer&gt; evens = numbers.stream()
+    .filter(n -> n % 2 == 0) 
+    .collect(Collectors.toList());</code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Map -->
+                    <div class="glass-panel rounded-xl overflow-hidden shadow-lg border border-slate-700">
+                        <div class="flex flex-col md:flex-row">
+                            <div class="md:w-1/3 bg-slate-800 p-6 border-r border-slate-700">
+                                <h3 class="text-xl font-bold text-blue-400 font-mono mb-2">map(Function)</h3>
+                                <p class="text-sm text-slate-300 mb-4">Transforms each element into another object. The stream size remains the same.</p>
+                                <div class="flex items-center gap-2 text-xs text-slate-400">
+                                    <span class="bg-slate-700 px-2 py-1 rounded">Stateless</span>
+                                </div>
+                            </div>
+                            <div class="md:w-2/3 p-0">
+                                <pre class="!m-0 h-full"><code class="language-java h-full flex items-center !bg-transparent text-sm p-6">// Extract names from Employee objects
+List&lt;String&gt; names = employees.stream()
+    .map(Employee::getName) 
+    .collect(Collectors.toList());</code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sorted -->
+                    <div class="glass-panel rounded-xl overflow-hidden shadow-lg border border-slate-700">
+                        <div class="flex flex-col md:flex-row">
+                            <div class="md:w-1/3 bg-slate-800 p-6 border-r border-slate-700">
+                                <h3 class="text-xl font-bold text-blue-400 font-mono mb-2">sorted(Comparator)</h3>
+                                <p class="text-sm text-slate-300 mb-4">Sorts the stream elements. Can use natural ordering or a custom Comparator.</p>
+                                <div class="flex items-center gap-2 text-xs text-yellow-400/80">
+                                    <i class="fa-solid fa-triangle-exclamation"></i> <span class="bg-yellow-900/30 border border-yellow-700/50 px-2 py-1 rounded">Stateful (Heavy)</span>
+                                </div>
+                            </div>
+                            <div class="md:w-2/3 p-0">
+                                <pre class="!m-0 h-full"><code class="language-java h-full flex items-center !bg-transparent text-sm p-6">// Sort employees by salary descending
+List&lt;Employee&gt; sorted = employees.stream()
+    .sorted(Comparator.comparing(Employee::getSalary).reversed())
+    .collect(Collectors.toList());</code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Distinct -->
+                    <div class="glass-panel rounded-xl overflow-hidden shadow-lg border border-slate-700">
+                        <div class="flex flex-col md:flex-row">
+                            <div class="md:w-1/3 bg-slate-800 p-6 border-r border-slate-700">
+                                <h3 class="text-xl font-bold text-blue-400 font-mono mb-2">distinct()</h3>
+                                <p class="text-sm text-slate-300 mb-4">Removes duplicate elements based on their <code>equals()</code> method.</p>
+                                <div class="flex items-center gap-2 text-xs text-yellow-400/80">
+                                    <i class="fa-solid fa-triangle-exclamation"></i> <span class="bg-yellow-900/30 border border-yellow-700/50 px-2 py-1 rounded">Stateful</span>
+                                </div>
+                            </div>
+                            <div class="md:w-2/3 p-0">
+                                <pre class="!m-0 h-full"><code class="language-java h-full flex items-center !bg-transparent text-sm p-6">List&lt;Integer&gt; distinctNums = Stream.of(1, 2, 2, 3, 3)
+    .distinct() // result: [1, 2, 3]
+    .collect(Collectors.toList());</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                    
+                     <!-- Limit & Skip -->
+                     <div class="glass-panel rounded-xl overflow-hidden shadow-lg border border-slate-700">
+                        <div class="flex flex-col md:flex-row">
+                            <div class="md:w-1/3 bg-slate-800 p-6 border-r border-slate-700">
+                                <h3 class="text-xl font-bold text-blue-400 font-mono mb-2">limit(n) / skip(n)</h3>
+                                <p class="text-sm text-slate-300 mb-4"><code>limit</code> truncates the stream to n elements. <code>skip</code> discards the first n elements.</p>
+                                <div class="flex items-center gap-2 text-xs text-yellow-400/80">
+                                    <span class="bg-yellow-900/30 border border-yellow-700/50 px-2 py-1 rounded">Stateful</span>
+                                </div>
+                            </div>
+                            <div class="md:w-2/3 p-0">
+                                <pre class="!m-0 h-full"><code class="language-java h-full flex items-center !bg-transparent text-sm p-6">// Useful for pagination
+List&lt;User&gt; pageTwo = users.stream()
+    .skip(10)  // Skip first page (10 items)
+    .limit(10) // Take second page
+    .collect(Collectors.toList());</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="terminal" class="scroll-mt-20">
+                <div class="inline-block px-3 py-1 bg-purple-900/50 text-purple-300 rounded-full text-xs font-semibold tracking-wider mb-4 border border-purple-700/50">THE FINAL STAGE</div>
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">Terminal Operations</h2>
+                <p class="text-slate-300 mb-6">These operations consume the stream, trigger the pipeline execution, and produce a result or side-effect. <strong>You cannot use a stream after a terminal operation.</strong></p>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    
+                    <!-- Collect -->
+                    <div class="glass-panel p-6 rounded-xl border-t-4 border-purple-500 flex flex-col h-full">
+                        <h3 class="text-xl font-bold text-purple-400 font-mono mb-2">collect(Collector)</h3>
+                        <p class="text-sm text-slate-300 mb-4 flex-1">The most versatile operation. Packages the stream elements into a Collection (List, Set, Map) or aggregates them.</p>
+                        <pre class="rounded-lg mt-auto"><code class="language-java text-xs">// Convert to List
+List&lt;String&gt; list = stream.collect(Collectors.toList());
+
+// Grouping By (Interview Favorite)
+Map&lt;String, List&lt;Employee&gt;&gt; byDept = employees.stream()
+    .collect(Collectors.groupingBy(Employee::getDept));</code></pre>
+                    </div>
+
+                    <!-- Reduce -->
+                    <div class="glass-panel p-6 rounded-xl border-t-4 border-purple-500 flex flex-col h-full">
+                        <h3 class="text-xl font-bold text-purple-400 font-mono mb-2">reduce(identity, accumulator)</h3>
+                        <p class="text-sm text-slate-300 mb-4 flex-1">Combines elements into a single value (e.g., sum, max, string concatenation).</p>
+                        <pre class="rounded-lg mt-auto"><code class="language-java text-xs">// Summing salaries
+int totalSalary = employees.stream()
+    .map(Employee::getSalary)
+    .reduce(0, (a, b) -> a + b); // or Integer::sum</code></pre>
+                    </div>
+
+                    <!-- forEach -->
+                    <div class="glass-panel p-6 rounded-xl border-t-4 border-purple-500 flex flex-col h-full">
+                        <h3 class="text-xl font-bold text-purple-400 font-mono mb-2">forEach(Consumer)</h3>
+                        <p class="text-sm text-slate-300 mb-4 flex-1">Performs an action for each element. Used for side-effects (like printing).</p>
+                        <pre class="rounded-lg mt-auto"><code class="language-java text-xs">users.stream()
+    .filter(User::isActive)
+    .forEach(u -> System.out.println(u.getName()));</code></pre>
+                    </div>
+
+                    <!-- Matchers -->
+                    <div class="glass-panel p-6 rounded-xl border-t-4 border-purple-500 flex flex-col h-full">
+                        <h3 class="text-xl font-bold text-purple-400 font-mono mb-2">anyMatch / allMatch / noneMatch</h3>
+                        <p class="text-sm text-slate-300 mb-4 flex-1">Returns a boolean. These use <em>short-circuiting</em> (stops evaluating once the answer is known).</p>
+                        <pre class="rounded-lg mt-auto"><code class="language-java text-xs">// Is there any employee earning > 100k?
+boolean hasRich = employees.stream()
+    .anyMatch(e -> e.getSalary() > 100000);</code></pre>
+                    </div>
+
+                    <!-- Finders -->
+                    <div class="glass-panel p-6 rounded-xl border-t-4 border-purple-500 flex flex-col h-full md:col-span-2">
+                        <h3 class="text-xl font-bold text-purple-400 font-mono mb-2">findFirst() / findAny()</h3>
+                        <p class="text-sm text-slate-300 mb-4 flex-1">Returns an <code>Optional</code> describing the first or some element of the stream (or empty if stream is empty).</p>
+                        <pre class="rounded-lg mt-auto"><code class="language-java text-xs">Optional&lt;Employee&gt; firstIT = employees.stream()
+    .filter(e -> e.getDept().equals("IT"))
+    .findFirst();
+    
+firstIT.ifPresent(e -> System.out.println(e.getName()));</code></pre>
+                    </div>
+
+                </div>
+            </section>
+
+            <section id="types" class="scroll-mt-20">
+                <div class="inline-block px-3 py-1 bg-indigo-900/50 text-indigo-300 rounded-full text-xs font-semibold tracking-wider mb-4 border border-indigo-700/50">CATEGORIES</div>
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">Types of Streams</h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="glass-panel p-6 rounded-xl shadow-lg border-t-4 border-indigo-500">
+                        <h3 class="text-xl font-bold mb-2">1. Sequential Stream</h3>
+                        <p class="text-sm text-slate-400 mb-4">Processes elements one by one in a single thread. Created by default using <code>stream()</code>.</p>
+                        <pre><code class="language-java rounded-lg text-xs">List&lt;String&gt; names = Arrays.asList("A", "B", "C", "D");
+names.stream().forEach(System.out::println); // A B C D</code></pre>
+                    </div>
+                    
+                    <div class="glass-panel p-6 rounded-xl shadow-lg border-t-4 border-indigo-500">
+                        <h3 class="text-xl font-bold mb-2">2. Parallel Streams</h3>
+                        <p class="text-sm text-slate-400 mb-4">Performs operations concurrently on multiple threads to speed up processing using multi-core processors. Use <code>parallelStream()</code>.</p>
+                        <pre><code class="language-java rounded-lg text-xs">List&lt;Integer&gt; nums = Arrays.asList(1,2,3,4,5,6,7,8,9);
+nums.parallelStream()
+    .forEach(n -> System.out.println(n + " " + Thread.currentThread().getName()));</code></pre>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-xl shadow-lg border-t-4 border-indigo-500">
+                        <h3 class="text-xl font-bold mb-2">3. Infinite Streams</h3>
+                        <p class="text-sm text-slate-400 mb-4">Generates unbounded sequences using <code>iterate()</code> or <code>generate()</code>. Remember to use <code>limit()</code>.</p>
+                        <pre><code class="language-java rounded-lg text-xs">Stream.iterate(1, n -> n + 1)
+      .limit(5)
+      .forEach(System.out::println); // 1 2 3 4 5</code></pre>
+                    </div>
+                    
+                    <div class="glass-panel p-6 rounded-xl shadow-lg border-t-4 border-indigo-500">
+                        <h3 class="text-xl font-bold mb-2">4. Primitive Streams</h3>
+                        <p class="text-sm text-slate-400 mb-4">Specialized streams for primitive data types to avoid autoboxing overhead: <code>IntStream</code>, <code>LongStream</code>, <code>DoubleStream</code>.</p>
+                        <pre><code class="language-java rounded-lg text-xs">IntStream.range(1, 5).forEach(System.out::println); // 1 2 3 4</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section id="vs-collection" class="scroll-mt-20">
+                <div class="inline-block px-3 py-1 bg-pink-900/50 text-pink-300 rounded-full text-xs font-semibold tracking-wider mb-4 border border-pink-700/50">COMPARISON</div>
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">Stream vs Collection</h2>
+                <div class="glass-panel rounded-2xl shadow-xl overflow-hidden border border-slate-700">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-800 text-slate-200">
+                                <th class="p-4 border-b border-slate-700 font-semibold w-1/2 text-lg">Collection</th>
+                                <th class="p-4 border-b border-slate-700 font-semibold w-1/2 text-lg">Stream</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm text-slate-300">
+                            <tr class="hover:bg-slate-800/50 transition-colors">
+                                <td class="p-4 border-b border-slate-700"><i class="fa-solid fa-database text-pink-400 w-6"></i> Stores data in memory and represents a data structure.</td>
+                                <td class="p-4 border-b border-slate-700"><i class="fa-solid fa-water text-blue-400 w-6"></i> Does not store data; it processes data from a source.</td>
+                            </tr>
+                            <tr class="hover:bg-slate-800/50 transition-colors">
+                                <td class="p-4 border-b border-slate-700"><i class="fa-solid fa-arrows-rotate text-pink-400 w-6"></i> Elements can be added or removed from it.</td>
+                                <td class="p-4 border-b border-slate-700"><i class="fa-solid fa-lock text-blue-400 w-6"></i> Cannot add or remove elements (Immutable processing flow).</td>
+                            </tr>
+                            <tr class="hover:bg-slate-800/50 transition-colors">
+                                <td class="p-4 border-b border-slate-700"><i class="fa-solid fa-forward-step text-pink-400 w-6"></i> External iteration (explicit loops like <code>for</code> or <code>iterator</code>).</td>
+                                <td class="p-4 border-b border-slate-700"><i class="fa-solid fa-microchip text-blue-400 w-6"></i> Internal iteration (handled seamlessly by the API).</td>
+                            </tr>
+                            <tr class="hover:bg-slate-800/50 transition-colors">
+                                <td class="p-4"><i class="fa-solid fa-clock text-pink-400 w-6"></i> Computed eagerly (data is ready immediately).</td>
+                                <td class="p-4"><i class="fa-solid fa-bed text-blue-400 w-6"></i> Lazy evaluation (computed only when a terminal operation triggers).</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="file-io" class="scroll-mt-20">
+                <div class="inline-block px-3 py-1 bg-cyan-900/50 text-cyan-300 rounded-full text-xs font-semibold tracking-wider mb-4 border border-cyan-700/50">I/O OPERATIONS</div>
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">File Operations with Streams</h2>
+                <p class="text-slate-300 mb-6">Java Streams simplify File I/O operations drastically, allowing you to read lines as a stream or write arrays seamlessly to a file.</p>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="glass-panel p-6 rounded-xl border border-slate-700 shadow-lg">
+                        <h3 class="text-xl font-bold text-cyan-400 mb-4 flex items-center gap-2"><i class="fa-solid fa-book-open-reader"></i> 1. File Read Operation</h3>
+                        <p class="text-sm text-slate-400 mb-4">Use <code>Files.lines()</code> to read a file lazily line-by-line.</p>
+                        <pre><code class="language-java rounded-lg text-xs">String fileName = "path/to/your/file.txt";
+// Create a Stream of lines from the file
+try (Stream&lt;String&gt; lines = Files.lines(Paths.get(fileName))) {
+    
+    List&lt;String&gt; filtered = lines
+        .filter(s -> s.length() == 5)
+        .map(String::toUpperCase)
+        .collect(Collectors.toList());
+        
+    System.out.println("Filtered: " + filtered);
+} catch (IOException e) {
+    e.printStackTrace();
+}</code></pre>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-xl border border-slate-700 shadow-lg">
+                        <h3 class="text-xl font-bold text-cyan-400 mb-4 flex items-center gap-2"><i class="fa-solid fa-pen-to-square"></i> 2. File Write Operation</h3>
+                        <p class="text-sm text-slate-400 mb-4">Use a Stream to write each word to a <code>PrintWriter</code>.</p>
+                        <pre><code class="language-java rounded-lg text-xs">String[] words = { "Geeks", "for", "Geeks", "World" };
+String fileName = "path/to/your/file.txt";
+
+try (PrintWriter pw = new PrintWriter(
+        Files.newBufferedWriter(Paths.get(fileName)))) {
+    
+    // Use Stream to write each word to file
+    Stream.of(words).forEach(pw::println);
+    
+    System.out.println("Words written successfully.");
+} catch (IOException e) {
+    e.printStackTrace();
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section id="map-vs-flatmap" class="scroll-mt-20">
+                <div class="inline-block px-3 py-1 bg-red-900/50 text-red-300 rounded-full text-xs font-semibold tracking-wider mb-4 border border-red-700/50">TOP INTERVIEW QUESTION</div>
+                <h2 class="text-3xl md:text-4xl font-bold mb-6"><code>map()</code> vs <code>flatMap()</code></h2>
+                
+                <div class="glass-panel p-8 rounded-2xl shadow-xl space-y-8 border border-slate-700">
+                    
+                    <div class="grid md:grid-cols-2 gap-8 items-start">
+                        <!-- MAP side -->
+                        <div class="space-y-4">
+                            <h3 class="text-2xl font-bold text-blue-400 border-b border-slate-700 pb-2">map()</h3>
+                            <ul class="list-disc list-inside text-slate-300 space-y-2 text-sm mb-4">
+                                <li><strong>1-to-1 Mapping</strong></li>
+                                <li>Takes one element, transforms it, returns exactly one element.</li>
+                                <li>Use when transforming object properties.</li>
+                            </ul>
+                            
+                            <!-- Visual representation -->
+                            <div class="bg-slate-800 p-4 rounded-lg flex flex-col gap-2 border border-slate-600">
+                                <div class="flex items-center gap-4 text-sm font-mono">
+                                    <div class="w-20 text-center bg-slate-700 p-2 rounded">"hello"</div>
+                                    <i class="fa-solid fa-arrow-right text-blue-400"></i>
+                                    <div class="w-20 text-center bg-blue-900 text-blue-100 p-2 rounded">5</div>
+                                </div>
+                                <div class="flex items-center gap-4 text-sm font-mono">
+                                    <div class="w-20 text-center bg-slate-700 p-2 rounded">"java"</div>
+                                    <i class="fa-solid fa-arrow-right text-blue-400"></i>
+                                    <div class="w-20 text-center bg-blue-900 text-blue-100 p-2 rounded">4</div>
+                                </div>
+                                <p class="text-xs text-center text-slate-400 mt-2 italic">Function: String::length</p>
+                            </div>
+                        </div>
+
+                        <!-- FLATMAP side -->
+                        <div class="space-y-4">
+                            <h3 class="text-2xl font-bold text-teal-400 border-b border-slate-700 pb-2">flatMap()</h3>
+                            <ul class="list-disc list-inside text-slate-300 space-y-2 text-sm mb-4">
+                                <li><strong>1-to-Many Mapping</strong> (Flattening)</li>
+                                <li>Takes one element, returns a <em>Stream</em> of elements, then flattens all those streams into one big stream.</li>
+                                <li>Use for Lists of Lists, nested structures.</li>
+                            </ul>
+                            
+                            <!-- Visual representation -->
+                            <div class="bg-slate-800 p-4 rounded-lg flex flex-col gap-2 border border-slate-600">
+                                <div class="flex items-center gap-4 text-sm font-mono">
+                                    <div class="w-20 text-center bg-slate-700 p-2 rounded">[1, 2]</div>
+                                    <i class="fa-solid fa-arrow-right text-teal-400"></i>
+                                    <div class="w-10 text-center bg-teal-900 text-teal-100 p-2 rounded">1</div>
+                                    <div class="w-10 text-center bg-teal-900 text-teal-100 p-2 rounded">2</div>
+                                </div>
+                                <div class="flex items-center gap-4 text-sm font-mono">
+                                    <div class="w-20 text-center bg-slate-700 p-2 rounded">[3, 4]</div>
+                                    <i class="fa-solid fa-arrow-right text-teal-400"></i>
+                                    <div class="w-10 text-center bg-teal-900 text-teal-100 p-2 rounded">3</div>
+                                    <div class="w-10 text-center bg-teal-900 text-teal-100 p-2 rounded">4</div>
+                                </div>
+                                <p class="text-xs text-center text-slate-400 mt-2 italic">Function: Collection::stream</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Code Example -->
+                    <div class="pt-4 border-t border-slate-700">
+                        <pre><code class="language-java rounded-xl text-sm">// Assume Department has a getEmployees() method returning List&lt;Employee&gt;
+List&lt;Department&gt; departments = getDepartments();
+
+// BAD (map): Returns List&lt;List&lt;Employee&gt;&gt;
+List&lt;List&lt;Employee&gt;&gt; bad = departments.stream()
+    .map(Department::getEmployees)
+    .collect(Collectors.toList());
+
+// GOOD (flatMap): Returns List&lt;Employee&gt; - flattened!
+List&lt;Employee&gt; good = departments.stream()
+    .flatMap(dept -> dept.getEmployees().stream()) // map each dept to a STREAM of employees
+    .collect(Collectors.toList());</code></pre>
+                    </div>
+
+                </div>
+            </section>
+
+            <section id="interview" class="scroll-mt-20">
+                <div class="inline-block px-3 py-1 bg-green-900/50 text-green-300 rounded-full text-xs font-semibold tracking-wider mb-4 border border-green-700/50">PRACTICAL APPLICATION</div>
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">Real-World Interview Scenarios</h2>
+                <p class="text-slate-300 mb-6">In modern Java interviews, you are almost guaranteed to be asked to manipulate a List of custom objects (like <code>Employee</code>) using the Stream API. Here is the ultimate cheat sheet.</p>
+
+                <!-- Base Setup -->
+                <div class="bg-slate-800 rounded-xl overflow-hidden shadow-lg border border-slate-700 mb-8">
+                    <div class="bg-slate-900 px-4 py-2 border-b border-slate-700 flex justify-between items-center">
+                        <span class="text-sm text-slate-400 font-mono">Setup Data Structure</span>
+                    </div>
+                    <pre class="!m-0"><code class="language-java text-sm !bg-transparent p-6">class Employee {
+    int id;
+    String name;
+    String department;
+    double salary;
+    // ... constructor, getters, setters
+}
+List&lt;Employee&gt; empList = Arrays.asList(...);</code></pre>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- Scenario 1 -->
+                    <div class="glass-panel p-6 rounded-xl border border-slate-700 hover:border-green-500 transition-colors">
+                        <h3 class="text-lg font-bold mb-2">1. Find the highest paid employee in the organization</h3>
+                        <pre><code class="language-java rounded-lg text-sm">Optional&lt;Employee&gt; highestPaid = empList.stream()
+    .max(Comparator.comparingDouble(Employee::getSalary));
+    // Alternately using collect:
+    // .collect(Collectors.maxBy(Comparator.comparingDouble(Employee::getSalary)))</code></pre>
+                    </div>
+
+                    <!-- Scenario 2 -->
+                    <div class="glass-panel p-6 rounded-xl border border-slate-700 hover:border-green-500 transition-colors">
+                        <h3 class="text-lg font-bold mb-2">2. Group employees by Department</h3>
+                        <p class="text-xs text-slate-400 mb-2">Uses <code>Collectors.groupingBy()</code>. The key is the department, the value is a List of employees.</p>
+                        <pre><code class="language-java rounded-lg text-sm">Map&lt;String, List&lt;Employee&gt;&gt; byDept = empList.stream()
+    .collect(Collectors.groupingBy(Employee::getDepartment));</code></pre>
+                    </div>
+
+                    <!-- Scenario 3 -->
+                    <div class="glass-panel p-6 rounded-xl border border-slate-700 hover:border-green-500 transition-colors">
+                        <h3 class="text-lg font-bold mb-2">3. Count the number of employees in each department</h3>
+                        <p class="text-xs text-slate-400 mb-2">Combines groupingBy with <code>Collectors.counting()</code>.</p>
+                        <pre><code class="language-java rounded-lg text-sm">Map&lt;String, Long&gt; countByDept = empList.stream()
+    .collect(Collectors.groupingBy(
+        Employee::getDepartment, 
+        Collectors.counting()
+    ));</code></pre>
+                    </div>
+
+                    <!-- Scenario 4 -->
+                    <div class="glass-panel p-6 rounded-xl border border-slate-700 hover:border-green-500 transition-colors">
+                        <h3 class="text-lg font-bold mb-2">4. Calculate the average salary of each department</h3>
+                        <pre><code class="language-java rounded-lg text-sm">Map&lt;String, Double&gt; avgSalaryByDept = empList.stream()
+    .collect(Collectors.groupingBy(
+        Employee::getDepartment,
+        Collectors.averagingDouble(Employee::getSalary)
+    ));</code></pre>
+                    </div>
+
+                    <!-- Scenario 5 -->
+                    <div class="glass-panel p-6 rounded-xl border border-slate-700 hover:border-green-500 transition-colors">
+                        <h3 class="text-lg font-bold mb-2">5. Get the names of employees joined after 2015</h3>
+                        <p class="text-xs text-slate-400 mb-2">Demonstrates chaining Filter, Map, and Collect.</p>
+                        <pre><code class="language-java rounded-lg text-sm">List&lt;String&gt; names = empList.stream()
+    .filter(e -> e.getYearOfJoining() > 2015)
+    .map(Employee::getName)
+    .collect(Collectors.toList());</code></pre>
+                    </div>
+                    
+                    <!-- Scenario 6 -->
+                    <div class="glass-panel p-6 rounded-xl border border-slate-700 hover:border-green-500 transition-colors">
+                        <h3 class="text-lg font-bold mb-2">6. Separate employees into two lists: Salary > 50k and < 50k</h3>
+                        <p class="text-xs text-slate-400 mb-2">Uses <code>Collectors.partitioningBy()</code> which returns a Map with Boolean keys.</p>
+                        <pre><code class="language-java rounded-lg text-sm">Map&lt;Boolean, List&lt;Employee&gt;&gt; partitioned = empList.stream()
+    .collect(Collectors.partitioningBy(e -> e.getSalary() > 50000));
+    
+List&lt;Employee&gt; highEarners = partitioned.get(true);
+List&lt;Employee&gt; lowEarners = partitioned.get(false);</code></pre>
+                    </div>
+                    
+                    <div class="glass-panel p-6 rounded-xl border border-slate-700 hover:border-green-500 transition-colors">
+                        <h3 class="text-lg font-bold mb-2 flex items-center gap-2"><i class="fa-solid fa-cart-shopping text-green-400"></i> Real-World Example: Grocery Store Transactions</h3>
+                        <p class="text-sm text-slate-400 mb-4">A complete pipeline: Filtering, sorting, mapping, and collecting business transactions.</p>
+                        <div class="grid xl:grid-cols-2 gap-4">
+                            <pre class="!m-0"><code class="language-java rounded-lg text-xs">class Transaction {
+    int id, value;
+    String type;
+    // ... constructor & getters ...
+}
+
+List&lt;Transaction&gt; transactions = Arrays.asList(
+    new Transaction(1, 100, "GROCERY"),
+    new Transaction(3, 80, "GROCERY"),
+    new Transaction(6, 120, "GROCERY"),
+    new Transaction(7, 40, "ELECTRONICS"),
+    new Transaction(10, 50, "GROCERY")
+);</code></pre>
+                            <pre class="!m-0"><code class="language-java rounded-lg text-xs">// Stream pipeline based on diagram
+List&lt;Integer&gt; transactionIds = transactions.stream()
+    // keep only groceries
+    .filter(t -> t.getType().equals("GROCERY"))
+    // sort by value desc
+    .sorted(Comparator.comparing(Transaction::getValue).reversed())
+    // map to id
+    .map(Transaction::getId)
+    // collect as list
+    .collect(Collectors.toList());
+    
+System.out.println(transactionIds); // Output: [6, 1, 3, 10]</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <script>
+        // Initialize Syntax Highlighting
+        document.addEventListener('DOMContentLoaded', (event) => {
+            document.querySelectorAll('pre code').forEach((el) => {
+                hljs.highlightElement(el);
+            });
+        });
+
+        // Simple Intersection Observer to highlight active sidebar links
+        const sections = document.querySelectorAll('section');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        const observerOptions = {
+            root: document.getElementById('main-content'),
+            rootMargin: '0px',
+            threshold: 0.2
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.getAttribute('id');
+                    
+                    // Remove active class from all
+                    navLinks.forEach(link => {
+                        link.classList.remove('active');
+                        link.classList.remove('bg-blue-600', 'text-white', 'font-semibold');
+                        link.classList.add('text-slate-400');
+                    });
+
+                    // Add active class to corresponding nav link
+                    const activeLink = document.querySelector(`.nav-link[href="#${id}"]`);
+                    if (activeLink) {
+                        activeLink.classList.add('active');
+                        activeLink.classList.remove('text-slate-400');
+                    }
+                }
+            });
+        }, observerOptions);
+
+        sections.forEach(section => {
+            observer.observe(section);
+        });
+        
+        // Smooth scroll for nav links in the custom scrollable main container
+        document.querySelectorAll('.nav-link').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const targetEl = document.getElementById(targetId);
+                const mainContainer = document.getElementById('main-content');
+                
+                // Calculate position relative to container
+                if(targetEl && mainContainer) {
+                    mainContainer.scrollTo({
+                        top: targetEl.offsetTop - 40,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
