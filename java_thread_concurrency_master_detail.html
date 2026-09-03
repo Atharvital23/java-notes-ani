@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Java Concurrency & Thread Dashboard (JDK 21+)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+
+    .bg-grid-pattern {
+      background-size: 32px 32px;
+      background-image: 
+        radial-gradient(circle, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    }
+
+    .tab-btn.active {
+      border-bottom-color: #0ea5e9; /* Sky 500 */
+      color: #7dd3fc; /* Sky 300 */
+      background-color: rgba(14, 165, 233, 0.1);
+    }
+
+    .nav-item {
+      transition: all 0.2s ease;
+    }
+    .nav-item:hover {
+      background-color: rgba(30, 41, 59, 0.8); /* slate-800 */
+      transform: translateX(4px);
+    }
+    .nav-item.active {
+      background-color: rgba(14, 165, 233, 0.15);
+      border-left-color: #0ea5e9;
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col font-sans overflow-hidden bg-slate-950 text-slate-100">
+
+  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur px-6 py-4 flex flex-wrap items-center justify-between gap-4 z-20 shadow-lg shrink-0">
+    <div class="flex items-center space-x-4">
+      <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-sky-600 via-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-sky-900/50">
+        <i class="fa-solid fa-microchip text-2xl"></i>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold tracking-wide text-white flex items-center gap-3">
+          Java Concurrency Deep-Dive
+          <span class="text-xs font-semibold px-2.5 py-1 rounded-md bg-sky-950 border border-sky-700 text-sky-300 shadow-inner">JDK 21+ Architecture</span>
+        </h1>
+        <p class="text-sm text-slate-400 mt-0.5">Comprehensive analysis of Threads, Virtual Threads, Executors, and Synchronizers</p>
+      </div>
+    </div>
+
+    <!-- Filter Buttons -->
+    <div class="flex items-center gap-2 bg-slate-950/70 p-1.5 rounded-xl border border-slate-800 overflow-x-auto">
+      <button id="filter-all" class="filter-btn active px-4 py-2 rounded-lg text-sm font-medium transition-all bg-sky-600 text-white shadow">
+        All
+      </button>
+      <button id="filter-core" class="filter-btn px-3 py-2 rounded-lg text-sm font-medium transition-all text-sky-400 hover:bg-sky-950/40">
+        <i class="fa-solid fa-code-branch text-xs mr-1"></i> Core Threads
+      </button>
+      <button id="filter-executor" class="filter-btn px-3 py-2 rounded-lg text-sm font-medium transition-all text-purple-400 hover:bg-purple-950/40">
+        <i class="fa-solid fa-server text-xs mr-1"></i> Executors
+      </button>
+      <button id="filter-lock" class="filter-btn px-3 py-2 rounded-lg text-sm font-medium transition-all text-rose-400 hover:bg-rose-950/40">
+        <i class="fa-solid fa-lock text-xs mr-1"></i> Locks
+      </button>
+      <button id="filter-sync" class="filter-btn px-3 py-2 rounded-lg text-sm font-medium transition-all text-amber-400 hover:bg-amber-950/40">
+        <i class="fa-solid fa-stopwatch text-xs mr-1"></i> Synchronizers
+      </button>
+    </div>
+
+    <!-- Search -->
+    <div class="relative">
+      <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+      <input type="text" id="search-input" placeholder="Search components..." 
+             class="bg-slate-950 border border-slate-700 rounded-lg pl-10 pr-8 py-2 text-sm text-slate-200 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 w-72 shadow-inner transition-all">
+      <button id="clear-search" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 text-sm">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  </header>
+
+  <main class="flex-1 flex overflow-hidden bg-slate-950 bg-grid-pattern relative">
+    
+    <!-- Left Pane: Navigation List -->
+    <aside class="w-96 flex-shrink-0 border-r border-slate-800 bg-slate-900/80 backdrop-blur overflow-y-auto flex flex-col z-10 shadow-2xl">
+      <div class="p-4 border-b border-slate-800/50 bg-slate-900 sticky top-0 z-10">
+        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400">Concurrency Index</h2>
+      </div>
+      <div id="nav-container" class="p-3 space-y-6 pb-20">
+        <!-- List populated by JS -->
+      </div>
+    </aside>
+
+    <!-- Right Pane: Detail View (Replacing the Drawer) -->
+    <section id="detail-pane" class="flex-1 h-full overflow-y-auto relative hidden">
+      
+      <!-- Detail Header -->
+      <div class="p-8 border-b border-slate-800/60 bg-gradient-to-b from-slate-900 to-slate-950 sticky top-0 z-10 backdrop-blur-md">
+        <div class="flex flex-col gap-2 max-w-5xl mx-auto">
+          <div class="flex items-center gap-3 mb-2">
+            <span id="detail-badge" class="px-2.5 py-1 rounded text-xs font-bold uppercase tracking-widest bg-sky-950 text-sky-300 border border-sky-800 shadow-sm">Class</span>
+            <span id="detail-jdk" class="px-2.5 py-1 rounded text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700">JDK 1.0+</span>
+            <span id="detail-pkg" class="text-sm text-slate-400 font-mono ml-auto">java.lang</span>
+          </div>
+          <h2 id="detail-title" class="text-4xl font-extrabold text-white tracking-tight drop-shadow-md">Thread</h2>
+          
+          <!-- Navigation Tabs -->
+          <div class="flex border-b border-slate-800 mt-6 gap-6 text-sm font-medium">
+            <button id="tab-specs-btn" class="tab-btn active pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition">
+              <i class="fa-solid fa-sliders mr-2"></i> Architecture & Specs
+            </button>
+            <button id="tab-code-btn" class="tab-btn pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition">
+              <i class="fa-solid fa-code mr-2"></i> Usage & Code
+            </button>
+            <button id="tab-qa-btn" class="tab-btn pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition">
+              <i class="fa-solid fa-clipboard-question mr-2"></i> Q&A & Interview
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-8 max-w-5xl mx-auto pb-32">
+        
+        <!-- TAB 1: Specs & Complexity -->
+        <div id="tab-specs" class="tab-content space-y-10 animate-fade-in">
+          
+          <!-- Description -->
+          <div class="space-y-3">
+            <h3 class="text-sm font-bold uppercase tracking-widest text-slate-400 border-b border-slate-800 pb-2">Description & Mechanics</h3>
+            <div id="detail-desc" class="text-base text-slate-300 leading-relaxed bg-slate-900/50 p-5 rounded-xl border border-slate-800/80 shadow-inner">
+              Select a component to inspect details.
+            </div>
+          </div>
+
+          <!-- Characteristics Grid (Replacing Collections Rules) -->
+          <div class="space-y-3">
+            <h3 class="text-sm font-bold uppercase tracking-widest text-slate-400 border-b border-slate-800 pb-2">Concurrency Characteristics</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 shadow-sm hover:border-sky-500/30 transition">
+                <span class="text-slate-500 block text-xs uppercase font-bold tracking-wider mb-1"><i class="fa-solid fa-weight-hanging mr-1"></i> Resource Cost</span>
+                <span id="rule-cost" class="text-slate-200 font-semibold">Heavyweight</span>
+              </div>
+              <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 shadow-sm hover:border-sky-500/30 transition">
+                <span class="text-slate-500 block text-xs uppercase font-bold tracking-wider mb-1"><i class="fa-solid fa-ban mr-1"></i> Blocking Nature</span>
+                <span id="rule-blocking" class="text-slate-200 font-semibold">OS Thread Blocks</span>
+              </div>
+              <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 shadow-sm hover:border-sky-500/30 transition">
+                <span class="text-slate-500 block text-xs uppercase font-bold tracking-wider mb-1"><i class="fa-solid fa-right-from-bracket mr-1"></i> Return Value</span>
+                <span id="rule-return" class="text-slate-200 font-semibold">Void</span>
+              </div>
+              <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 shadow-sm hover:border-sky-500/30 transition">
+                <span class="text-slate-500 block text-xs uppercase font-bold tracking-wider mb-1"><i class="fa-solid fa-network-wired mr-1"></i> Paradigm</span>
+                <span id="rule-paradigm" class="text-slate-200 font-semibold">Shared State</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Performance Profile Table (Replacing Big-O Table) -->
+          <div class="space-y-3">
+            <h3 class="text-sm font-bold uppercase tracking-widest text-slate-400 border-b border-slate-800 pb-2">Overhead & Performance Profile</h3>
+            <div class="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden shadow-sm">
+              <table class="w-full text-left text-sm">
+                <thead class="bg-slate-950/80 border-b border-slate-800 text-slate-400 text-xs uppercase tracking-wider">
+                  <tr>
+                    <th class="px-6 py-4 font-semibold">Performance Aspect</th>
+                    <th class="px-6 py-4 font-semibold">Characteristic</th>
+                    <th class="px-6 py-4 font-semibold">Internal Mechanics</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60 font-mono text-slate-300 text-xs">
+                  <tr class="hover:bg-slate-800/30 transition">
+                    <td class="px-6 py-4 text-slate-400">Creation Cost</td>
+                    <td id="perf-creation" class="px-6 py-4 text-rose-400 font-bold">~1-2 ms</td>
+                    <td id="perf-creation-note" class="px-6 py-4 text-slate-400 font-sans">Requires OS System Call</td>
+                  </tr>
+                  <tr class="hover:bg-slate-800/30 transition">
+                    <td class="px-6 py-4 text-slate-400">Context Switch</td>
+                    <td id="perf-switch" class="px-6 py-4 text-amber-400 font-bold">OS Kernel Space</td>
+                    <td id="perf-switch-note" class="px-6 py-4 text-slate-400 font-sans">Expensive CPU cycle cost</td>
+                  </tr>
+                  <tr class="hover:bg-slate-800/30 transition">
+                    <td class="px-6 py-4 text-slate-400">Memory Footprint</td>
+                    <td id="perf-memory" class="px-6 py-4 text-rose-400 font-bold">~1MB - 2MB</td>
+                    <td id="perf-memory-note" class="px-6 py-4 text-slate-400 font-sans">Dedicated thread stack allocated by OS</td>
+                  </tr>
+                  <tr class="hover:bg-slate-800/30 transition">
+                    <td class="px-6 py-4 text-slate-400">Scalability Limit</td>
+                    <td id="perf-scale" class="px-6 py-4 text-emerald-400 font-bold">Thousands</td>
+                    <td id="perf-scale-note" class="px-6 py-4 text-slate-400 font-sans">Capped by OS total memory and limits</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Methods -->
+          <div class="space-y-3">
+            <h3 class="text-sm font-bold uppercase tracking-widest text-sky-400 border-b border-slate-800 pb-2 flex items-center gap-2">
+              <i class="fa-solid fa-gears"></i> Core Operations & Methods
+            </h3>
+            <div id="detail-methods" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Methods injected here -->
+            </div>
+          </div>
+
+          <!-- Memory Footprint Details -->
+          <div class="space-y-3">
+            <h3 class="text-sm font-bold uppercase tracking-widest text-slate-400 border-b border-slate-800 pb-2">JVM Integration & Memory Detail</h3>
+            <div id="detail-jvm" class="text-sm text-slate-300 bg-slate-900 p-5 rounded-xl border border-slate-800 leading-relaxed font-mono shadow-inner">
+              JVM analysis details...
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: Usage & Code -->
+        <div id="tab-code" class="tab-content hidden space-y-8">
+          
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="space-y-3">
+              <h3 class="text-sm font-bold uppercase tracking-widest text-slate-400 border-b border-slate-800 pb-2">When to Use</h3>
+              <div id="detail-whentouse" class="text-sm text-slate-300 bg-slate-900 p-5 rounded-xl border border-slate-800 leading-relaxed shadow-sm">
+                Guidelines on when to select this.
+              </div>
+            </div>
+
+            <div class="space-y-3">
+              <h3 class="text-sm font-bold uppercase tracking-widest text-slate-400 border-b border-slate-800 pb-2">Real-World Use Case</h3>
+              <div id="detail-realworld" class="text-sm text-sky-200 bg-sky-950/20 p-5 rounded-xl border border-sky-800/30 leading-relaxed shadow-sm">
+                Scenario.
+              </div>
+            </div>
+          </div>
+
+          <!-- Code Snippet -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+              <h3 class="text-sm font-bold uppercase tracking-widest text-slate-400">Implementation Example</h3>
+              <button id="copy-code-btn" class="text-xs font-semibold text-sky-400 hover:text-sky-300 flex items-center gap-1.5 bg-slate-900 px-3 py-1.5 rounded-md border border-slate-700 hover:border-sky-700 transition">
+                <i class="fa-regular fa-copy"></i> Copy Code
+              </button>
+            </div>
+            <pre id="detail-code" class="bg-[#0d1117] p-6 rounded-xl border border-slate-800 text-sm font-mono text-emerald-300 overflow-x-auto leading-relaxed shadow-inner whitespace-pre-wrap shadow-xl">
+// Java code will appear here
+            </pre>
+          </div>
+        </div>
+
+        <!-- TAB 3: Q&A -->
+        <div id="tab-qa" class="tab-content hidden space-y-8">
+          
+          <div class="space-y-3">
+            <h3 class="text-sm font-bold uppercase tracking-widest text-slate-400 border-b border-slate-800 pb-2">Comparison with Alternatives</h3>
+            <div id="detail-comparison" class="text-sm text-slate-300 bg-slate-900 p-6 rounded-xl border border-slate-800 leading-relaxed shadow-sm">
+              Contrast details.
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <h3 class="text-sm font-bold uppercase tracking-widest text-slate-400 border-b border-slate-800 pb-2">Technical Interview Focus</h3>
+            <div id="detail-interview" class="space-y-4">
+              <!-- Q&A inserted here -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+    
+    <!-- Empty State -->
+    <div id="empty-state" class="flex-1 flex flex-col items-center justify-center text-slate-500">
+      <i class="fa-solid fa-code-branch text-6xl mb-6 text-slate-800"></i>
+      <h2 class="text-2xl font-bold text-slate-400 mb-2">Select a Concurrency Component</h2>
+      <p class="text-sm">Choose an item from the navigation list to view its deep-dive analysis.</p>
+    </div>
+
+  </main>
+
+  <script>
+    // Structured Data specifically for Master-Detail rendering
+    const concurrencyData = [
+      {
+        category: "Core Execution Concepts",
+        type: "core",
+        icon: "fa-code-branch",
+        color: "text-sky-400",
+        items: [
+          {
+            id: "runnable",
+            name: "Runnable",
+            type: "interface",
+            typeGroup: "core",
+            pkg: "java.lang",
+            jdk: "JDK 1.0+",
+            desc: "The fundamental functional interface representing a task that can be executed concurrently. It specifies a unit of work but does not return a result or throw checked exceptions.",
+            rules: { cost: "Very Low", blocking: "Task Dependent", return: "void", paradigm: "Fire-and-forget" },
+            perf: { creation: "Fast", creationNote: "Lambda or Object creation", switch: "N/A", switchNote: "Runs on executor thread", memory: "~16 bytes", memoryNote: "Object header overhead only", scale: "Millions", scaleNote: "Queue capacity", jvm: "Represents work, not the worker. The JVM simply invokes the run() method on whatever OS thread was assigned to execute it." },
+            whenToUse: "Defining simple background tasks, asynchronous operations, or scheduled jobs where no return data is needed by the caller.",
+            realWorld: "Logging audit trails asynchronously, heartbeats, or firing periodic cleanup routines.",
+            methods: [
+              { name: "run()", sig: "abstract void run()", desc: "When an object implementing interface Runnable is used to create a thread, starting the thread causes the object's run method to be called." }
+            ],
+            code: `Runnable task = () -> {\n    String threadName = Thread.currentThread().getName();\n    System.out.println("Processing async task in: " + threadName);\n};\n\n// Typically submitted to an Executor, but can be run via raw Thread:\nnew Thread(task).start();`,
+            comparison: "Runnable cannot return a value or throw checked exceptions; Callable can do both.",
+            interview: [
+              { q: "Can a Runnable throw a checked exception?", a: "No. Because its signature does not declare 'throws Exception', any checked exception inside run() must be caught or wrapped in an unchecked RuntimeException." },
+              { q: "Why use Runnable over extending Thread?", a: "Implementing Runnable allows your class to extend another class (since Java lacks multiple inheritance), and it decouples the task logic from the execution mechanics." }
+            ]
+          },
+          {
+            id: "callable",
+            name: "Callable<V>",
+            type: "interface",
+            typeGroup: "core",
+            pkg: "java.util.concurrent",
+            jdk: "JDK 1.5+",
+            desc: "A functional interface similar to Runnable, but designed to return a generic result and capable of throwing checked exceptions. Essential for Future-based asynchronous processing.",
+            rules: { cost: "Very Low", blocking: "Task Dependent", return: "Generic <V>", paradigm: "Future Computation" },
+            perf: { creation: "Fast", creationNote: "Lambda instantiation", switch: "N/A", switchNote: "Executed by Thread Pool", memory: "~16 bytes", memoryNote: "Standard object overhead", scale: "Millions", scaleNote: "Stored in memory queues", jvm: "Execution is managed by an ExecutorService which returns a Future tracking the outcome of the Callable's invocation." },
+            whenToUse: "When you need to execute a background task that calculates a value and returns it to the main thread.",
+            realWorld: "Fetching data from three different microservices in parallel, waiting for all three to return, and aggregating their JSON responses.",
+            methods: [
+              { name: "call()", sig: "V call() throws Exception", desc: "Computes a result, or throws an exception if unable to do so." }
+            ],
+            code: `Callable<Integer> expensiveComputation = () -> {\n    Thread.sleep(1000); // Simulate heavy work\n    return 42;\n};\n\nExecutorService executor = Executors.newFixedThreadPool(1);\nFuture<Integer> future = executor.submit(expensiveComputation);\n\n// Main thread can do other things here...\n\n// Blocks until result is ready\nInteger result = future.get(); \nSystem.out.println("Result: " + result);`,
+            comparison: "Superior to Runnable when you need data returned. Unlike Runnable, it cannot be passed directly into a raw Thread constructor; it requires an ExecutorService or FutureTask.",
+            interview: [
+              { q: "How do you retrieve the result of a Callable?", a: "By submitting it to an ExecutorService, which gives you a Future. You then call future.get() which blocks until the result is computed." }
+            ]
+          },
+          {
+            id: "thread",
+            name: "Thread",
+            type: "class",
+            typeGroup: "core",
+            pkg: "java.lang",
+            jdk: "JDK 1.0+",
+            desc: "The fundamental unit of execution in Java. Traditionally, an instance of java.lang.Thread is mapped 1:1 to an underlying Operating System (Platform) thread.",
+            rules: { cost: "Heavyweight", blocking: "OS Kernel Blocks", return: "void", paradigm: "Shared State Concurrency" },
+            perf: { creation: "~1-2 ms", creationNote: "Requires OS system call", switch: "~1-5 µs", switchNote: "Kernel mode context switch", memory: "1MB - 2MB", memoryNote: "Pre-allocated OS Stack", scale: "Thousands", scaleNote: "Limited by OS memory (ulimit)", jvm: "The JVM issues a system call (e.g., clone() on Linux) to allocate an actual OS thread. Thread scheduling is handled by the OS kernel, not the JVM." },
+            whenToUse: "Rarely used directly in modern Java. Legacy applications use it for long-running daemon processes.",
+            realWorld: "A legacy server application spawning a dedicated thread to listen on a specific TCP port.",
+            methods: [
+              { name: "start()", sig: "void start()", desc: "Causes this thread to begin execution; the JVM calls the run method of this thread." },
+              { name: "join()", sig: "void join()", desc: "Waits for this thread to die/complete." },
+              { name: "sleep()", sig: "static void sleep(long millis)", desc: "Causes the currently executing thread to sleep, yielding CPU time." },
+              { name: "interrupt()", sig: "void interrupt()", desc: "Interrupts this thread, causing an InterruptedException if it is sleeping or waiting." }
+            ],
+            code: `Thread worker = new Thread(() -> {\n    System.out.println("Running in background");\n});\nworker.start();\n\n// Wait for worker to finish\ntry {\n    worker.join();\n} catch (InterruptedException e) {\n    Thread.currentThread().interrupt();\n}`,
+            comparison: "Raw Threads are expensive and unmanaged. Modern applications use ExecutorService for pooling, or VirtualThreads for lightweight scalability.",
+            interview: [
+              { q: "What happens if you call run() directly instead of start()?", a: "The run() method executes synchronously on the *current* thread. It does not spawn a new thread, completely defeating the purpose of multithreading." },
+              { q: "Why is stop() deprecated?", a: "Because it forces the thread to stop immediately, potentially leaving shared data structures (and locks) in an inconsistent, corrupted state." }
+            ]
+          },
+          {
+            id: "virtualthread",
+            name: "Virtual Thread",
+            type: "class (Loom)",
+            typeGroup: "core",
+            pkg: "java.lang",
+            jdk: "JDK 21+",
+            desc: "Project Loom: Lightweight threads managed entirely by the JVM. Many virtual threads are mapped (multiplexed) onto a small pool of OS carrier threads.",
+            rules: { cost: "Ultra-Lightweight", blocking: "JVM Unmounts (Yields)", return: "void", paradigm: "Thread-per-request" },
+            perf: { creation: "< 1 µs", creationNote: "Just Java object creation", switch: "Fast", switchNote: "User-space JVM unmounting", memory: "~200-300 Bytes", memoryNote: "Dynamic heap chunk stack", scale: "Millions", scaleNote: "Limited only by Java Heap size", jvm: "When a Virtual Thread blocks on I/O (e.g., HTTP call, DB query), the JVM unmounts it from the OS carrier thread, allowing the carrier thread to immediately execute a different Virtual Thread. No OS kernel block occurs." },
+            whenToUse: "High-throughput, I/O bound applications following a 'thread-per-request' model. (e.g., Spring Boot 3.2+).",
+            realWorld: "Handling 100,000 concurrent WebSocket connections on a single JVM instance without running out of memory.",
+            methods: [
+              { name: "ofVirtual()", sig: "static Thread.Builder.OfVirtual ofVirtual()", desc: "Returns a builder for creating virtual threads." },
+              { name: "startVirtualThread()", sig: "static Thread startVirtualThread(Runnable task)", desc: "Quickly starts a virtual thread to execute a task." }
+            ],
+            code: `// Safely launch 100,000 threads\ntry (var executor = Executors.newVirtualThreadPerTaskExecutor()) {\n    IntStream.range(0, 100_000).forEach(i -> {\n        executor.submit(() -> {\n            // Simulated I/O block (Database, API, etc.)\n            Thread.sleep(Duration.ofSeconds(1)); \n            return i;\n        });\n    });\n} // Auto-closes and waits for all to finish`,
+            comparison: "Replaces complex reactive programming (WebFlux/RxJava) with simple, synchronous, blocking code that achieves the same massive scalability.",
+            interview: [
+              { q: "What is 'Pinning' in Virtual Threads?", a: "Pinning occurs when a Virtual Thread cannot unmount from its carrier thread during a blocking operation. This usually happens if the block occurs inside a 'synchronized' block or native C code. Replacing 'synchronized' with ReentrantLock fixes this." },
+              { q: "Should you pool Virtual Threads?", a: "Never. They are so cheap to create and destroy that pooling them is an anti-pattern. Always create a new one per task." }
+            ]
+          }
+        ]
+      },
+      {
+        category: "Executors & Thread Pools",
+        type: "executor",
+        icon: "fa-server",
+        color: "text-purple-400",
+        items: [
+          {
+            id: "executorservice",
+            name: "ExecutorService",
+            type: "interface",
+            typeGroup: "executor",
+            pkg: "java.util.concurrent",
+            jdk: "JDK 1.5+",
+            desc: "The primary interface for managing pools of threads. It abstracts away thread creation and scheduling, allowing developers to focus on task submission and lifecycle management.",
+            rules: { cost: "Pool Overhead", blocking: "Queueing / Thread reuse", return: "Future<V>", paradigm: "Task Management" },
+            perf: { creation: "Moderate", creationNote: "Initial thread spin up", switch: "Varies", switchNote: "OS Thread switching", memory: "Pool + Queue Size", memoryNote: "Holds unexecuted tasks", scale: "Configurable", scaleNote: "Core vs Max threads", jvm: "Maintains a queue of Runnables/Callables. Reuses a set number of worker threads to execute them, preventing the overhead of creating new threads for every task." },
+            whenToUse: "Standard mechanism for executing asynchronous code and managing resource limits.",
+            realWorld: "Handling incoming HTTP requests in an application server (e.g., Tomcat), or executing background email processing jobs.",
+            methods: [
+              { name: "submit()", sig: "<T> Future<T> submit(Callable<T> task)", desc: "Submits a task for execution and returns a Future representing that task." },
+              { name: "shutdown()", sig: "void shutdown()", desc: "Initiates an orderly shutdown: executes previously submitted tasks, rejects new ones." },
+              { name: "awaitTermination()", sig: "boolean awaitTermination(long timeout, TimeUnit unit)", desc: "Blocks until all tasks have completed after a shutdown request." }
+            ],
+            code: `ExecutorService executor = Executors.newFixedThreadPool(4);\n\nFuture<String> future = executor.submit(() -> {\n    // background work\n    return "Success";\n});\n\nexecutor.shutdown(); // Refuse new tasks\ntry {\n    // Wait up to 60s for running tasks to finish\n    if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {\n        executor.shutdownNow(); // Force kill\n    }\n} catch (InterruptedException e) {\n    executor.shutdownNow();\n}`,
+            comparison: "Replaces raw `new Thread().start()` with managed resource pooling and lifecycle hooks.",
+            interview: [
+              { q: "What is the difference between shutdown() and shutdownNow()?", a: "shutdown() lets currently executing and queued tasks finish. shutdownNow() attempts to interrupt running tasks and returns a List of tasks that were in the queue but never started." }
+            ]
+          },
+          {
+            id: "threadpoolexecutor",
+            name: "ThreadPoolExecutor",
+            type: "class",
+            typeGroup: "executor",
+            pkg: "java.util.concurrent",
+            jdk: "JDK 1.5+",
+            desc: "The highly configurable core implementation of ExecutorService. It manages core pool size, maximum pool size, keep-alive times, a task queue, and rejection policies.",
+            rules: { cost: "Highly Tunable", blocking: "Queue Policy Dependent", return: "Future<V>", paradigm: "Worker Pool" },
+            perf: { creation: "Variable", creationNote: "Depends on prestartCoreThread", switch: "OS Switch", switchNote: "Workers are OS threads", memory: "Queue size bound", memoryNote: "Risk of OutOfMemory if unbounded", scale: "Strictly Bounded", scaleNote: "Throws Exception if overloaded", jvm: "If a task arrives and threads < corePoolSize, a new thread is created. If threads == corePoolSize, the task is queued. If queue is full, threads expand up to maxPoolSize." },
+            whenToUse: "When you need strict control over thread creation limits, specific blocking queues, and custom failure (rejection) handlers.",
+            realWorld: "Throttling load on a database connection pool to strictly prevent overwhelming the DB with too many concurrent queries.",
+            methods: [
+              { name: "setRejectedExecutionHandler()", sig: "void setRejectedExecutionHandler(RejectedExecutionHandler h)", desc: "Sets the policy for what happens when the queue is full and max threads are reached." }
+            ],
+            code: `ThreadPoolExecutor tpe = new ThreadPoolExecutor(\n    2, // corePoolSize (always alive)\n    4, // maxPoolSize (spawned if queue full)\n    60L, TimeUnit.SECONDS, // keepAlive time for extra threads\n    new LinkedBlockingQueue<>(100), // Max 100 tasks in queue\n    new ThreadPoolExecutor.CallerRunsPolicy() // If full, main thread runs it\n);\n\ntpe.submit(() -> System.out.println("Running..."));`,
+            comparison: "Executors factory methods (e.g., newCachedThreadPool) just return pre-configured ThreadPoolExecutors. Direct usage grants full control.",
+            interview: [
+              { q: "What happens when a ThreadPoolExecutor receives a task and core threads are busy?", a: "It places the task in the BlockingQueue. It ONLY spawns new threads up to maxPoolSize if the queue becomes completely full." }
+            ]
+          },
+          {
+            id: "completablefuture",
+            name: "CompletableFuture<T>",
+            type: "class",
+            typeGroup: "executor",
+            pkg: "java.util.concurrent",
+            jdk: "JDK 1.8+",
+            desc: "A Future that can be explicitly completed. Acts as a foundational building block for constructing complex, non-blocking asynchronous data pipelines (Monadic/Promises).",
+            rules: { cost: "Lightweight", blocking: "Non-blocking callbacks", return: "CompletableFuture", paradigm: "Reactive / Async Pipeline" },
+            perf: { creation: "Fast", creationNote: "Object creation", switch: "N/A", switchNote: "Runs on ForkJoinPool", memory: "Chain State", memoryNote: "Allocates states per pipeline stage", scale: "Massive", scaleNote: "Avoids thread blocking", jvm: "If no explicit Executor is passed, methods like supplyAsync() execute in the global ForkJoinPool.commonPool()." },
+            whenToUse: "Orchestrating complex asynchronous flows, combining multiple parallel service calls, and avoiding `.get()` blocking.",
+            realWorld: "A microservice endpoint that fetches user data from Service A, fetches order data from Service B concurrently, and combines them into a single JSON response.",
+            methods: [
+              { name: "supplyAsync()", sig: "static <U> CompletableFuture<U> supplyAsync(Supplier<U> s)", desc: "Starts an asynchronous computation." },
+              { name: "thenApply()", sig: "<U> CompletableFuture<U> thenApply(Function fn)", desc: "Attaches a non-blocking transformation callback." },
+              { name: "thenCombine()", sig: "<U,V> CompletableFuture<V> thenCombine(CompletableFuture, BiFunction)", desc: "Waits for two futures to finish, then combines their results." }
+            ],
+            code: `CompletableFuture<String> userFuture = CompletableFuture.supplyAsync(() -> fetchUser());\nCompletableFuture<String> orderFuture = CompletableFuture.supplyAsync(() -> fetchOrder());\n\n// Combine both non-blocking\nCompletableFuture<String> response = userFuture.thenCombine(orderFuture, (user, order) -> {\n    return user + " bought " + order;\n});\n\n// Wait for final result (or return to framework)\nSystem.out.println(response.join());`,
+            comparison: "Standard Future requires a blocking `get()` call to see if it's done. CompletableFuture allows attaching callbacks that trigger automatically.",
+            interview: [
+              { q: "What is the difference between thenApply and thenCompose?", a: "thenApply maps a value (like Stream.map). thenCompose is used when the callback itself returns a new CompletableFuture, flattening it (like Stream.flatMap) to avoid CompletableFuture<CompletableFuture<T>>." }
+            ]
+          }
+        ]
+      },
+      {
+        category: "Locks & Synchronization",
+        type: "lock",
+        icon: "fa-lock",
+        color: "text-rose-400",
+        items: [
+          {
+            id: "synchronized",
+            name: "synchronized (Intrinsic)",
+            type: "keyword",
+            typeGroup: "lock",
+            pkg: "Java Language Feature",
+            jdk: "JDK 1.0+",
+            desc: "The built-in Java keyword for mutual exclusion. Every Java object has an intrinsic 'monitor' lock that this keyword acquires and releases automatically.",
+            rules: { cost: "Optimized (Biased)", blocking: "OS Kernel Block (Uninterruptible)", return: "N/A", paradigm: "Monitor Lock" },
+            perf: { creation: "Zero", creationNote: "Part of Object header", switch: "High under load", switchNote: "Kernel suspension", memory: "Zero extra", memoryNote: "Uses object mark word", scale: "Low contention limit", scaleNote: "Causes thread bottlenecks", jvm: "JVM automatically acquires the monitor on entry and releases on exit (even if an exception is thrown). Highly optimized by the JVM (Lock Elision/Biased Locking) when un-contended." },
+            whenToUse: "Simple thread-safety requirements where a single block or method needs protection and advanced features (timeouts) aren't needed.",
+            realWorld: "Safeguarding simple counter increments or state modifications in legacy backend code.",
+            methods: [
+              { name: "wait()", sig: "void wait()", desc: "Called on the Object. Releases the monitor lock and puts the thread in WAITING state." },
+              { name: "notifyAll()", sig: "void notifyAll()", desc: "Wakes up all threads waiting on this object's monitor." }
+            ],
+            code: `public class Counter {\n    private int count = 0;\n\n    // Locks the instance (this)\n    public synchronized void increment() {\n        count++;\n    }\n\n    public void addAmount(int val) {\n        // Fine-grained locking\n        synchronized(this) {\n            count += val;\n        }\n    }\n}`,
+            comparison: "Cannot be interrupted while waiting for the lock, cannot timeout, and must release in the exact same block. ReentrantLock fixes all these.",
+            interview: [
+              { q: "Does synchronized lock the method or the object?", a: "It locks the Object. A synchronized instance method locks `this`. A synchronized static method locks the `Class` object." }
+            ]
+          },
+          {
+            id: "reentrantlock",
+            name: "ReentrantLock",
+            type: "class",
+            typeGroup: "lock",
+            pkg: "java.util.concurrent.locks",
+            jdk: "JDK 1.5+",
+            desc: "An advanced, explicitly managed mutual exclusion lock. Provides the same basic behavior as synchronized, but adds fairness policies, interruptibility, and try-locking.",
+            rules: { cost: "Moderate", blocking: "Interruptible / Timeout", return: "boolean (tryLock)", paradigm: "Explicit Locking" },
+            perf: { creation: "Low", creationNote: "Object allocation", switch: "Moderate", switchNote: "AQS parks threads via Unsafe", memory: "Low", memoryNote: "AQS node queue", scale: "High under load", scaleNote: "Handles contention gracefully", jvm: "Backed by AbstractQueuedSynchronizer (AQS). Uses CAS (Compare-And-Swap) CPU instructions for incredibly fast un-contended acquisition." },
+            whenToUse: "When you need to attempt to get a lock without waiting forever (tryLock), or when avoiding Virtual Thread 'pinning'.",
+            realWorld: "Preventing cache stampedes, or locking specific shards of a large in-memory data structure.",
+            methods: [
+              { name: "lock()", sig: "void lock()", desc: "Acquires the lock, blocking until available." },
+              { name: "unlock()", sig: "void unlock()", desc: "Releases the lock. MUST be placed in a finally block." },
+              { name: "tryLock()", sig: "boolean tryLock(long time, TimeUnit unit)", desc: "Attempts to acquire lock, returning false if time expires." }
+            ],
+            code: `Lock lock = new ReentrantLock();\n\npublic void process() {\n    lock.lock();\n    try {\n        // Critical section\n        updateSharedState();\n    } finally {\n        // ALWAYS unlock in finally block\n        lock.unlock();\n    }\n}`,
+            comparison: "Unlike synchronized, ReentrantLock requires explicit unlocking. However, it prevents Virtual Threads from pinning to their carrier threads.",
+            interview: [
+              { q: "What does 'Reentrant' mean?", a: "It means a thread that already holds the lock can enter another block demanding the same lock without deadlocking itself. The lock maintains a hold count." }
+            ]
+          },
+          {
+            id: "readwritelock",
+            name: "ReadWriteLock",
+            type: "interface",
+            typeGroup: "lock",
+            pkg: "java.util.concurrent.locks",
+            jdk: "JDK 1.5+",
+            desc: "Maintains a pair of associated locks: one for read-only operations and one for writing. Allows multiple concurrent readers, but only one exclusive writer.",
+            rules: { cost: "Moderate", blocking: "Writers block Readers", return: "N/A", paradigm: "Shared-Read / Exclusive-Write" },
+            perf: { creation: "Low", creationNote: "Object allocation", switch: "Low for readers", switchNote: "Readers proceed concurrently", memory: "Low", memoryNote: "AQS tracking", scale: "Excellent (Read-Heavy)", scaleNote: "Massive throughput for reads", jvm: "The write lock is strictly exclusive. If the write lock is held, no readers can enter. If readers are active, writers must wait." },
+            whenToUse: "When a data structure is read frequently but modified rarely.",
+            realWorld: "In-memory caching registries, lookup tables, and configuration caches.",
+            methods: [
+              { name: "readLock()", sig: "Lock readLock()", desc: "Returns the lock used for reading (shared)." },
+              { name: "writeLock()", sig: "Lock writeLock()", desc: "Returns the lock used for writing (exclusive)." }
+            ],
+            code: `ReadWriteLock rwl = new ReentrantReadWriteLock();\nMap<String, String> cache = new HashMap<>();\n\npublic String get(String key) {\n    rwl.readLock().lock();\n    try { return cache.get(key); }\n    finally { rwl.readLock().unlock(); }\n}\n\npublic void put(String key, String value) {\n    rwl.writeLock().lock();\n    try { cache.put(key, value); }\n    finally { rwl.writeLock().unlock(); }\n}`,
+            comparison: "Significantly faster than standard ReentrantLock for read-heavy workloads. Slower if writes are very frequent.",
+            interview: [
+              { q: "Can a reader thread upgrade its lock to a write lock?", a: "No, ReentrantReadWriteLock does not allow lock upgrading (it will deadlock). Java 8's StampedLock allows this." }
+            ]
+          }
+        ]
+      },
+      {
+        category: "Synchronizers & Memory Context",
+        type: "sync",
+        icon: "fa-stopwatch",
+        color: "text-amber-400",
+        items: [
+          {
+            id: "countdownlatch",
+            name: "CountDownLatch",
+            type: "class",
+            typeGroup: "sync",
+            pkg: "java.util.concurrent",
+            jdk: "JDK 1.5+",
+            desc: "A synchronization aid that allows one or more threads to wait until a set of operations being performed in other threads completes.",
+            rules: { cost: "Low", blocking: "Await blocks until zero", return: "N/A", paradigm: "One-shot Barrier" },
+            perf: { creation: "Low", creationNote: "Init with count", switch: "Parks waiters", switchNote: "Efficient AQS wait", memory: "Minimal", memoryNote: "Single integer state", scale: "High", scaleNote: "Many threads can countDown", jvm: "The count cannot be reset. Once it hits zero, all waiting threads are released. Subsequent calls to await() return immediately." },
+            whenToUse: "When a main thread must wait for N background services to initialize before proceeding.",
+            realWorld: "A server waiting for the Database, Cache, and Message Queue connections to establish before opening the HTTP port.",
+            methods: [
+              { name: "await()", sig: "void await() throws InterruptedException", desc: "Causes the current thread to wait until the latch has counted down to zero." },
+              { name: "countDown()", sig: "void countDown()", desc: "Decrements the count of the latch, releasing all waiting threads if count reaches zero." }
+            ],
+            code: `CountDownLatch latch = new CountDownLatch(3);\n\n// Pass latch to 3 worker threads\nexecutor.submit(() -> {\n    initDatabase();\n    latch.countDown();\n});\n// ... spawn 2 more workers ...\n\n// Main thread blocks here\nlatch.await(); \nSystem.out.println("All systems go!");`,
+            comparison: "CountDownLatch is single-use. If you need a reusable barrier where threads wait for each other repeatedly, use CyclicBarrier.",
+            interview: [
+              { q: "Can a CountDownLatch be reset and reused?", a: "No. Once the count reaches zero, it is done. You must instantiate a new one." }
+            ]
+          },
+          {
+            id: "threadlocal",
+            name: "ThreadLocal<T>",
+            type: "class",
+            typeGroup: "sync",
+            pkg: "java.lang",
+            jdk: "JDK 1.2+",
+            desc: "Provides thread-local variables. Each thread that accesses one has its own, independently initialized copy of the variable.",
+            rules: { cost: "Memory Bound", blocking: "Non-blocking Map lookup", return: "T", paradigm: "Context Passing" },
+            perf: { creation: "Fast", creationNote: "Wrapper object", switch: "Zero", switchNote: "Lookup on get()", memory: "Leak Prone", memoryNote: "Held in custom map", scale: "Dangerous in pools", scaleNote: "Retained between tasks", jvm: "Values are stored in a custom WeakHashMap physically attached to the `Thread` instance itself." },
+            whenToUse: "Passing contextual data (user auth, trace IDs) transparently down a deep call stack without adding it to method signatures.",
+            realWorld: "Spring Security Context holding the current User, or SLF4J MDC logging Request IDs.",
+            methods: [
+              { name: "get()", sig: "T get()", desc: "Returns value in current thread's copy." },
+              { name: "set()", sig: "void set(T value)", desc: "Sets the current thread's copy." },
+              { name: "remove()", sig: "void remove()", desc: "Removes current thread's value (CRITICAL for preventing memory leaks in Thread Pools)." }
+            ],
+            code: `public class UserContext {\n    private static final ThreadLocal<String> currentUser = new ThreadLocal<>();\n\n    public static void set(String user) { currentUser.set(user); }\n    public static String get() { return currentUser.get(); }\n    public static void clear() { currentUser.remove(); }\n}\n\n// In Filter\nUserContext.set("alice_123");\ntry {\n    processRequest(); // reads UserContext deeply\n} finally {\n    UserContext.clear(); // PREVENT LEAK\n}`,
+            comparison: "ThreadLocal is mutable and dangerous in unmanaged pools. Project Loom introduced 'ScopedValue' (Java 21) which is immutable and bounded as a safer alternative.",
+            interview: [
+              { q: "Why do ThreadLocals cause severe memory leaks in Web Servers (like Tomcat)?", a: "Because Tomcat reuses threads from a pool. If a task sets a ThreadLocal (holding an object from the app's ClassLoader) and doesn't remove() it, the thread keeps a strong reference to it forever. The app's ClassLoader can never be garbage collected on redeploy." }
+            ]
+          }
+        ]
+      }
+    ];
+
+    let currentItem = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderNav('all');
+      setupFilters();
+      setupSearch();
+      setupTabs();
+      
+      document.getElementById('copy-code-btn').addEventListener('click', copyCodeToClipboard);
+    });
+
+    function setupFilters() {
+      const filterBtns = document.querySelectorAll('.filter-btn');
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          filterBtns.forEach(b => b.classList.remove('active', 'bg-sky-600', 'text-white', 'shadow'));
+          btn.classList.add('active', 'bg-sky-600', 'text-white', 'shadow');
+          
+          const type = btn.id.replace('filter-', '');
+          renderNav(type);
+        });
+      });
+    }
+
+    function setupSearch() {
+      const searchInput = document.getElementById('search-input');
+      const clearBtn = document.getElementById('clear-search');
+
+      searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        if (query) {
+          clearBtn.classList.remove('hidden');
+        } else {
+          clearBtn.classList.add('hidden');
+        }
+        renderNav('all', query);
+      });
+
+      clearBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        clearBtn.classList.add('hidden');
+        renderNav('all');
+      });
+    }
+
+    function renderNav(filterType, searchQuery = '') {
+      const navContainer = document.getElementById('nav-container');
+      navContainer.innerHTML = '';
+
+      concurrencyData.forEach(category => {
+        // Filter logic
+        if (filterType !== 'all' && category.type !== filterType) return;
+
+        let itemsToRender = category.items;
+        if (searchQuery) {
+          itemsToRender = itemsToRender.filter(item => 
+            item.name.toLowerCase().includes(searchQuery) || 
+            item.desc.toLowerCase().includes(searchQuery)
+          );
+        }
+
+        if (itemsToRender.length === 0) return;
+
+        // Category Header
+        const catDiv = document.createElement('div');
+        catDiv.className = 'mb-2';
+        catDiv.innerHTML = `
+          <h3 class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-2 pl-2">
+            <i class="fa-solid ${category.icon} ${category.color}"></i> ${category.category}
+          </h3>
+        `;
+        
+        // Category Items List
+        const listDiv = document.createElement('div');
+        listDiv.className = 'space-y-1';
+
+        itemsToRender.forEach(item => {
+          const btn = document.createElement('button');
+          btn.className = `nav-item w-full text-left px-4 py-2.5 rounded-lg border border-transparent text-sm font-medium text-slate-300 hover:text-white flex items-center justify-between group`;
+          btn.innerHTML = `
+            <span>${item.name}</span>
+            <i class="fa-solid fa-chevron-right text-[10px] text-slate-600 group-hover:text-sky-400 transition"></i>
+          `;
+          
+          // Preserve active state
+          if (currentItem && currentItem.id === item.id) {
+            btn.classList.add('active');
+          }
+
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            showDetails(item, category.color);
+          });
+
+          listDiv.appendChild(btn);
+        });
+
+        catDiv.appendChild(listDiv);
+        navContainer.appendChild(catDiv);
+      });
+
+      if (navContainer.innerHTML === '') {
+        navContainer.innerHTML = '<div class="text-sm text-slate-500 text-center p-4">No components found.</div>';
+      }
+    }
+
+    function showDetails(item, colorClass) {
+      currentItem = item;
+      
+      // Toggle Views
+      document.getElementById('empty-state').classList.add('hidden');
+      const detailPane = document.getElementById('detail-pane');
+      detailPane.classList.remove('hidden');
+
+      // Scroll to top of detail view
+      detailPane.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // Header fields
+      const badge = document.getElementById('detail-badge');
+      badge.textContent = item.type;
+      
+      // Dynamic badge styling based on item type
+      badge.className = 'px-2.5 py-1 rounded text-xs font-bold uppercase tracking-widest shadow-sm ';
+      if(item.typeGroup === 'core') badge.className += 'bg-sky-950 text-sky-300 border border-sky-800';
+      else if(item.typeGroup === 'executor') badge.className += 'bg-purple-950 text-purple-300 border border-purple-800';
+      else if(item.typeGroup === 'lock') badge.className += 'bg-rose-950 text-rose-300 border border-rose-800';
+      else badge.className += 'bg-amber-950 text-amber-300 border border-amber-800';
+
+      document.getElementById('detail-jdk').textContent = item.jdk;
+      document.getElementById('detail-pkg').textContent = `package ${item.pkg}`;
+      document.getElementById('detail-title').textContent = item.name;
+
+      // Specs & Architecture
+      document.getElementById('detail-desc').textContent = item.desc;
+      
+      document.getElementById('rule-cost').textContent = item.rules.cost;
+      document.getElementById('rule-blocking').textContent = item.rules.blocking;
+      document.getElementById('rule-return').textContent = item.rules.return;
+      document.getElementById('rule-paradigm').textContent = item.rules.paradigm;
+
+      document.getElementById('perf-creation').textContent = item.perf.creation;
+      document.getElementById('perf-creation-note').textContent = item.perf.creationNote;
+      document.getElementById('perf-switch').textContent = item.perf.switch;
+      document.getElementById('perf-switch-note').textContent = item.perf.switchNote;
+      document.getElementById('perf-memory').textContent = item.perf.memory;
+      document.getElementById('perf-memory-note').textContent = item.perf.memoryNote;
+      document.getElementById('perf-scale').textContent = item.perf.scale;
+      document.getElementById('perf-scale-note').textContent = item.perf.scaleNote;
+
+      document.getElementById('detail-jvm').textContent = item.perf.jvm;
+
+      // Methods
+      const methodsContainer = document.getElementById('detail-methods');
+      methodsContainer.innerHTML = '';
+      if (item.methods && item.methods.length > 0) {
+        item.methods.forEach(m => {
+          const div = document.createElement('div');
+          div.className = 'bg-slate-900 p-4 rounded-xl border border-slate-800 shadow-sm space-y-2';
+          div.innerHTML = `
+            <div class="font-mono text-sm font-bold ${colorClass.replace('text-', 'text-')}">${m.name}</div>
+            <div class="font-mono text-xs text-slate-400 bg-slate-950/80 px-2 py-1 rounded border border-slate-800/60 break-all">${m.sig}</div>
+            <p class="text-sm text-slate-300">${m.desc}</p>
+          `;
+          methodsContainer.appendChild(div);
+        });
+      }
+
+      // Usage & Code
+      document.getElementById('detail-whentouse').textContent = item.whenToUse;
+      document.getElementById('detail-realworld').textContent = item.realWorld;
+      document.getElementById('detail-code').textContent = item.code;
+
+      // Comparison & Q&A
+      document.getElementById('detail-comparison').textContent = item.comparison;
+      
+      const interviewContainer = document.getElementById('detail-interview');
+      interviewContainer.innerHTML = '';
+      if (item.interview && item.interview.length > 0) {
+        item.interview.forEach((qa, index) => {
+          const div = document.createElement('div');
+          div.className = 'bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm space-y-3';
+          div.innerHTML = `
+            <div class="font-semibold text-amber-300 text-sm flex items-start gap-2">
+              <span class="bg-amber-950/80 border border-amber-800 text-amber-300 text-xs px-2 py-0.5 rounded font-mono shrink-0">Q${index+1}</span>
+              ${qa.q}
+            </div>
+            <div class="text-slate-300 text-sm leading-relaxed pl-9 border-l-2 border-slate-800/80">
+              ${qa.a}
+            </div>
+          `;
+          interviewContainer.appendChild(div);
+        });
+      }
+    }
+
+    function setupTabs() {
+      const tabBtns = document.querySelectorAll('.tab-btn');
+      const tabContents = document.querySelectorAll('.tab-content');
+
+      tabBtns.forEach((btn, index) => {
+        btn.addEventListener('click', () => {
+          tabBtns.forEach(b => b.classList.remove('active'));
+          tabContents.forEach(c => c.classList.add('hidden'));
+
+          btn.classList.add('active');
+          if (index === 0) document.getElementById('tab-specs').classList.remove('hidden');
+          if (index === 1) document.getElementById('tab-code').classList.remove('hidden');
+          if (index === 2) document.getElementById('tab-qa').classList.remove('hidden');
+        });
+      });
+    }
+
+    function copyCodeToClipboard() {
+      const codeElement = document.getElementById('detail-code');
+      navigator.clipboard.writeText(codeElement.textContent).then(() => {
+        const copyBtn = document.getElementById('copy-code-btn');
+        const originalText = copyBtn.innerHTML;
+        copyBtn.innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i> Copied!`;
+        setTimeout(() => {
+          copyBtn.innerHTML = originalText;
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>
