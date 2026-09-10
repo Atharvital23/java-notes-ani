@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Online Java Compiler - Programiz</title>
+  
+  <link rel="preconnect" href="https://fonts.programiz.com" crossorigin />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0" />
+  
+  <link rel="stylesheet" href="https://fonts.programiz.com/compiler.css" />
+  <link rel="stylesheet" href="https://cdn.playground-v2.programiz.com/build/styles.6cb71a2f91c9fe90e188.css" />
+
+  <style>
+    /* Clean layout overrides to stretch full screen without ad reservation space */
+    body {
+      padding-top: 0 !important;
+      margin: 0;
+      overflow: hidden;
+      background: #1e1e1e;
+    }
+
+    #root {
+      height: 100vh !important;
+      width: 100vw;
+    }
+
+    /* Hide any remnant ad wrappers injected by delayed scripts */
+    .pgAdWrapper, 
+    .desktop-right-ad, 
+    .mobile-ad-wrapper, 
+    .compiler-header-ad {
+      display: none !important;
+    }
+  </style>
+
+  <script>
+    window.__TURNSTILE_SITE_KEY__ = "0x4AAAAAAEejdPAnhRqW6fHy";
+  </script>
+</head>
+
+<body>
+  <div class="container dark-mode tw:w-screen tw:overflow-hidden tw:relative" id="root" data-lang="java">
+    <div class="spinner tw:bg-surface tw:dark:bg-[#1c2130] tw:fixed tw:top-0 tw:left-0 tw:z-[2147483001] tw:h-full tw:w-full tw:flex tw:justify-center tw:items-center" style="display: none">
+      <div class="loader tw:opacity-80 tw:text-primary tw:dark:text-white tw:text-[20vh] tw:font-bold tw:font-[Consolas,Menlo,Monaco,monospace]">
+        <span>{</span><span>}</span>
+      </div>
+    </div>
+    
+    <div class="mobile-nav-drawer tw:hidden tw:relative">
+      <div class="nav-backdrop tw:absolute tw:bg-black/60 tw:z-[999] tw:top-0 tw:left-[-999px] tw:w-screen tw:h-[1000px]"></div>
+      <div class="nav-menu tw:z-[1000] tw:w-[calc(100vw-52px)] tw:h-[1000px] tw:absolute tw:left-[-999px] tw:top-0 tw:bg-white tw:dark:bg-[#383b40] tw:pt-[26px] tw:pr-0 tw:pb-[26px] tw:pl-6 tw:box-border tw:transition-all tw:duration-300 tw:ease-[ease] tw:overflow-hidden">
+        <div class="nav-header-wrapper tw:flex tw:justify-between">
+          <div class="nav-logo-title-wrapper">
+            <a href="#" class="nav-logo-link">
+              <img id="nav-logo" class="tw:w-[68px] tw:h-[23px]" alt="Programiz" src="https://cdn.playground-v2.programiz.com/assets/logos/logo-inverted.svg" />
+            </a>
+          </div>
+          <button type="button" class="close-nav-btn tw:mt-0 tw:mr-5 tw:mb-0 tw:ml-0 tw:border-0 tw:bg-transparent" title="Close navigation">
+            <img class="svg" src="https://cdn.playground-v2.programiz.com/assets/icons/close.svg" alt="" />
+          </button>
+        </div>
+        <div class="nav-menu-list tw:pt-[40px] tw:overflow-y-scroll tw:h-[calc(100dvh-90px)]">
+          <a href="#" class="change-lang-row tw:inline-flex tw:items-center tw:mb-4 tw:w-full tw:box-border java active" title="Online Java Compiler">
+            <span class="change-lang-btn tw:flex tw:text-center tw:bg-transparent tw:rounded-xs tw:border tw:border-border tw:p-[7px]">
+              <img class="change-lang-btn-icon tw:h-[22px] tw:w-[22px] svg" src="https://cdn.playground-v2.programiz.com/assets/icons/java.svg" alt="Java Online" />
+            </span>
+            <span class="nav-menu-text tw:ml-4 tw:font-medium tw:text-sm">Online Java Compiler</span>
+          </a>
+          <a href="#" class="change-lang-row tw:inline-flex tw:items-center tw:mb-4 tw:w-full tw:box-border python " title="Online Python Compiler">
+            <span class="change-lang-btn tw:flex tw:text-center tw:bg-transparent tw:rounded-xs tw:border tw:border-border tw:p-[7px]">
+              <img class="change-lang-btn-icon tw:h-[22px] tw:w-[22px] svg" src="https://cdn.playground-v2.programiz.com/assets/icons/python.svg" alt="Python Online" />
+            </span>
+            <span class="nav-menu-text tw:ml-4 tw:font-medium tw:text-sm">Online Python Compiler</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="share-link-generating-modal tw:hidden tw:relative" style="display: none;">
+      <div class="modal-backdrop-share"></div>
+      <div class="modal-content">
+        <div class="modal-header tw:flex tw:justify-between tw:items-center tw:text-text tw:dark:text-white/87 tw:pt-6 tw:px-6 tw:pb-4">
+          <h2 class="modal-title tw:m-0 tw:text-[24px] tw:font-medium tw:leading-[36px]">Generating Link</h2>
+        </div>
+        <div class="modal-body tw:pt-0 tw:px-6 tw:pb-6">
+          <div class="progress-bar tw:w-full tw:bg-border tw:dark:bg-white/20 tw:rounded-sm">
+            <div class="progress tw:w-0 tw:h-2 tw:bg-primary tw:rounded-sm"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notification" id="notification" style="display:none;">
+      <div class="check-icon-wrapper tw:bg-danger tw:dark:bg-white/20 tw:flex tw:items-center tw:justify-center tw:py-[14px] tw:px-2 tw:border-r tw:border-r-success">
+        <img src="https://cdn.playground-v2.programiz.com/assets/icons/check.svg" alt="check">
+      </div>
+      <div class="notification-message-wrapper tw:flex tw:items-center tw:h-full tw:w-max">
+        <p class="notification-message tw:text-[16px] tw:leading-[24px] tw:font-medium tw:pt-3 tw:pr-0 tw:pb-3 tw:pl-2 tw:m-0"></p>
+        <button type="button" class="close-modal-notification tw:cursor-pointer tw:outline-none tw:bg-transparent tw:border-0 tw:flex tw:items-center tw:pt-[10px] tw:pr-2 tw:pb-[10px] tw:pl-3" title="Close">
+          <img class="svg" src="https://cdn.playground-v2.programiz.com/assets/icons/close-v2-small.svg" alt="" />
+        </button>
+      </div>
+    </div>
+
+    <div class="share-link-modal tw:hidden" style="display: none;">
+      <div class="modal-backdrop-share"></div>
+      <div class="modal-content">
+        <div class="modal-header tw:flex tw:justify-between tw:items-center tw:text-text tw:dark:text-white/87 tw:pt-6 tw:px-6 tw:pb-4">
+          <h2 class="modal-title tw:m-0 tw:text-[24px] tw:font-medium tw:leading-[36px]">Share your code</h2>
+          <button type="button" class="close-modal tw:cursor-pointer tw:outline-none tw:bg-transparent tw:border-0" title="Close">
+            <img class="svg" src="https://cdn.playground-v2.programiz.com/assets/icons/close.svg" alt="" />
+          </button>
+        </div>
+        <div class="modal-body tw:pt-0 tw:px-6 tw:pb-6">
+          <div class="share-code-container tw:flex tw:items-center tw:justify-between tw:bg-[#f8faff] tw:border tw:border-border tw:dark:border-white/20 tw:rounded-sm tw:py-3 tw:px-4 tw:text-[16px] tw:leading-[24px]">
+            <input type="text" class="share-code-value tw:flex tw:grow tw:border-0 tw:bg-transparent tw:w-full tw:text-text tw:dark:text-white/87 tw:font-normal tw:text-sm tw:p-0" value="" readonly />
+          </div>
+          <button class="share-code-copy-btn tw:w-full tw:py-2 tw:px-0 tw:text-sm tw:mt-4 tw:bg-primary tw:hover:bg-primary-hover tw:text-white tw:border-0 tw:rounded-sm tw:font-bold" title="Copy Link">Copy Link</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="wrapper tw:bg-surface tw:flex tw:flex-col tw:h-full tw:w-full tw:max-h-full">
+     
+
+      <div class="mobile-top-bar clearfix tw:flex tw:items-center tw:relative tw:p-2 tw:border-b tw:border-b-border tw:dark:border-b-white/20 tw:bg-white tw:dark:bg-[#2d2f34]">
+        <div class="pills-wrapper tw:float-left tw:flex tw:grow tw:w-1/2">
+          <div class="pills clearfix tw:flex tw:max-w-[200px] tw:min-w-[175px] tw:text-center">
+            <button class="pill active compiler-pill tw:bg-white tw:text-[rgba(51,51,51,0.6)] tw:py-1 tw:px-[15px] tw:text-sm tw:shadow-none tw:flex-1 tw:border tw:border-black/12 tw:border-l-white tw:border-r-white tw:box-border tw:max-w-full tw:overflow-hidden tw:whitespace-nowrap tw:text-ellipsis" id="executed-file-name-mobile" title="Main.java">
+              Main.java
+            </button>
+            <button class="pill shell-pill tw:bg-white tw:text-[rgba(51,51,51,0.6)] tw:py-1 tw:px-[15px] tw:text-sm tw:shadow-none tw:flex-1 tw:border tw:border-black/12 tw:border-l-white tw:border-r-white tw:box-border">
+              Output
+            </button>
+          </div>
+        </div>
+
+        <div class="other-options-wrapper tw:float-right tw:flex tw:items-center tw:gap-0.5">
+          <div class="mobile-top-bar-run-button run tw:flex tw:items-center tw:box-border tw:h-8 tw:py-1.5 tw:px-4 tw:w-[52px] tw:justify-center tw:ml-2 tw:cursor-pointer tw:bg-primary tw:text-sm tw:text-white tw:border-0 tw:outline-none tw:rounded-xs tw:z-[109] tw:hover:bg-primary-hover">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M2.91675 1.75L11.0834 7L2.91675 12.25V1.75Z" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="mobile-overflow-menu-wrapper tw:relative tw:flex tw:items-center tw:shrink-0 tw:ml-1">
+            <button type="button" class="mobile-overflow-menu-btn tw:flex tw:items-center tw:justify-center tw:p-1.5 tw:bg-transparent tw:border-0 tw:rounded-xs tw:cursor-pointer" id="toggle-overflow-menu-mobile" title="More options">
+              <img class="svg" src="https://cdn.playground-v2.programiz.com/assets/icons/more-vertical.svg" alt="" />
+            </button>
+            <div class="mobile-overflow-menu tw:hidden tw:absolute tw:top-[calc(100%+8px)] tw:right-0 tw:flex-col tw:min-w-[160px] tw:bg-white tw:dark:bg-[#2d2f34] tw:border tw:border-border tw:dark:border-white/20 tw:rounded-sm tw:shadow-[0px_4px_12px_0px_#000a010f] tw:p-1 tw:z-[110]" id="mobile-overflow-menu">
+              <button type="button" class="share-button-mob mobile-overflow-menu-item tw:flex tw:items-center tw:cursor-pointer tw:p-0 tw:bg-transparent tw:border-0" title="Share">
+                <img class="svg share-icon tw:w-5 tw:h-5" src="https://cdn.playground-v2.programiz.com/assets/icons/share.svg" alt="" />
+                <span>Share</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="main-content-wrapper tw:flex-1 tw:flex tw:min-h-0 tw:min-w-0 tw:h-full tw:w-full">
+        <div class="sidebar-wrapper tw:transition-all tw:duration-300 tw:ease-[ease] tw:w-0 tw:hidden">
+          <a href="#" class="change-lang-btn tw:flex tw:text-center tw:bg-transparent tw:rounded-xs tw:border tw:border-border tw:p-[7px] tw:mb-3 java active" title="Online Java Compiler">
+            <img class="change-lang-btn-icon tw:h-[22px] tw:w-[22px] svg" src="https://cdn.playground-v2.programiz.com/assets/icons/java.svg" alt="Java Online" />
+          </a>
+        </div>
+        
+        <div class="editor-workspace-wrapper tw:h-full tw:w-full tw:min-h-0 tw:min-w-0">
+          <div class="split-panes-wrapper tw:flex-1 tw:w-full tw:h-full tw:min-h-0 tw:min-w-0 tw:flex">
+            
+            <div class="editor-wrapper tw:transition-all tw:duration-300 tw:ease-[ease] tw:h-full tw:w-full tw:min-h-0 tw:min-w-0 tw:relative tw:min-[800px]:w-[calc(50%_-_3px)] tw:min-[800px]:transition-[width] tw:min-[800px]:flex tw:min-[800px]:flex-col tw:min-[800px]:border-r tw:min-[800px]:border-border">
+              <div class="editor-desktop-top-bar tw:bg-[#fbfbfb] tw:dark:bg-[#2d2f34] tw:dark:text-white tw:h-12 tw:hidden tw:min-[800px]:flex tw:min-[800px]:justify-between tw:min-[800px]:mb-1 tw:min-[800px]:shrink-0">
+                <div class="file-name tw:text-text/70 tw:text-[14px] tw:font-normal tw:items-center tw:bg-surface tw:leading-[24px] tw:py-3 tw:px-[18px] tw:border-r tw:border-r-border tw:border-t tw:border-t-border tw:border-b tw:border-b-surface tw:max-w-full tw:overflow-hidden tw:whitespace-nowrap tw:text-ellipsis" id="executed-file-name" title="Main.java">
+                  Main.java
+                </div>
+                <div class="desktop-top-bar__btn-wrapper">
+                  <button class="desktop-run-button run tw:flex tw:items-center tw:shrink-0 tw:w-[80px] tw:h-8 tw:mt-0 tw:mr-3 tw:mb-0 tw:ml-4 tw:justify-center tw:cursor-pointer tw:py-1.5 tw:px-4 tw:bg-primary tw:text-sm tw:text-white tw:border-0 tw:outline-none tw:rounded-xs tw:z-[109] tw:hover:bg-primary-hover">
+                    <span class="run-text tw:inline-flex tw:items-center tw:gap-1">
+                      Run
+                   <svg width="13" height="13" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M2.91675 1.75L11.0834 7L2.91675 12.25V1.75Z" fill="#fff" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                    </span>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="skel-gutter" aria-hidden="true">
+                <span class="skel-gutter-bar"></span><span class="skel-gutter-bar"></span><span class="skel-gutter-bar"></span><span class="skel-gutter-bar"></span>
+                <span class="skel-gutter-bar"></span><span class="skel-gutter-bar"></span><span class="skel-gutter-bar"></span><span class="skel-gutter-bar"></span>
+              </div>
+              
+              <div id="editor" class="skel-loading tw:w-full tw:h-full">
+<span class="skel-bar">// Online Java Compiler</span>
+<span class="skel-bar">// Use this editor to write, compile and run your Java code online</span>
+<span class="skel-bar">class Main {</span>
+<span class="skel-ws">    </span><span class="skel-bar">public static void main(String[] args) {</span>
+<span class="skel-ws">        </span><span class="skel-bar">System.out.println("Start small. Ship something.");</span>
+<span class="skel-ws">    </span><span class="skel-bar">}</span>
+<span class="skel-bar">}</span>
+              </div>
+            </div>
+
+            <div class="mobile-float-actions">
+              <button class="mobile-run-button run tw:flex tw:items-center tw:cursor-pointer tw:py-1.5 tw:px-4 tw:bg-primary tw:text-sm tw:text-white tw:border-0 tw:outline-none tw:rounded-xs tw:z-[109] tw:hover:bg-primary-hover">
+                Run
+              </button>
+            </div>
+
+            <div class="panes-divider tw:hidden" id="panes-divider" role="separator" aria-orientation="vertical">
+              <span class="panes-divider__handle" aria-hidden="true">
+                <svg width="28" height="66" viewBox="0 0 28 66" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <g clip-path="url(#panes-divider-handle-clip)">
+                    <g filter="url(#panes-divider-handle-shadow)">
+                      <rect class="panes-divider__handle-bg" x="4" y="1" width="20" height="56" rx="4" fill="white"/>
+                      <rect class="panes-divider__handle-border" x="4.5" y="1.5" width="19" height="55" rx="3.5" stroke="#D3DCE6"/>
+                    </g>
+                    <path class="panes-divider__handle-arrow" d="M18.2427 26.3633L20.364 28.4846L18.2427 30.6059" stroke="#25265E" stroke-opacity="0.4" stroke-width="1.00346" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path class="panes-divider__handle-arrow" d="M9.75732 30.6059L7.636 28.4846L9.75732 26.3633" stroke="#25265E" stroke-opacity="0.4" stroke-width="1.00346" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle class="panes-divider__handle-dot" cx="10" cy="6" r="1" fill="#E3E3E3"/>
+                    <circle class="panes-divider__handle-dot" cx="14" cy="6" r="1" fill="#E3E3E3"/>
+                  </g>
+                  <defs>
+                    <clipPath id="panes-divider-handle-clip">
+                      <rect width="28" height="66" fill="white"/>
+                    </clipPath>
+                  </defs>
+                </svg>
+              </span>
+            </div>
+
+            <div class="terminal-wrapper tw:hidden tw:relative tw:transition-all tw:duration-300 tw:ease-[ease] tw:h-full tw:w-full tw:min-h-0 tw:min-w-0 tw:min-[800px]:w-[calc(50%_-_3px)] tw:min-[800px]:transition-[width] tw:min-[800px]:flex tw:min-[800px]:flex-col">
+              <div class="terminal-desktop-top-bar tw:bg-[#fbfbfb] tw:dark:bg-[#2d2f34] tw:dark:text-white tw:h-12 tw:hidden tw:min-[800px]:flex tw:min-[800px]:justify-between tw:min-[800px]:shrink-0">
+                <div class="shell-name tw:text-text/70 tw:dark:text-white tw:text-[14px] tw:font-normal tw:leading-[24px] tw:py-[11px] tw:px-[18px] tw:border-t tw:border-t-border tw:dark:border-t-white/20 tw:border-b tw:border-b-border tw:dark:border-b-white/20">
+                  Output
+                </div>
+                <div class="terminal-desktop-top-bar__btn-wrapper">
+                  <button class="share-button tw:flex tw:shrink-0 tw:items-center tw:justify-center tw:font-medium tw:text-sm tw:ml-4 tw:h-8 tw:rounded-xs tw:border-0 tw:bg-transparent tw:text-text/67 tw:dark:text-white tw:cursor-pointer tw:p-1.5" title="Share">
+                    <img class="toggle-expanded-mode-mobile-icon svg share-icon tw:w-5 tw:h-5" alt="" src="https://cdn.playground-v2.programiz.com/assets/icons/share.svg" />
+                  </button>
+                  <div class="terminal-overflow-menu-wrapper tw:relative tw:flex tw:items-center tw:shrink-0 tw:ml-2">
+                    <button type="button" class="terminal-overflow-menu-btn tw:flex tw:items-center tw:justify-center tw:p-1.5 tw:bg-transparent tw:border-0 tw:rounded-xs tw:cursor-pointer" id="toggle-overflow-menu-desktop" title="More options">
+                      <img class="svg" src="https://cdn.playground-v2.programiz.com/assets/icons/more-vertical.svg" alt="" />
+                    </button>
+                    <div class="terminal-overflow-menu tw:hidden tw:absolute tw:top-[calc(100%+8px)] tw:right-0 tw:flex-col tw:min-w-[168px] tw:bg-white tw:dark:bg-[#2d2f34] tw:border tw:border-border tw:dark:border-white/20 tw:rounded-sm tw:shadow-[0px_4px_12px_0px_#000a010f] tw:p-1 tw:z-[110]" id="terminal-overflow-menu">
+                      <button type="button" id="toggle-expanded-mode-desktop" class="terminal-overflow-menu-item tw:flex tw:items-center tw:gap-4 tw:w-full tw:py-2 tw:px-3 tw:bg-transparent tw:border-0 tw:rounded-xs tw:text-sm tw:font-medium tw:text-text/70 tw:dark:text-white tw:text-left tw:cursor-pointer">
+                        <span class="fullscreen-menu-label enter">Full screen</span>
+                        <span class="fullscreen-menu-label exit tw:hidden">Exit full screen</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div id="terminal" class="stdin-idle tw:w-full tw:h-full"></div>
+            </div>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script defer type="text/javascript">
+    const lang = "java";
+  </script>
+  
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.5/socket.io.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/mousetrap/1.4.6/mousetrap.min.js"></script>
+  <script>
+    window.__ASSET_PATH__ = "https://cdn.playground-v2.programiz.com/";
+    window.__VISUALIZE_ON_LOAD__ = false;
+  </script>
+  <script defer src="https://cdn.playground-v2.programiz.com/build/final.04818ee61e766556ba03.js"></script>
+
+</body>
+</html>
