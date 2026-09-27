@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hibernate & MySQL: End-to-End Visual Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .code-block { font-family: 'Courier New', Courier, monospace; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(229, 231, 235, 0.5);
+        }
+        /* Custom Scrollbar for code blocks */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #1f2937; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+        
+        .condition-badge {
+            @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200 shadow-sm mb-2;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased selection:bg-blue-200">
+
+    <nav class="fixed top-0 w-full z-50 glass-panel shadow-sm transition-all">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex-shrink-0 flex items-center space-x-2">
+                    <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
+                    <span class="font-bold text-xl text-slate-900">Hibernate<span class="text-blue-600">Viz</span></span>
+                </div>
+                <div class="hidden lg:flex space-x-6 text-sm font-medium">
+                    <a href="#architecture" class="text-slate-600 hover:text-blue-600 transition">Architecture</a>
+                    <a href="#config" class="text-slate-600 hover:text-blue-600 transition">Config</a>
+                    <a href="#lifecycle" class="text-slate-600 hover:text-blue-600 transition">Lifecycle</a>
+                    <a href="#mapping" class="text-slate-600 hover:text-blue-600 transition">Mapping</a>
+                    <a href="#execution" class="text-slate-600 hover:text-blue-600 transition">Execution</a>
+                    <a href="#theory" class="text-slate-600 hover:text-blue-600 transition">Theory</a>
+                    <a href="#jpa-api" class="text-slate-600 hover:text-blue-600 transition">JPA Ref</a>
+                    <a href="#annotations" class="text-blue-600 hover:text-blue-800 transition">Annotations</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <header class="pt-28 pb-12 bg-gradient-to-br from-blue-900 to-indigo-800 text-white text-center">
+        <div class="max-w-4xl mx-auto px-4">
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">End-to-End Hibernate Mapping</h1>
+            <p class="text-lg md:text-xl text-blue-100 mb-8">Connecting Java Objects to MySQL Databases visually. Discover the strict conditions required to execute flawless ORM operations.</p>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-24">
+
+        <!-- Sections 1-5 (Base Architecture & Execution) -->
+        <section id="architecture" class="scroll-mt-24">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900 mb-2">1. High-Level Architecture</h2>
+                <p class="text-slate-600">Hibernate acts as a bridge translating object-oriented Java code into relational SQL for MySQL.</p>
+            </div>
+            
+            <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-100 flex justify-center overflow-x-auto">
+                <div class="mermaid">
+                    flowchart LR
+                        subgraph Java Application
+                            A[Java App] -->|Uses| B(Session)
+                            B --> C{Transaction}
+                            C --> D[Query / Criteria]
+                        end
+                        
+                        subgraph Hibernate Framework
+                            E[SessionFactory] -.->|Creates| B
+                            F[hibernate.cfg.xml] -.->|Configures| E
+                            G[Entity Annotations] -.->|Maps to| E
+                        end
+                        
+                        subgraph MySQL Database
+                            B <-->|JDBC / SQL| H[(MySQL DB)]
+                        end
+                        
+                        classDef default fill:#f8fafc,stroke:#cbd5e1,stroke-width:2px;
+                        classDef highlight fill:#eff6ff,stroke:#3b82f6,stroke-width:2px;
+                        classDef db fill:#f0fdf4,stroke:#22c55e,stroke-width:2px;
+                        
+                        class B,E highlight;
+                        class H db;
+                </div>
+            </div>
+        </section>
+
+        <section id="config" class="scroll-mt-24">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900 mb-2">2. Prerequisites & Configuration</h2>
+                <p class="text-slate-600">Before writing Java code, you must establish the dependencies and connection strings.</p>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-8">
+                <div class="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
+                    <div class="bg-slate-50 border-b border-slate-100 px-6 py-4 flex justify-between items-center">
+                        <h3 class="font-semibold text-slate-800">pom.xml (Dependencies)</h3>
+                        <span class="condition-badge mb-0">Required Condition</span>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-sm text-slate-600 mb-4">You must include Hibernate Core and the MySQL Driver to enable communication.</p>
+                        <pre class="bg-slate-900 text-green-400 p-4 rounded-lg overflow-x-auto text-sm code-block shadow-inner">
+&lt;!-- Hibernate Core --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.hibernate.orm&lt;/groupId&gt;
+    &lt;artifactId&gt;hibernate-core&lt;/artifactId&gt;
+    &lt;version&gt;6.4.4.Final&lt;/version&gt;
+&lt;/dependency&gt;
+
+&lt;!-- MySQL Connector --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;com.mysql&lt;/groupId&gt;
+    &lt;artifactId&gt;mysql-connector-j&lt;/artifactId&gt;
+    &lt;version&gt;8.3.0&lt;/version&gt;
+&lt;/dependency&gt;</pre>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
+                    <div class="bg-slate-50 border-b border-slate-100 px-6 py-4 flex justify-between items-center">
+                        <h3 class="font-semibold text-slate-800">hibernate.cfg.xml</h3>
+                        <span class="condition-badge mb-0">Required Condition</span>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-sm text-slate-600 mb-4">Tells Hibernate where the DB is, how to talk to it, and schema generation strategy.</p>
+                        <pre class="bg-slate-900 text-blue-300 p-4 rounded-lg overflow-x-auto text-sm code-block shadow-inner">
+&lt;hibernate-configuration&gt;
+  &lt;session-factory&gt;
+    &lt;!-- Connection --&gt;
+    &lt;property name="hibernate.connection.url"&gt;
+        <span class="text-yellow-300">jdbc:mysql://localhost:3306/db</span>
+    &lt;/property&gt;
+    &lt;property name="hibernate.connection.username"&gt;root&lt;/property&gt;
+    &lt;property name="hibernate.connection.password"&gt;pass&lt;/property&gt;
+    
+    &lt;!-- Dialect --&gt;
+    &lt;property name="hibernate.dialect"&gt;
+        <span class="text-yellow-300">org.hibernate.dialect.MySQLDialect</span>
+    &lt;/property&gt;
+
+    &lt;!-- Schema condition --&gt;
+    &lt;property name="hibernate.hbm2ddl.auto"&gt;<span class="text-green-400">update</span>&lt;/property&gt;
+  &lt;/session-factory&gt;
+&lt;/hibernate-configuration&gt;</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="lifecycle" class="scroll-mt-24">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900 mb-2">3. Entity Lifecycle</h2>
+                <p class="text-slate-600">The crucial conditions dictating *when* your Java object data is actually flushed to the MySQL database.</p>
+            </div>
+            
+            <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-100">
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div class="overflow-x-auto">
+                        <div class="mermaid">
+                            stateDiagram-v2
+                                [*] --> Transient : new Object()
+                                Transient --> Persistent : session.persist()
+                                Persistent --> Detached : session.close()
+                                Detached --> Persistent : session.merge()
+                                Persistent --> Removed : session.remove()
+                                Removed --> [*] : Transaction Commit
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="bg-slate-50 p-4 rounded-lg border-l-4 border-slate-400">
+                            <h4 class="font-bold text-slate-800">Transient</h4>
+                            <p class="text-sm text-slate-600">Exists in memory. No MySQL equivalent. <strong>Condition:</strong> Just instantiated using `new`.</p>
+                        </div>
+                        <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                            <h4 class="font-bold text-blue-900">Persistent</h4>
+                            <p class="text-sm text-blue-800">Managed by Session. <strong>Condition:</strong> Changes automatically update MySQL on commit.</p>
+                        </div>
+                        <div class="bg-amber-50 p-4 rounded-lg border-l-4 border-amber-500">
+                            <h4 class="font-bold text-amber-900">Detached</h4>
+                            <p class="text-sm text-amber-800">Session closed. <strong>Condition:</strong> Data exists, but won't sync to MySQL unless merged back.</p>
+                        </div>
+                        <div class="bg-red-50 p-4 rounded-lg border-l-4 border-red-500">
+                            <h4 class="font-bold text-red-900">Removed</h4>
+                            <p class="text-sm text-red-800"><strong>Condition:</strong> Marked for deletion; row will be dropped from MySQL upon commit.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="mapping" class="scroll-mt-24">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900 mb-2">4. Entity Mapping & Annotations</h2>
+                <p class="text-slate-600">Applying Jakarta Persistence API to transform a plain Java Class into a MySQL Table mapping.</p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden relative mb-8">
+                <div class="absolute top-4 right-4">
+                    <span class="condition-badge">Required Mapping Conditions</span>
+                </div>
+                <div class="p-6 md:p-8">
+                    <pre class="bg-slate-900 text-slate-300 p-6 rounded-xl overflow-x-auto text-sm md:text-base code-block shadow-inner">
+<span class="text-gray-500">import jakarta.persistence.*;</span>
+
+<span class="text-yellow-400">@Entity</span> <span class="text-gray-400">// Condition: Marks this class for Hibernate management</span>
+<span class="text-yellow-400">@Table</span>(name = <span class="text-green-400">"users"</span>) <span class="text-gray-400">// Condition: Maps to specific MySQL table</span>
+<span class="text-pink-400">public class</span> <span class="text-blue-300">User</span> {
+
+    <span class="text-yellow-400">@Id</span> <span class="text-gray-400">// Condition: Designates Primary Key</span>
+    <span class="text-yellow-400">@GeneratedValue</span>(strategy = GenerationType.<span class="text-blue-300">IDENTITY</span>) <span class="text-gray-400">// Condition: Auto-increment (MySQL)</span>
+    <span class="text-pink-400">private</span> <span class="text-blue-300">Long</span> id;
+
+    <span class="text-yellow-400">@Column</span>(name = <span class="text-green-400">"user_name"</span>, length = <span class="text-purple-400">50</span>, nullable = <span class="text-pink-400">false</span>, unique = <span class="text-pink-400">true</span>)
+    <span class="text-gray-400">// Condition: Defines MySQL column constraints</span>
+    <span class="text-pink-400">private</span> <span class="text-blue-300">String</span> username;
+}</pre>
+                </div>
+            </div>
+
+            <!-- Detailed Relationship Mappings -->
+            <div class="space-y-8 mt-12">
+                <div class="text-center mb-6">
+                    <h3 class="text-2xl font-bold text-slate-800">In-Depth: Relational Mappings</h3>
+                    <p class="text-slate-600">How Java objects translate to MySQL foreign keys and join tables.</p>
+                </div>
+
+                <!-- One to One -->
+                <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden flex flex-col lg:flex-row">
+                    <div class="lg:w-1/3 bg-blue-50 p-6 border-r border-blue-100 flex flex-col justify-center">
+                        <h4 class="font-bold text-xl text-blue-900 mb-2 flex items-center">
+                            <span class="bg-blue-600 text-white px-2 py-1 rounded text-sm mr-2">1:1</span> One-to-One
+                        </h4>
+                        <p class="text-sm text-blue-800 mb-4 font-semibold">Example: User & Profile</p>
+                        <div class="space-y-3 text-sm text-slate-700">
+                            <p><strong>MySQL Theory:</strong> One record in the <code>users</code> table links to exactly one record in the <code>profiles</code> table. This is enforced by placing a Foreign Key (e.g., <code>profile_id</code>) in one of the tables and adding a <code>UNIQUE</code> constraint.</p>
+                            <p><strong>Hibernate Rule:</strong> The entity containing the <code>@JoinColumn</code> is the "owning side" (it physically holds the foreign key in the database).</p>
+                        </div>
+                    </div>
+                    <div class="lg:w-2/3 p-6 bg-slate-900 text-slate-300 text-sm overflow-x-auto code-block">
+<pre><span class="text-gray-500">// Owning Side (User table holds the foreign key)</span>
+<span class="text-yellow-400">@Entity</span>
+<span class="text-pink-400">public class</span> <span class="text-blue-300">User</span> {
+    <span class="text-yellow-400">@Id</span> <span class="text-pink-400">private</span> <span class="text-blue-300">Long</span> id;
+
+    <span class="text-yellow-400">@OneToOne</span>(cascade = CascadeType.<span class="text-blue-300">ALL</span>)
+    <span class="text-yellow-400">@JoinColumn</span>(name = <span class="text-green-400">"profile_id"</span>, referencedColumnName = <span class="text-green-400">"id"</span>)
+    <span class="text-pink-400">private</span> <span class="text-blue-300">Profile</span> profile;
+}
+
+<span class="text-gray-500">// Inverse Side (Optional, allows bidirectional navigation)</span>
+<span class="text-yellow-400">@Entity</span>
+<span class="text-pink-400">public class</span> <span class="text-blue-300">Profile</span> {
+    <span class="text-yellow-400">@Id</span> <span class="text-pink-400">private</span> <span class="text-blue-300">Long</span> id;
+
+    <span class="text-gray-500">// "mappedBy" tells Hibernate: "Look at the 'profile' property in User class"</span>
+    <span class="text-yellow-400">@OneToOne</span>(mappedBy = <span class="text-green-400">"profile"</span>)
+    <span class="text-pink-400">private</span> <span class="text-blue-300">User</span> user;
+}</pre>
+                    </div>
+                </div>
+
+                <!-- One to Many -->
+                <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden flex flex-col lg:flex-row">
+                    <div class="lg:w-1/3 bg-green-50 p-6 border-r border-green-100 flex flex-col justify-center">
+                        <h4 class="font-bold text-xl text-green-900 mb-2 flex items-center">
+                            <span class="bg-green-600 text-white px-2 py-1 rounded text-sm mr-2">1:N</span> One-to-Many
+                        </h4>
+                        <p class="text-sm text-green-800 mb-4 font-semibold">Example: Department & Employees</p>
+                        <div class="space-y-3 text-sm text-slate-700">
+                            <p><strong>MySQL Theory:</strong> A single Department has many Employees. In a relational database, the Foreign Key (<code>department_id</code>) <strong>MUST always</strong> reside on the "Many" side (the <code>employees</code> table).</p>
+                            <p><strong>Hibernate Rule:</strong> It is best practice to make this bidirectional. The <code>@ManyToOne</code> side is always the owning side. Use <code>mappedBy</code> on the <code>@OneToMany</code> collection side to prevent unwanted extra join tables.</p>
+                        </div>
+                    </div>
+                    <div class="lg:w-2/3 p-6 bg-slate-900 text-slate-300 text-sm overflow-x-auto code-block">
+<pre><span class="text-gray-500">// Owning Side (Many side physically holds the FK)</span>
+<span class="text-yellow-400">@Entity</span>
+<span class="text-pink-400">public class</span> <span class="text-blue-300">Employee</span> {
+    <span class="text-yellow-400">@Id</span> <span class="text-pink-400">private</span> <span class="text-blue-300">Long</span> id;
+
+    <span class="text-yellow-400">@ManyToOne</span>(fetch = FetchType.<span class="text-blue-300">LAZY</span>) <span class="text-gray-500">// Best practice for performance</span>
+    <span class="text-yellow-400">@JoinColumn</span>(name = <span class="text-green-400">"department_id"</span>) <span class="text-gray-500">// Creates FK column in employee table</span>
+    <span class="text-pink-400">private</span> <span class="text-blue-300">Department</span> department;
+}
+
+<span class="text-gray-500">// Inverse Side (One side has the Collection)</span>
+<span class="text-yellow-400">@Entity</span>
+<span class="text-pink-400">public class</span> <span class="text-blue-300">Department</span> {
+    <span class="text-yellow-400">@Id</span> <span class="text-pink-400">private</span> <span class="text-blue-300">Long</span> id;
+
+    <span class="text-yellow-400">@OneToMany</span>(mappedBy = <span class="text-green-400">"department"</span>, cascade = CascadeType.<span class="text-blue-300">ALL</span>)
+    <span class="text-pink-400">private</span> <span class="text-blue-300">List&lt;Employee&gt;</span> employees = <span class="text-pink-400">new</span> <span class="text-blue-300">ArrayList</span>&lt;&gt;();
+}</pre>
+                    </div>
+                </div>
+
+                <!-- Many to Many -->
+                <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden flex flex-col lg:flex-row">
+                    <div class="lg:w-1/3 bg-purple-50 p-6 border-r border-purple-100 flex flex-col justify-center">
+                        <h4 class="font-bold text-xl text-purple-900 mb-2 flex items-center">
+                            <span class="bg-purple-600 text-white px-2 py-1 rounded text-sm mr-2">N:N</span> Many-to-Many
+                        </h4>
+                        <p class="text-sm text-purple-800 mb-4 font-semibold">Example: Students & Courses</p>
+                        <div class="space-y-3 text-sm text-slate-700">
+                            <p><strong>MySQL Theory:</strong> Students take multiple courses, and courses have multiple students. MySQL cannot link this directly. It explicitly requires a <strong>Join Table</strong> (e.g., <code>student_course</code>) containing foreign keys linking to both tables.</p>
+                            <p><strong>Hibernate Rule:</strong> Use <code>@JoinTable</code> on the owning side to define the intermediate table structure and its columns.</p>
+                        </div>
+                    </div>
+                    <div class="lg:w-2/3 p-6 bg-slate-900 text-slate-300 text-sm overflow-x-auto code-block">
+<pre><span class="text-gray-500">// Owning Side (Defines the Join Table)</span>
+<span class="text-yellow-400">@Entity</span>
+<span class="text-pink-400">public class</span> <span class="text-blue-300">Student</span> {
+    <span class="text-yellow-400">@Id</span> <span class="text-pink-400">private</span> <span class="text-blue-300">Long</span> id;
+
+    <span class="text-yellow-400">@ManyToMany</span>
+    <span class="text-yellow-400">@JoinTable</span>(
+        name = <span class="text-green-400">"student_course"</span>, <span class="text-gray-500">// Name of the new MySQL join table</span>
+        joinColumns = <span class="text-yellow-400">@JoinColumn</span>(name = <span class="text-green-400">"student_id"</span>),
+        inverseJoinColumns = <span class="text-yellow-400">@JoinColumn</span>(name = <span class="text-green-400">"course_id"</span>)
+    )
+    <span class="text-pink-400">private</span> <span class="text-blue-300">Set&lt;Course&gt;</span> courses = <span class="text-pink-400">new</span> <span class="text-blue-300">HashSet</span>&lt;&gt;();
+}
+
+<span class="text-gray-500">// Inverse Side</span>
+<span class="text-yellow-400">@Entity</span>
+<span class="text-pink-400">public class</span> <span class="text-blue-300">Course</span> {
+    <span class="text-yellow-400">@Id</span> <span class="text-pink-400">private</span> <span class="text-blue-300">Long</span> id;
+
+    <span class="text-yellow-400">@ManyToMany</span>(mappedBy = <span class="text-green-400">"courses"</span>)
+    <span class="text-pink-400">private</span> <span class="text-blue-300">Set&lt;Student&gt;</span> students = <span class="text-pink-400">new</span> <span class="text-blue-300">HashSet</span>&lt;&gt;();
+}</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="execution" class="scroll-mt-24">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900 mb-2">5. End-to-End Execution (CRUD)</h2>
+                <p class="text-slate-600">The actual Java code flow required to read and write to MySQL natively.</p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg border border-slate-100 flex flex-col md:flex-row overflow-hidden">
+                <div class="md:w-2/3 p-6 bg-slate-900">
+<pre class="text-slate-300 text-sm overflow-x-auto code-block">
+<span class="text-gray-500">// 1. Build Factory (ONCE per application)</span>
+SessionFactory factory = new Configuration()
+    .configure("hibernate.cfg.xml").buildSessionFactory();
+
+<span class="text-gray-500">// 2. Open Session</span>
+Session session = factory.openSession();
+Transaction tx = null;
+
+try {
+    <span class="text-gray-500">// 3. Begin TX (Condition: Required for C/U/D)</span>
+    tx = session.beginTransaction();
+    
+    <span class="text-gray-500">// --- CREATE ---</span>
+    User u = new User(); u.setUsername("dev");
+    <span class="text-yellow-400">session.persist(u);</span> <span class="text-gray-400">// MySQL INSERT</span>
+    
+    <span class="text-gray-500">// --- READ ---</span>
+    User dbUser = <span class="text-yellow-400">session.get(User.class, 1L);</span> <span class="text-gray-400">// MySQL SELECT</span>
+    
+    <span class="text-gray-500">// --- UPDATE ---</span>
+    dbUser.setUsername("senior_dev"); <span class="text-gray-400">// Automatic Dirty Checking</span>
+    
+    <span class="text-gray-500">// --- DELETE ---</span>
+    <span class="text-yellow-400">session.remove(dbUser);</span> <span class="text-gray-400">// MySQL DELETE</span>
+
+    <span class="text-gray-500">// 4. Commit to MySQL</span>
+    tx.commit(); 
+    
+} catch (Exception e) {
+    if (tx != null) tx.rollback();
+} finally {
+    session.close(); <span class="text-gray-400">// Condition: Prevent memory leaks</span>
+}
+</pre>
+                </div>
+                <div class="md:w-1/3 p-6 bg-slate-50 flex flex-col justify-center space-y-6 border-l border-slate-200">
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold mr-3">1</div>
+                            <h4 class="font-bold text-slate-800">Configuration</h4>
+                        </div>
+                        <p class="text-sm text-slate-600">The <code>SessionFactory</code> parses the XML and prepares DB connections. Heavyweight object.</p>
+                    </div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold mr-3">2</div>
+                            <h4 class="font-bold text-slate-800">Transactions</h4>
+                        </div>
+                        <p class="text-sm text-slate-600"><strong>Condition:</strong> You absolutely must wrap writes (Insert/Update/Delete) in a <code>Transaction</code> to guarantee ACID properties in MySQL.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ENTERPRISE THEORY SECTION -->
+        <section id="theory" class="scroll-mt-24 pt-8 border-t-2 border-slate-100">
+            <div class="mb-10 text-center max-w-3xl mx-auto">
+                <span class="text-blue-600 font-bold tracking-wider uppercase text-sm mb-2 block">Demonstration Theory</span>
+                <h2 class="text-3xl font-extrabold text-slate-900 mb-4">6. Enterprise Ecosystem: Hibernate, JPA, & Lombok</h2>
+                <p class="text-slate-600 text-lg">In modern real-time projects (like Spring Boot microservices), we rarely write the manual code shown in Section 5. Instead, we use industry-standard tools that layer on top of each other.</p>
+            </div>
+
+            <div class="grid lg:grid-cols-3 gap-8 mb-12">
+                <!-- Hibernate Theory -->
+                <div class="bg-white rounded-2xl p-8 shadow-lg border border-slate-200 relative overflow-hidden group hover:border-blue-300 transition-colors">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-full -z-10 group-hover:bg-blue-100 transition-colors"></div>
+                    <h3 class="text-2xl font-bold text-slate-900 mb-3 text-blue-700">Hibernate</h3>
+                    <p class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">The Engine (Implementation)</p>
+                    <p class="text-slate-600 mb-4 leading-relaxed">
+                        Hibernate is an <strong>Object-Relational Mapping (ORM)</strong> tool. Its core theory is solving the <em>"Impedance Mismatch"</em>—the fundamental difference between how Java structures data (objects, inheritance, collections) and how MySQL structures data (tables, rows, foreign keys).
+                    </p>
+                    <ul class="text-sm text-slate-700 space-y-2 list-disc list-inside">
+                        <li>Writes the JDBC SQL code automatically.</li>
+                        <li>Provides First-Level Caching to minimize DB hits.</li>
+                        <li>Performs "Dirty Checking" to generate smart UPDATEs.</li>
+                    </ul>
+                </div>
+
+                <!-- JPA Theory -->
+                <div class="bg-white rounded-2xl p-8 shadow-lg border border-slate-200 relative overflow-hidden group hover:border-green-300 transition-colors">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-green-50 rounded-bl-full -z-10 group-hover:bg-green-100 transition-colors"></div>
+                    <h3 class="text-2xl font-bold text-slate-900 mb-3 text-green-700">JPA</h3>
+                    <p class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">The Rulebook (Specification)</p>
+                    <p class="text-slate-600 mb-4 leading-relaxed">
+                        JPA (Jakarta Persistence API) is <strong>NOT a tool</strong>—it is a set of rules and interfaces defined by Java. It contains annotations like <code>@Entity</code> and <code>@Id</code>. 
+                    </p>
+                    <p class="text-slate-600 mb-4 leading-relaxed">
+                        <em>The Relationship:</em> JPA is the interface, Hibernate is the class that implements it. By writing your code using JPA annotations, you theoretically aren't locked into Hibernate; you could switch to another ORM (like EclipseLink) without changing your Java code.
+                    </p>
+                </div>
+
+                <!-- Lombok Theory -->
+                <div class="bg-white rounded-2xl p-8 shadow-lg border border-slate-200 relative overflow-hidden group hover:border-red-300 transition-colors">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-red-50 rounded-bl-full -z-10 group-hover:bg-red-100 transition-colors"></div>
+                    <h3 class="text-2xl font-bold text-slate-900 mb-3 text-red-700">Lombok</h3>
+                    <p class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">The Optimizer (Code Generator)</p>
+                    <p class="text-slate-600 mb-4 leading-relaxed">
+                        In enterprise Java, Entities require dozens of lines of Getters, Setters, and Constructors. Project Lombok is a compiler plugin that dynamically generates this boilerplate code at compile time.
+                    </p>
+                    <ul class="text-sm text-slate-700 space-y-2 font-mono bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <li><span class="text-red-600">@Data</span> // Makes Getters/Setters</li>
+                        <li><span class="text-red-600">@NoArgsConstructor</span> // Req. by JPA</li>
+                        <li><span class="text-red-600">@AllArgsConstructor</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Real-World Code Combination -->
+            <div class="bg-slate-900 rounded-3xl overflow-hidden shadow-2xl">
+                <div class="bg-slate-800 p-4 border-b border-slate-700 flex items-center justify-between">
+                    <h3 class="text-white font-semibold">7. Real-World Combination (Spring Boot)</h3>
+                    <span class="text-xs text-slate-400 font-mono">How it looks in actual enterprise projects</span>
+                </div>
+                <div class="p-6 md:p-8 grid lg:grid-cols-2 gap-8">
+                    
+                    <div>
+                        <p class="text-blue-300 text-sm mb-2 font-semibold">1. The Clean Entity (JPA + Lombok)</p>
+                        <pre class="bg-slate-950 p-4 rounded-xl text-sm code-block text-slate-300 overflow-x-auto">
+<span class="text-gray-500">// Lombok removes all boilerplate!</span>
+<span class="text-red-400">@Data</span>
+<span class="text-red-400">@NoArgsConstructor</span>
+<span class="text-yellow-400">@Entity</span> <span class="text-gray-500">// JPA handles the mapping</span>
+<span class="text-yellow-400">@Table</span>(name = <span class="text-green-400">"employees"</span>)
+<span class="text-pink-400">public class</span> <span class="text-blue-300">Employee</span> {
+    <span class="text-yellow-400">@Id</span> 
+    <span class="text-yellow-400">@GeneratedValue</span>(...)
+    <span class="text-pink-400">private</span> <span class="text-blue-300">Long</span> id;
+    <span class="text-pink-400">private</span> <span class="text-blue-300">String</span> name;
+}</pre>
+                    </div>
+
+                    <div>
+                        <p class="text-blue-300 text-sm mb-2 font-semibold">2. The Repository (Spring Data JPA)</p>
+                        <pre class="bg-slate-950 p-4 rounded-xl text-sm code-block text-slate-300 overflow-x-auto">
+<span class="text-gray-500">// Spring Data JPA auto-generates Hibernate queries!</span>
+<span class="text-pink-400">public interface</span> <span class="text-blue-300">EmpRepo</span> 
+       <span class="text-pink-400">extends</span> <span class="text-blue-300">JpaRepository</span>&lt;Employee, Long&gt; {
+    
+    <span class="text-gray-500">// No SQL needed, Spring parses the method name</span>
+    List&lt;Employee&gt; <span class="text-yellow-200">findByName</span>(String name);
+}</pre>
+                    </div>
+
+                    <div class="lg:col-span-2">
+                        <p class="text-blue-300 text-sm mb-2 font-semibold">3. The Service Layer (Automatic Transactions)</p>
+                        <pre class="bg-slate-950 p-4 rounded-xl text-sm code-block text-slate-300 overflow-x-auto">
+<span class="text-yellow-400">@Service</span>
+<span class="text-red-400">@RequiredArgsConstructor</span> <span class="text-gray-500">// Lombok auto-injects the repo</span>
+<span class="text-pink-400">public class</span> <span class="text-blue-300">EmpService</span> {
+    
+    <span class="text-pink-400">private final</span> <span class="text-blue-300">EmpRepo</span> repo;
+
+    <span class="text-yellow-400">@Transactional</span> <span class="text-gray-500">// Spring opens Session & begins TX automatically!</span>
+    <span class="text-pink-400">public void</span> <span class="text-yellow-200">updateName</span>(Long id, String newName) {
+        Employee emp = repo.findById(id).orElseThrow();
+        emp.setName(newName); 
+        <span class="text-gray-500">// NO session.save() needed! Automatic dirty checking handles the MySQL update.</span>
+    }
+}</pre>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- JPA MIGRATION TABLE -->
+        <section id="jpa-api" class="scroll-mt-24 pt-8 border-t-2 border-slate-100">
+            <div class="mb-8">
+                <div class="flex items-center space-x-3 mb-2">
+                    <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide">Reference</span>
+                    <h2 class="text-3xl font-bold text-slate-900">8. Legacy Hibernate to Modern JPA Standard</h2>
+                </div>
+                <p class="text-slate-600">A complete mapping guide transitioning older, native Hibernate methods to their modern Jakarta Persistence API (JPA) equivalents required in enterprise Spring Boot projects.</p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[800px]">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-700 text-sm uppercase tracking-wider border-b border-slate-200">
+                                <th class="p-4 font-semibold w-1/5">Legacy Hibernate Method</th>
+                                <th class="p-4 font-semibold w-1/5">Modern JPA Alternative</th>
+                                <th class="p-4 font-semibold w-1/6">Operation Type</th>
+                                <th class="p-4 font-semibold w-auto">Primary Behavior & Key Differences</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm text-slate-700 divide-y divide-slate-100">
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="p-4"><code class="text-red-600 bg-red-50 px-2 py-1 rounded border border-red-100 font-mono">save(entity)</code></td>
+                                <td class="p-4"><code class="text-green-700 bg-green-50 px-2 py-1 rounded border border-green-100 font-mono">persist(entity)</code></td>
+                                <td class="p-4 font-medium text-slate-800">Create (Insert)</td>
+                                <td class="p-4 text-slate-600">Marks a brand-new entity as persistent. Unlike <code class="font-mono text-xs text-red-500">save()</code>, it does not immediately return an identifier or force an early database INSERT before commit.</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="p-4"><code class="text-red-600 bg-red-50 px-2 py-1 rounded border border-red-100 font-mono">update(entity)</code></td>
+                                <td class="p-4"><code class="text-green-700 bg-green-50 px-2 py-1 rounded border border-green-100 font-mono">merge(entity)</code></td>
+                                <td class="p-4 font-medium text-slate-800">Update</td>
+                                <td class="p-4 text-slate-600">Copies the state of a detached entity onto a managed entity instance. It prevents the common "duplicate object in session" exceptions caused by <code class="font-mono text-xs text-red-500">update()</code>.</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="p-4"><code class="text-red-600 bg-red-50 px-2 py-1 rounded border border-red-100 font-mono">saveOrUpdate(entity)</code></td>
+                                <td class="p-4"><code class="text-green-700 bg-green-50 px-2 py-1 rounded border border-green-100 font-mono">merge(entity)</code></td>
+                                <td class="p-4 font-medium text-slate-800">Save / Update</td>
+                                <td class="p-4 text-slate-600">Automatically detects if an entity is new or existing and performs the appropriate save or update action safely.</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="p-4"><code class="text-red-600 bg-red-50 px-2 py-1 rounded border border-red-100 font-mono">delete(entity)</code></td>
+                                <td class="p-4"><code class="text-green-700 bg-green-50 px-2 py-1 rounded border border-green-100 font-mono">remove(entity)</code></td>
+                                <td class="p-4 font-medium text-slate-800">Delete</td>
+                                <td class="p-4 text-slate-600">Schedules a managed entity instance for deletion from the database during the next flush cycle.</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="p-4"><code class="text-red-600 bg-red-50 px-2 py-1 rounded border border-red-100 font-mono">get(Class, id)</code></td>
+                                <td class="p-4"><code class="text-green-700 bg-green-50 px-2 py-1 rounded border border-green-100 font-mono">find(Class, id)</code></td>
+                                <td class="p-4 font-medium text-slate-800">Read (Eager)</td>
+                                <td class="p-4 text-slate-600">Eagerly fetches the entity from the database. Returns <code class="font-mono text-xs">null</code> if the record does not exist.</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="p-4"><code class="text-red-600 bg-red-50 px-2 py-1 rounded border border-red-100 font-mono">load(Class, id)</code></td>
+                                <td class="p-4"><code class="text-green-700 bg-green-50 px-2 py-1 rounded border border-green-100 font-mono">getReference(Class, id)</code></td>
+                                <td class="p-4 font-medium text-slate-800">Read (Lazy)</td>
+                                <td class="p-4 text-slate-600">Returns a lightweight runtime proxy object without hitting the database immediately. Throws an exception if accessed and the record doesn't exist.</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="p-4"><code class="text-red-600 bg-red-50 px-2 py-1 rounded border border-red-100 font-mono">createQuery(string)</code></td>
+                                <td class="p-4"><code class="text-green-700 bg-green-50 px-2 py-1 rounded border border-green-100 font-mono">createQuery(str, Class)</code></td>
+                                <td class="p-4 font-medium text-slate-800">Query (Typed)</td>
+                                <td class="p-4 text-slate-600">Creates a type-safe JPQL/HQL query. It eliminates the need for unsafe manual casting when fetching result lists.</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="p-4"><code class="text-red-600 bg-red-50 px-2 py-1 rounded border border-red-100 font-mono">createCriteria(Class)</code></td>
+                                <td class="p-4"><code class="text-green-700 bg-green-50 px-2 py-1 rounded border border-green-100 font-mono">getCriteriaBuilder()</code></td>
+                                <td class="p-4 font-medium text-slate-800">Query (Dynamic)</td>
+                                <td class="p-4 text-slate-600">Legacy Hibernate Criteria is completely removed. You must now use the standard <code class="font-mono text-xs">CriteriaBuilder</code> API to build programmatically dynamic queries.</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="p-4"><code class="text-red-600 bg-red-50 px-2 py-1 rounded border border-red-100 font-mono">createSQLQuery(string)</code></td>
+                                <td class="p-4"><code class="text-green-700 bg-green-50 px-2 py-1 rounded border border-green-100 font-mono">createNativeQuery(str)</code></td>
+                                <td class="p-4 font-medium text-slate-800">Raw SQL</td>
+                                <td class="p-4 text-slate-600">Executes a native, database-specific SQL string query instead of HQL/JPQL.</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="p-4"><code class="text-red-600 bg-red-50 px-2 py-1 rounded border border-red-100 font-mono">beginTransaction()</code></td>
+                                <td class="p-4"><code class="text-green-700 bg-green-50 px-2 py-1 rounded border border-green-100 font-mono">getTransaction().begin()</code></td>
+                                <td class="p-4 font-medium text-slate-800">Transaction</td>
+                                <td class="p-4 text-slate-600">Manages local transaction boundaries through the standard EntityTransaction API.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- COMPLETE ANNOTATION REFERENCE GUIDE -->
+        <section id="annotations" class="scroll-mt-24 pt-8 border-t-2 border-slate-100">
+            <div class="mb-10 text-center max-w-3xl mx-auto">
+                <span class="text-indigo-600 font-bold tracking-wider uppercase text-sm mb-2 block">Cheat Sheet</span>
+                <h2 class="text-3xl font-extrabold text-slate-900 mb-4">9. Complete Annotation Reference Guide</h2>
+                <p class="text-slate-600 text-lg">A comprehensive, student-friendly directory of all essential Hibernate and JPA mapping annotations.</p>
+                <p class="text-sm text-slate-500 mt-2 italic">Note: Modern Hibernate uses standardized JPA annotations (<code class="font-mono">jakarta.persistence.*</code>) and provides its own extensions under <code class="font-mono">org.hibernate.annotations.*</code>.</p>
+            </div>
+
+            <!-- Important Interview Annotations Callout -->
+            <div class="bg-indigo-50 border-l-4 border-indigo-600 p-6 rounded-r-xl shadow-sm mb-12">
+                <h3 class="text-indigo-900 font-bold text-lg mb-3 flex items-center">
+                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Must-Know Interview Annotations
+                </h3>
+                <div class="flex flex-wrap gap-2 text-sm font-mono text-indigo-700">
+                    <span class="bg-indigo-100 px-2 py-1 rounded">@Entity</span>
+                    <span class="bg-indigo-100 px-2 py-1 rounded">@Table</span>
+                    <span class="bg-indigo-100 px-2 py-1 rounded">@Id</span>
+                    <span class="bg-indigo-100 px-2 py-1 rounded">@GeneratedValue</span>
+                    <span class="bg-indigo-100 px-2 py-1 rounded">@Column</span>
+                    <span class="bg-indigo-100 px-2 py-1 rounded">@OneToOne</span>
+                    <span class="bg-indigo-100 px-2 py-1 rounded">@OneToMany</span>
+                    <span class="bg-indigo-100 px-2 py-1 rounded">@ManyToOne</span>
+                    <span class="bg-indigo-100 px-2 py-1 rounded">@ManyToMany</span>
+                    <span class="bg-indigo-100 px-2 py-1 rounded">@JoinColumn</span>
+                    <span class="bg-indigo-100 px-2 py-1 rounded">@MappedBy</span>
+                    <span class="bg-indigo-100 px-2 py-1 rounded">@Inheritance</span>
+                    <span class="bg-indigo-100 px-2 py-1 rounded">@Enumerated</span>
+                    <span class="bg-indigo-100 px-2 py-1 rounded">@Transient</span>
+                    <span class="bg-indigo-100 px-2 py-1 rounded">@Version</span>
+                    <span class="bg-indigo-100 px-2 py-1 rounded">@CreationTimestamp</span>
+                    <span class="bg-indigo-100 px-2 py-1 rounded">@UpdateTimestamp</span>
+                    <span class="bg-indigo-100 px-2 py-1 rounded">@Formula</span>
+                </div>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-8">
+                
+                <!-- 1. Entity and Table Mapping -->
+                <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+                    <h3 class="bg-slate-50 px-5 py-3 border-b border-slate-200 font-bold text-slate-800">1. Entity and Table Mapping</h3>
+                    <div class="p-0">
+                        <table class="w-full text-left text-sm text-slate-700">
+                            <tbody class="divide-y divide-slate-100">
+                                <tr><td class="px-5 py-3 font-mono text-pink-600 w-1/3">@Entity</td><td class="px-5 py-3">Marks a Java class as a persistent entity.</td></tr>
+                                <tr><td class="px-5 py-3 font-mono text-pink-600">@Table</td><td class="px-5 py-3">Specifies the database table mapped to the entity.</td></tr>
+                                <tr><td class="px-5 py-3 font-mono text-pink-600">@MappedSuperclass</td><td class="px-5 py-3">Allows fields of a superclass to be inherited by JPA entities.</td></tr>
+                                <tr><td class="px-5 py-3 font-mono text-pink-600">@Embeddable</td><td class="px-5 py-3">Marks a class whose fields can be embedded into an entity.</td></tr>
+                                <tr><td class="px-5 py-3 font-mono text-pink-600">@Embedded</td><td class="px-5 py-3">Embeds an @Embeddable object inside an entity.</td></tr>
+                                <tr><td class="px-5 py-3 font-mono text-pink-600">@AttributeOverride</td><td class="px-5 py-3">Overrides the column mapping of an embedded attribute.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 2. Primary Key and Column Mapping -->
+                <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+                    <h3 class="bg-slate-50 px-5 py-3 border-b border-slate-200 font-bold text-slate-800">2. Primary Key and Column Mapping</h3>
+                    <div class="p-0">
+                        <table class="w-full text-left text-sm text-slate-700">
+                            <tbody class="divide-y divide-slate-100">
+                                <tr><td class="px-5 py-3 font-mono text-pink-600 w-1/3">@Id</td><td class="px-5 py-3">Marks a field/property as the primary key.</td></tr>
+                                <tr><td class="px-5 py-3 font-mono text-pink-600">@GeneratedValue</td><td class="px-5 py-3">Specifies how the primary-key value is generated.</td></tr>
+                                <tr><td class="px-5 py-3 font-mono text-pink-600">@SequenceGenerator</td><td class="px-5 py-3">Defines a database sequence generator.</td></tr>
+                                <tr><td class="px-5 py-3 font-mono text-pink-600">@TableGenerator</td><td class="px-5 py-3">Defines a table-based identifier generator.</td></tr>
+                                <tr><td class="px-5 py-3 font-mono text-pink-600">@Column</td><td class="px-5 py-3">Maps a field/property to a database column.</td></tr>
+                                <tr><td class="px-5 py-3 font-mono text-pink-600">@Basic</td><td class="px-5 py-3">Specifies basic persistent field mapping; usually optional.</td></tr>
+                                <tr><td class="px-5 py-3 font-mono text-pink-600">@Transient</td><td class="px-5 py-3">Excludes a field/property from persistence.</td></tr>
+                                <tr><td class="px-5 py-3 font-mono text-pink-600">@Access</td><td class="px-5 py-3">Specifies field or property access strategy.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 3. Relationship Mapping -->
+                <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+                    <h3 class="bg-slate-50 px-5 py-3 border-b border-slate-200 font-bold text-slate-800">3. Relationship Mapping</h3>
+                    <div class="p-0">
+                        <table class="w-full text-left text-sm text-slate-700">
+                            <tbody class="divide-y divide-slate-100">
+                                <tr><td class="px-5 py-3 font-mono text-pink-600 w-1/3">@OneToOne</td><td class="px-5 py-3">Maps a one-to-one relationship.</td></tr>
+                                <tr><td class="px-5 py-3 font-mono text-pink-600">@OneToMany</td><td class="px-5 py-3">Maps a one-to-many relationship.</td></tr>
+                                <tr><td class="px-5 py-3 font-mono text-pink-600">@ManyToOne</td><td class="px-5 py-3">Maps a many-to-one relationship.</td></tr>
+                                <tr><td class="px-5 py-3 font-mono text-pink-600">@ManyToMany</td><td class="px-5 py-3">Maps a many-to-many relationship.</td></tr>
+                                <tr><td class="px-5 py-3 font-mono text-pink-600">@JoinColumn</td><td class="px-5 py-3">Specifies the foreign-key/join column.</td></tr>
+                                <tr><td class="px-5 py-3 font-mono text-pink-600">@JoinColumns</td><td class="px-5 py-3">Specifies multiple join columns.</td></tr>
+                                <tr><td class="px-5 py-3 font-mono text-pink-600">@JoinTable</td><td class="px-5 py-3">Specifies a join table used for relationships.</td></tr>
+                                <tr><td class="px-5 py-3 font-mono text-pink-600">@MappedBy</td><td class="px-5 py-3">Specifies the inverse side of a bidirectional relationship.</td></tr>
+                                <tr><td class="px-5 py-3 font-mono text-pink-600">@OrderBy</td><td class="px-5 py-3">Specifies ordering of a collection using an orderby-clause.</td></tr>
+                                <tr><td class="px-5 py-3 font-mono text-pink-600">@OrderColumn</td><td class="px-5 py-3">Stores the persistent order/index of a list.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 4. Inheritance & 5. Enums/Large Objects -->
+                <div class="space-y-8">
+                    <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+                        <h3 class="bg-slate-50 px-5 py-3 border-b border-slate-200 font-bold text-slate-800">4. Inheritance Mapping</h3>
+                        <div class="p-0">
+                            <table class="w-full text-left text-sm text-slate-700">
+                                <tbody class="divide-y divide-slate-100">
+                                    <tr><td class="px-5 py-3 font-mono text-pink-600 w-1/3">@Inheritance</td><td class="px-5 py-3">Defines the inheritance mapping strategy.</td></tr>
+                                    <tr><td class="px-5 py-3 font-mono text-pink-600">@DiscriminatorColumn</td><td class="px-5 py-3">Defines the discriminator column for inheritance.</td></tr>
+                                    <tr><td class="px-5 py-3 font-mono text-pink-600">@DiscriminatorValue</td><td class="px-5 py-3">Specifies the discriminator value for an entity.</td></tr>
+                                    <tr><td class="px-5 py-3 font-mono text-pink-600">@PrimaryKeyJoinColumn</td><td class="px-5 py-3">Maps a primary-key join used in inheritance or one-to-one mappings.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+                        <h3 class="bg-slate-50 px-5 py-3 border-b border-slate-200 font-bold text-slate-800">5. Enum, Large Objects & Versioning</h3>
+                        <div class="p-0">
+                            <table class="w-full text-left text-sm text-slate-700">
+                                <tbody class="divide-y divide-slate-100">
+                                    <tr><td class="px-5 py-3 font-mono text-pink-600 w-1/3">@Enumerated</td><td class="px-5 py-3">Maps a Java enum to a database value.</td></tr>
+                                    <tr><td class="px-5 py-3 font-mono text-pink-600">@Lob</td><td class="px-5 py-3">Maps a large object such as CLOB or BLOB.</td></tr>
+                                    <tr><td class="px-5 py-3 font-mono text-pink-600">@Version</td><td class="px-5 py-3">Used for optimistic locking.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. Hibernate-Specific Annotations -->
+                <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+                    <h3 class="bg-slate-50 px-5 py-3 border-b border-slate-200 font-bold text-slate-800">6. Hibernate-Specific Annotations</h3>
+                    <div class="p-0">
+                        <table class="w-full text-left text-sm text-slate-700">
+                            <tbody class="divide-y divide-slate-100">
+                                <tr>
+                                    <td class="px-5 py-3 font-mono text-pink-600 w-1/3">@CreationTimestamp<br>@UpdateTimestamp</td>
+                                    <td class="px-5 py-3">Common Hibernate annotations for automatic timestamp management. Records creation and update times.</td>
+                                </tr>
+                                <tr><td class="px-5 py-3 font-mono text-pink-600">@JdbcTypeCode</td><td class="px-5 py-3">Specifies a JDBC type code for Hibernate type mapping.</td></tr>
+                                <tr><td class="px-5 py-3 font-mono text-pink-600">@JdbcType</td><td class="px-5 py-3">Specifies a Hibernate JDBC type descriptor.</td></tr>
+                                <tr><td class="px-5 py-3 font-mono text-pink-600">@JavaType</td><td class="px-5 py-3">Specifies a Hibernate Java type descriptor.</td></tr>
+                                <tr><td class="px-5 py-3 font-mono text-pink-600">@Formula</td><td class="px-5 py-3">Maps a read-only property to a SQL expression.</td></tr>
+                                <tr><td class="px-5 py-3 font-mono text-pink-600">@SQLRestriction</td><td class="px-5 py-3">Adds a SQL restriction to entity/collection fetching in modern Hibernate.</td></tr>
+                                <tr><td class="px-5 py-3 font-mono text-pink-600">@SQLJoinTableRestriction</td><td class="px-5 py-3">Adds a SQL restriction to a join table in modern Hibernate.</td></tr>
+                                <tr><td class="px-5 py-3 font-mono text-pink-600">@FilterDef / @Filter</td><td class="px-5 py-3">Defines and applies a Hibernate filter to an entity or association.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 7. Lifecycle & 8. Named Queries -->
+                <div class="space-y-8">
+                    <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+                        <h3 class="bg-slate-50 px-5 py-3 border-b border-slate-200 font-bold text-slate-800">7. Hibernate Lifecycle / Callback</h3>
+                        <div class="p-0">
+                            <table class="w-full text-left text-sm text-slate-700">
+                                <tbody class="divide-y divide-slate-100">
+                                    <tr>
+                                        <td class="px-5 py-3 font-mono text-pink-600 w-1/3">@PrePersist<br>@PostPersist</td>
+                                        <td class="px-5 py-3">Runs before/after an entity is persisted to the database.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-5 py-3 font-mono text-pink-600">@PreUpdate<br>@PostUpdate</td>
+                                        <td class="px-5 py-3">Runs before/after an entity update occurs.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-5 py-3 font-mono text-pink-600">@PreRemove<br>@PostRemove</td>
+                                        <td class="px-5 py-3">Runs before/after an entity is removed.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-5 py-3 font-mono text-pink-600">@PostLoad</td>
+                                        <td class="px-5 py-3">Runs after an entity is loaded from the database.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+                        <h3 class="bg-slate-50 px-5 py-3 border-b border-slate-200 font-bold text-slate-800">8. Named Query Annotations</h3>
+                        <div class="p-0">
+                            <table class="w-full text-left text-sm text-slate-700">
+                                <tbody class="divide-y divide-slate-100">
+                                    <tr><td class="px-5 py-3 font-mono text-pink-600 w-1/3">@NamedQuery</td><td class="px-5 py-3">Defines a named JPQL/HQL-style query.</td></tr>
+                                    <tr><td class="px-5 py-3 font-mono text-pink-600">@NamedQueries</td><td class="px-5 py-3">Groups multiple @NamedQuery definitions together.</td></tr>
+                                    <tr><td class="px-5 py-3 font-mono text-pink-600">@NamedNativeQuery</td><td class="px-5 py-3">Defines a named native SQL query.</td></tr>
+                                    <tr><td class="px-5 py-3 font-mono text-pink-600">@NamedNativeQueries</td><td class="px-5 py-3">Groups multiple @NamedNativeQuery definitions.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 py-8 text-center mt-12">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
+            <p>&copy; 2026 End-to-End Hibernate Visual Guide.</p>
+            <p class="text-sm mt-2 md:mt-0">Designed for deep relational mapping comprehension in Enterprise Java.</p>
+        </div>
+    </footer>
+
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true, 
+            theme: 'default',
+            securityLevel: 'loose',
+            fontFamily: 'Inter, sans-serif'
+        });
+    </script>
+</body>
+</html>
